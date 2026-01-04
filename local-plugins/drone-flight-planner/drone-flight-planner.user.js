@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-drone-planner@mordenkainennn
 // @name           IITC Plugin: mordenkainennn's Drone Flight Planner
-// @version        0.0.1
+// @version        0.0.2
 // @description    Plugin for planning drone flights in IITC
 // @author         mordenkainennn
 // @category       Layer
@@ -394,6 +394,108 @@ function wrapper(plugin_info) {
         return message;
     }
 
+    self.exportPlanAsJson = function () {
+        if (!self.plan || !self.plan.furthestPath) {
+            alert("No plan to export.");
+            return;
+        }
+
+        let portalsData = {};
+        self.plan.furthestPath.forEach(guid => {
+            let portal = self.allPortals[guid];
+            if (portal) {
+                let latLng = self.getLatLng(guid);
+                portalsData[guid] = {
+                    name: portal.options.data.title,
+                    lat: latLng.lat,
+                    lng: latLng.lng
+                };
+            }
+        });
+
+        const planJson = {
+            name: "Drone Flight Plan",
+            version: "1.0",
+            startPortalGuid: self.startPortal.guid,
+            path: self.plan.furthestPath,
+            portals: portalsData
+        };
+
+        const jsonString = JSON.stringify(planJson, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'iitc-drone-plan.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    self.importPlanFromJson = function () {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json,.json';
+        input.onchange = function (e) {
+            const file = e.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                try {
+                    const planJson = JSON.parse(event.target.result);
+
+                    // Basic validation
+                    if (!planJson.version || !planJson.startPortalGuid || !planJson.path || !planJson.portals) {
+                        alert('Invalid plan file format.');
+                        return;
+                    }
+
+                    // Clear current plan
+                    self.clearLayers();
+                    self.plan = null;
+
+                    // Load portal data from JSON into self.allPortals
+                    // This is a simplified way to make getLatLng and getPortalNameFromGUID work.
+                    // We create mock portal objects.
+                    for (const guid in planJson.portals) {
+                        if (!self.allPortals[guid]) {
+                            const portalData = planJson.portals[guid];
+                            self.allPortals[guid] = {
+                                options: {
+                                    data: {
+                                        title: portalData.name,
+                                        latE6: portalData.lat * 1e6,
+                                        lngE6: portalData.lng * 1e6
+                                    }
+                                }
+                            };
+                        }
+                    }
+
+                    self.startPortal = { guid: planJson.startPortalGuid };
+
+                    // Reconstruct a minimal 'plan' object for drawing
+                    self.plan = {
+                        furthestPath: planJson.path
+                    };
+
+                    self.updateLayer();
+                    alert('Plan imported successfully!');
+
+                } catch (err) {
+                    alert('Failed to parse JSON file: ' + err);
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    };
+
     self.getPortalNameFromGUID = function (guid) {
         let portalData = self.allPortals[guid];
 
@@ -685,8 +787,9 @@ function wrapper(plugin_info) {
         '    <div id="hcf-buttons-container" style="margin: 3px;">\n' +
         '      <button id="scan-portals" style="cursor: pointer" style=""margin: 2px;">Use Portals In View</button>' +
         '      <button id="hcf-to-dt-btn" style="cursor: pointer">Export to DrawTools</button>' +
-        '      <button id="swap-ends-btn" style="cursor: pointer">Switch End to Start</button>' +
-        '      <button id="hcf-simulator-btn" style="cursor: pointer" hidden>Simulate</button>' +
+        '      <button id="export-plan-btn" style="cursor: pointer">Export Plan</button>' +
+        '      <button id="import-plan-btn" style="cursor: pointer">Import Plan</button>' +
+        '      <button id="swap-ends-btn" style="cursor: pointer">Switch End to Start</button>' + '      <button id="hcf-simulator-btn" style="cursor: pointer" hidden>Simulate</button>' +
         '      <button id="hcf-clear-start-btn" style="cursor: pointer">Clear Start Portal</button>' +
         '      <button id="hcf-clear-some-btn" style="cursor: pointer">Clear Unused Portals</button>' +
         '      <button id="hcf-clear-most-btn" style="cursor: pointer">Clear Most Portals</button>' +
@@ -844,6 +947,14 @@ function wrapper(plugin_info) {
     }
 
     self.attachEventHandler = function () {
+        $("#export-plan-btn").click(function () {
+            self.exportPlanAsJson();
+        });
+
+        $("#import-plan-btn").click(function () {
+            self.importPlanFromJson();
+        });
+
         $("#hcf-to-dt-btn").click(function () {
             self.exportToDrawtools(self.plan);
         });

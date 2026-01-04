@@ -1,13 +1,13 @@
 // ==UserScript==
-// @id             iitc-plugin-drone-planner@mordenkainennn
-// @name           IITC Plugin: mordenkainennn's Drone Flight Planner
-// @version        0.0.1.20251231
+// @id             iitc-plugin-drone-planner@57Cell
+// @name           IITC Plugin: 57Cell's Drone Flight Planner
+// @version        0.0.2
 // @description    Plugin for planning drone flights in IITC
-// @author         mordenkainennn
+// @author         57Cell (Michael Hartley) and ChatGPT 4.0 mod by mordenkainennn
 // @category       Layer
-// @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
-// @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/main/local-plugins/drone-flight-planner/drone-flight-planner.meta.js
-// @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/main/local-plugins/drone-flight-planner/drone-flight-planner.user.js
+// @namespace      https://github.com/jonatkins/ingress-intel-total-conversion
+// @updateURL      https://github.com/mike40033/iitc-57Cell/raw/master/plugins/drone-flight-planner/drone-flight-planner.meta.js
+// @downloadURL    https://github.com/mike40033/iitc-57Cell/raw/master/plugins/drone-flight-planner/drone-flight-planner.user.js
 // @include        https://intel.ingress.com/*
 // @include        http://intel.ingress.com/*
 // @match          https://intel.ingress.com/*
