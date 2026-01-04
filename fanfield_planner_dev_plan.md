@@ -15,7 +15,7 @@ The plugin will guide the user through planning a multi-layered control field st
     *   Basic UserScript headers adapted with user's specific details (`@id`, `@name`, `@author`, `@namespace`, `@updateURL`, `@downloadURL`, `@version`, `@description`).
     *   Basic `wrapper` and `setup` function structures in `user.js`.
 
-### Phase 1: User Interface (UI) Design & Implementation
+### Phase 1: User Interface (UI) Design & Implementation (Completed)
 
 1.  **Dialog Box (`self.dialog_html`):**
     *   **Portal Selection Area:**
