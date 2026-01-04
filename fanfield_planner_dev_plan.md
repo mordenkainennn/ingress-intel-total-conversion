@@ -35,7 +35,7 @@ The plugin will guide the user through planning a multi-layered control field st
     *   Display images and names of selected Anchor and Base portals within the dialog.
     *   Provide visual cues (e.g., messages) to guide the user on what to select next.
 
-### Phase 2: Core Logic Implementation (Completed)
+### Phase 2: Core Logic Implementation (Completed) (Completed)
 
 1.  **Portal Selection Handling (`self.portalSelected`):**
     *   Modify the standard `portalSelected` hook to update `self.anchorPortal` or `self.basePortals` based on the active UI mode.
@@ -61,7 +61,7 @@ The plugin will guide the user through planning a multi-layered control field st
         *   Add a **"Action: Destroy and Recapture Anchor Portal"** (new action type).
         *   Add "Action: Link from Anchor to all Base Portals" (from `self.anchorPortal` to each portal in `self.basePortals`).
 
-### Phase 3: Output and Visualisation
+### Phase 3: Output and Visualisation (Completed)
 
 1.  **Text Plan Generation (`self.planToText`):**
     *   Create a function to format the entire multi-phase plan (including "Destroy" actions) into a clear, numbered/lettered step-by-step text format suitable for the `textarea`.
@@ -78,7 +78,7 @@ The plugin will guide the user through planning a multi-layered control field st
     *   Use distinct colors to differentiate between Phase 1 (base construction) and Phase 2 (final fields) links/fields on the map.
     *   Draw the planned links and fields onto these layers.
 
-### Phase 4: Integration and Refinement
+### Phase 4: Integration and Refinement (Completed)
 
 1.  **Event Handlers (`self.attachEventHandler`):**
     *   Wire up all buttons and UI interactions.

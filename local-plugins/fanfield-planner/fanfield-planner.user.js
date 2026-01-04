@@ -145,6 +145,17 @@ function wrapper(plugin_info) {
         window.addHook('portalSelected', self.portalSelected);
 
         $('#toolbox').append('<a onclick="window.plugin.fanfieldPlanner.openDialog(); return false;">Plan Fanfield</a>');
+
+        // Initialize LayerGroups for drawing
+        self.linksLayerPhase1 = new L.LayerGroup();
+        self.fieldsLayerPhase1 = new L.LayerGroup();
+        self.linksLayerPhase2 = new L.LayerGroup();
+        self.fieldsLayerPhase2 = new L.LayerGroup();
+
+        window.addLayerGroup('Fanfield Plan (Links Phase 1)', self.linksLayerPhase1, false);
+        window.addLayerGroup('Fanfield Plan (Fields Phase 1)', self.fieldsLayerPhase1, false);
+        window.addLayerGroup('Fanfield Plan (Links Phase 2)', self.linksLayerPhase2, false);
+        window.addLayerGroup('Fanfield Plan (Fields Phase 2)', self.fieldsLayerPhase2, false);
     };
 
     self.openDialog = function () {
@@ -167,6 +178,7 @@ function wrapper(plugin_info) {
             self.basePortals = [];
             self.updateDialog();
             $('#fanfield-plan-text').val('');
+            self.clearLayers(); // Clear map drawings as well
         });
 
         // Event delegation for remove buttons
@@ -182,9 +194,67 @@ function wrapper(plugin_info) {
                 const plan = self.generateFanfieldPlan();
                 const planText = self.planToText(plan);
                 $('#fanfield-plan-text').val(planText);
+                self.drawPlan(plan); // Call drawPlan here
             } catch (e) {
                 console.error("Fanfield planning error:", e);
                 $('#fanfield-plan-text').val("An error occurred during planning:\n" + e.message);
+                self.clearLayers(); // Clear old drawings on error
+            }
+        });
+    };
+
+    // ++ Drawing Functions ++
+    self.clearLayers = function () {
+        self.linksLayerPhase1.clearLayers();
+        self.fieldsLayerPhase1.clearLayers();
+        self.linksLayerPhase2.clearLayers();
+        self.fieldsLayerPhase2.clearLayers();
+    };
+
+    self.drawLink = function (layerGroup, fromLatLng, toLatLng, color) {
+        const poly = L.polyline([fromLatLng, toLatLng], { color: color, opacity: 1, weight: 3, clickable: false, interactive: false });
+        poly.addTo(layerGroup);
+    };
+
+    self.drawField = function (layerGroup, p1LatLng, p2LatLng, p3LatLng, color) {
+        const poly = L.polygon([p1LatLng, p2LatLng, p3LatLng], { stroke: false, fill: true, fillColor: color, fillOpacity: 0.1, clickable: false, interactive: false });
+        poly.addTo(layerGroup);
+    };
+
+    self.drawPlan = function (plan) {
+        self.clearLayers();
+        if (!plan) return;
+
+        const phase1Color = '#FF00FF'; // Magenta
+        const phase2Color = '#FFFF00'; // Yellow
+
+        plan.forEach(action => {
+            if (action.type === 'link') {
+                const fromPortal = window.portals[action.from];
+                const toPortal = window.portals[action.to];
+                if (!fromPortal || !toPortal) return;
+                const fromLatLng = fromPortal.getLatLng();
+                const toLatLng = toPortal.getLatLng();
+                
+                if (action.phase === 1) {
+                    self.drawLink(self.linksLayerPhase1, fromLatLng, toLatLng, phase1Color);
+                } else if (action.phase === 2) {
+                    self.drawLink(self.linksLayerPhase2, fromLatLng, toLatLng, phase2Color);
+                }
+            } else if (action.type === 'field') {
+                const p1 = window.portals[action.p1];
+                const p2 = window.portals[action.p2];
+                const p3 = window.portals[action.p3];
+                if (!p1 || !p2 || !p3) return;
+                const p1LatLng = p1.getLatLng();
+                const p2LatLng = p2.getLatLng();
+                const p3LatLng = p3.getLatLng();
+
+                if (action.phase === 1) {
+                    self.drawField(self.fieldsLayerPhase1, p1LatLng, p2LatLng, p3LatLng, phase1Color);
+                } else if (action.phase === 2) {
+                    self.drawField(self.fieldsLayerPhase2, p1LatLng, p2LatLng, p3LatLng, phase2Color);
+                }
             }
         });
     };
@@ -223,19 +293,23 @@ function wrapper(plugin_info) {
                 distance = self.distance(window.portals[lastVisitedGuid].getLatLng(), window.portals[guid].getLatLng());
                 totalDistance += distance;
             }
-            plan.push({ type: 'visit', guid: guid, distance: distance, from: lastVisitedGuid });
+            plan.push({ type: 'visit', guid: guid, distance: distance, from: lastVisitedGuid, phase: 1 });
 
             // Action: Link to anchor
-            plan.push({ type: 'link', from: guid, to: self.anchorPortal.guid });
+            plan.push({ type: 'link', from: guid, to: self.anchorPortal.guid, phase: 1 });
             linkCount++;
+            keysNeeded[guid]++; // Key needed for linking to anchor
 
             // Action: Link to previous base portals to form fields
             for (let i = 0; i < index; i++) {
                 const prevBaseGuid = optimizedBasePath[i];
-                plan.push({ type: 'link', from: guid, to: prevBaseGuid });
+                plan.push({ type: 'link', from: guid, to: prevBaseGuid, phase: 1 });
                 linkCount++;
-                fieldCount++; // Each link to a previous base portal creates a new field with the anchor
-                keysNeeded[guid]++;
+                
+                // Field formed by (currentBase, Anchor, prevBase)
+                plan.push({ type: 'field', p1: guid, p2: self.anchorPortal.guid, p3: prevBaseGuid, phase: 1 });
+                fieldCount++;
+                keysNeeded[guid]++; // Key needed for linking to prevBase
             }
 
             lastVisitedGuid = guid;
@@ -247,19 +321,27 @@ function wrapper(plugin_info) {
         // Action: Go to anchor
         let distance = self.distance(window.portals[lastVisitedGuid].getLatLng(), window.portals[self.anchorPortal.guid].getLatLng());
         totalDistance += distance;
-        plan.push({ type: 'visit', guid: self.anchorPortal.guid, distance: distance, from: lastVisitedGuid });
-
+                    plan.push({ type: 'visit', guid: self.anchorPortal.guid, distance: distance, from: lastVisitedGuid, phase: 2 });
         // Action: Destroy and rebuild
-        plan.push({ type: 'destroy', guid: self.anchorPortal.guid });
+        plan.push({ type: 'destroy', guid: self.anchorPortal.guid, phase: 2 });
 
         // Action: Link from anchor to all base portals
-        baseGuids.forEach(guid => {
-            plan.push({ type: 'link', from: self.anchorPortal.guid, to: guid });
+        for (let i = 0; i < optimizedBasePath.length; i++) {
+            const currentBase = optimizedBasePath[i];
+            plan.push({ type: 'link', from: self.anchorPortal.guid, to: currentBase, phase: 2 });
             linkCount++;
-        });
-        fieldCount += baseGuids.length - 1; // Linking to N portals from one point creates N-1 fields.
+            keysNeeded[self.anchorPortal.guid]++; // Key needed for linking from anchor
+            
+            // Form fields in Phase 2: Anchor, prevBase, currentBase
+            // This is valid if i > 0, because we need two base portals to form a triangle with the anchor
+            if (i > 0) {
+                const prevBase = optimizedBasePath[i-1];
+                plan.push({ type: 'field', p1: self.anchorPortal.guid, p2: prevBase, p3: currentBase, phase: 2 });
+                fieldCount++;
+            }
+        }
         
-        plan.push({type: 'summary', linkCount, fieldCount, totalDistance, keysNeeded });
+        plan.push({type: 'summary', linkCount, fieldCount, totalDistance, keysNeeded, basePortalsCount: baseGuids.length });
 
         return plan;
     };
@@ -276,7 +358,7 @@ function wrapper(plugin_info) {
                     step = 1;
                     break;
                 case 'visit':
-                    let visitText = `Step ${step++}: Go to portal ${self.getPortalLink(action.guid)}.`;
+                    let visitText = `Step ${step++} (Phase ${action.phase}): Go to portal ${self.getPortalLink(action.guid)}.`;
                     if (action.from) {
                         const fromLL = window.portals[action.from].getLatLng();
                         const toLL = window.portals[action.guid].getLatLng();
@@ -286,15 +368,19 @@ function wrapper(plugin_info) {
                     planText += visitText + '\n';
                     break;
                 case 'link':
-                    planText += `    - Link to ${self.getPortalLink(action.to)}\n`;
+                    planText += `    - (Phase ${action.phase}) Link from ${self.getPortalLink(action.from)} to ${self.getPortalLink(action.to)}\n`;
+                    break;
+                case 'field':
+                    planText += `    -> (Phase ${action.phase}) FIELD created: ${self.getPortalLink(action.p1)}, ${self.getPortalLink(action.p2)}, ${self.getPortalLink(action.p3)}\n`;
                     break;
                 case 'destroy':
-                    planText += `Step ${step++}: Destroy and recapture portal ${self.getPortalLink(action.guid)}.\n`;
+                    planText += `Step ${step++} (Phase ${action.phase}): Destroy and recapture portal ${self.getPortalLink(action.guid)}.\n`;
                     break;
                 case 'summary':
                     planText += "\n--- SUMMARY ---\n";
-                    planText += `Total Fields: ${action.fieldCount}\n`;
+                    planText += `Base Portals: ${action.basePortalsCount}\n`;
                     planText += `Total Links: ${action.linkCount}\n`;
+                    planText += `Total Fields: ${action.fieldCount}\n`;
                     planText += `Estimated Travel Distance: ${self.formatDistance(action.totalDistance)}\n\n`;
                     planText += "Keys Required:\n";
                     for (const guid in action.keysNeeded) {
