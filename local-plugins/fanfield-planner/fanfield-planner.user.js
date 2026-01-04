@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-fanfield-planner@mordenkainennn
 // @name           IITC Plugin: mordenkainennn's Fanfield Planner
-// @version        0.0.1.20251231
+// @version        1.0
 // @description    Plugin for planning fanfields/pincushions in IITC
 // @author         mordenkainennn
 // @category       Layer
@@ -25,7 +25,7 @@
 
 function wrapper(plugin_info) {
     if (typeof window.plugin !== 'function') window.plugin = function () { };
-    
+
     // PLUGIN START
     let self = window.plugin.fanfieldPlanner = function () { };
 
@@ -109,7 +109,7 @@ function wrapper(plugin_info) {
             $('#plan-fanfield-btn').prop('disabled', true);
         }
     };
-    
+
     self.portalSelected = function (data) {
         if (!self.dialogIsOpen()) return;
 
@@ -133,7 +133,7 @@ function wrapper(plugin_info) {
         self.updateDialog();
     };
 
-    self.dialogIsOpen = function() {
+    self.dialogIsOpen = function () {
         // Corrected selector: jQuery UI prepends "dialog-" to the id.
         return ($("#dialog-fanfield-planner-view").length > 0 && $("#dialog-fanfield-planner-view").dialog('isOpen'));
     };
@@ -182,7 +182,7 @@ function wrapper(plugin_info) {
         });
 
         // Event delegation for remove buttons
-        $(document).on('click', '.fanfield-remove-btn', function() {
+        $(document).on('click', '.fanfield-remove-btn', function () {
             const indexToRemove = $(this).data('index');
             self.basePortals.splice(indexToRemove, 1);
             self.updateDialog();
@@ -235,7 +235,7 @@ function wrapper(plugin_info) {
                 if (!fromPortal || !toPortal) return;
                 const fromLatLng = fromPortal.getLatLng();
                 const toLatLng = toPortal.getLatLng();
-                
+
                 if (action.phase === 1) {
                     self.drawLink(self.linksLayerPhase1, fromLatLng, toLatLng, phase1Color);
                 } else if (action.phase === 2) {
@@ -305,7 +305,7 @@ function wrapper(plugin_info) {
                 const prevBaseGuid = optimizedBasePath[i];
                 plan.push({ type: 'link', from: guid, to: prevBaseGuid, phase: 1 });
                 linkCount++;
-                
+
                 // Field formed by (currentBase, Anchor, prevBase)
                 plan.push({ type: 'field', p1: guid, p2: self.anchorPortal.guid, p3: prevBaseGuid, phase: 1 });
                 fieldCount++;
@@ -321,7 +321,7 @@ function wrapper(plugin_info) {
         // Action: Go to anchor
         let distance = self.distance(window.portals[lastVisitedGuid].getLatLng(), window.portals[self.anchorPortal.guid].getLatLng());
         totalDistance += distance;
-                    plan.push({ type: 'visit', guid: self.anchorPortal.guid, distance: distance, from: lastVisitedGuid, phase: 2 });
+        plan.push({ type: 'visit', guid: self.anchorPortal.guid, distance: distance, from: lastVisitedGuid, phase: 2 });
         // Action: Destroy and rebuild
         plan.push({ type: 'destroy', guid: self.anchorPortal.guid, phase: 2 });
 
@@ -331,28 +331,28 @@ function wrapper(plugin_info) {
             plan.push({ type: 'link', from: self.anchorPortal.guid, to: currentBase, phase: 2 });
             linkCount++;
             keysNeeded[self.anchorPortal.guid]++; // Key needed for linking from anchor
-            
+
             // Form fields in Phase 2: Anchor, prevBase, currentBase
             // This is valid if i > 0, because we need two base portals to form a triangle with the anchor
             if (i > 0) {
-                const prevBase = optimizedBasePath[i-1];
+                const prevBase = optimizedBasePath[i - 1];
                 plan.push({ type: 'field', p1: self.anchorPortal.guid, p2: prevBase, p3: currentBase, phase: 2 });
                 fieldCount++;
             }
         }
-        
-        plan.push({type: 'summary', linkCount, fieldCount, totalDistance, keysNeeded, basePortalsCount: baseGuids.length });
+
+        plan.push({ type: 'summary', linkCount, fieldCount, totalDistance, keysNeeded, basePortalsCount: baseGuids.length });
 
         return plan;
     };
 
-    self.planToText = function(plan) {
+    self.planToText = function (plan) {
         if (!plan) return "No plan generated.";
         let planText = "";
         let step = 1;
 
         plan.forEach(action => {
-            switch(action.type) {
+            switch (action.type) {
                 case 'header':
                     planText += `\n--- ${action.text} ---\n`;
                     step = 1;
@@ -396,7 +396,7 @@ function wrapper(plugin_info) {
 
     // ++ Helper Functions ++
 
-    self.getPortalLink = function(guid) {
+    self.getPortalLink = function (guid) {
         const portal = window.portals[guid];
         if (!portal) return `[Unknown Portal: ${guid}]`;
         const details = portal.options.data;
@@ -406,11 +406,11 @@ function wrapper(plugin_info) {
         return `<a href="${perma}" target="_blank">${details.title}</a>`;
     };
 
-    self.distance = function(p1, p2) {
+    self.distance = function (p1, p2) {
         return p1.distanceTo(p2);
     };
-    
-    self.bearing = function(p1, p2) {
+
+    self.bearing = function (p1, p2) {
         const toRad = Math.PI / 180;
         const toDeg = 180 / Math.PI;
         const lat1 = p1.lat * toRad;
@@ -422,23 +422,23 @@ function wrapper(plugin_info) {
         return (Math.atan2(y, x) * toDeg + 360) % 360;
     };
 
-    self.calculatePathLength = function(path) {
+    self.calculatePathLength = function (path) {
         let totalLength = 0;
         for (let i = 1; i < path.length; i++) {
-            let p1 = window.portals[path[i-1]]?.getLatLng();
+            let p1 = window.portals[path[i - 1]]?.getLatLng();
             let p2 = window.portals[path[i]]?.getLatLng();
-            if(p1 && p2) {
+            if (p1 && p2) {
                 totalLength += self.distance(p1, p2);
             }
         }
         return totalLength;
     };
 
-    self.findShortestPath = function(portalGuids) {
+    self.findShortestPath = function (portalGuids) {
         if (portalGuids.length <= 1) return portalGuids;
         let bestPath = portalGuids.slice();
         // Simple sort as a starting point (e.g., by latitude)
-        bestPath.sort((a,b) => window.portals[a].getLatLng().lat - window.portals[b].getLatLng().lat);
+        bestPath.sort((a, b) => window.portals[a].getLatLng().lat - window.portals[b].getLatLng().lat);
         let bestLength = self.calculatePathLength(bestPath);
 
         // Run optimization for a limited number of iterations
@@ -447,7 +447,7 @@ function wrapper(plugin_info) {
             let index1 = Math.floor(Math.random() * newPath.length);
             let index2 = Math.floor(Math.random() * newPath.length);
             [newPath[index1], newPath[index2]] = [newPath[index2], newPath[index1]];
-            
+
             let newLength = self.calculatePathLength(newPath);
 
             if (newLength < bestLength) {
@@ -457,16 +457,16 @@ function wrapper(plugin_info) {
         }
         return bestPath;
     };
-    
-    self.buildDirection = function(compass1, compass2, angle) {
+
+    self.buildDirection = function (compass1, compass2, angle) {
         if (angle < 0) angle += 360;
         if (angle == 0) return compass1;
         if (angle == 45) return compass1 + compass2;
-        if (angle > 45) return self.buildDirection(compass2, compass1, 90-angle);
+        if (angle > 45) return self.buildDirection(compass2, compass1, 90 - angle);
         return compass1 + ' ' + Math.round(angle) + '° ' + compass2;
     };
 
-    self.formatBearing = function(bearing) {
+    self.formatBearing = function (bearing) {
         bearing = (bearing + 360) % 360;
         if (bearing <= 90) return self.buildDirection('N', 'E', bearing);
         else if (bearing <= 180) return self.buildDirection('S', 'E', 180 - bearing);
@@ -474,7 +474,7 @@ function wrapper(plugin_info) {
         else return self.buildDirection('N', 'W', 360 - bearing);
     };
 
-    self.formatDistance = function(distanceMeters) {
+    self.formatDistance = function (distanceMeters) {
         if (distanceMeters < 1000) {
             return `${Math.round(distanceMeters)}m`;
         } else {
