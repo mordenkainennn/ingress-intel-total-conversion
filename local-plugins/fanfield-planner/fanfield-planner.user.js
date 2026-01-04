@@ -113,9 +113,14 @@ function wrapper(plugin_info) {
     self.portalSelected = function (data) {
         if (!self.dialogIsOpen()) return;
 
-        const mode = $('input[name="fanfield-select-mode"]:checked').val();
+        // Using the _details property as it's confirmed to work in the user's environment via homogeneous-fields plugin
         const portalDetails = window.portals[data.selectedPortalGuid]?._details;
-        if (!portalDetails) return;
+        if (!portalDetails) {
+            console.warn(`Fanfield Planner: Could not retrieve portal details for ${data.selectedPortalGuid}. Portal may not be fully loaded.`);
+            return;
+        }
+
+        const mode = $('input[name="fanfield-select-mode"]:checked').val();
 
         if (mode === 'anchor') {
             self.anchorPortal = { guid: data.selectedPortalGuid, details: portalDetails };
@@ -129,7 +134,8 @@ function wrapper(plugin_info) {
     };
 
     self.dialogIsOpen = function() {
-        return ($("#fanfield-planner-view").hasClass("ui-dialog-content") && $("#fanfield-planner-view").dialog('isOpen'));
+        // Corrected selector: jQuery UI prepends "dialog-" to the id.
+        return ($("#dialog-fanfield-planner-view").length > 0 && $("#dialog-fanfield-planner-view").dialog('isOpen'));
     };
 
     self.setup = function () {
@@ -139,7 +145,6 @@ function wrapper(plugin_info) {
         window.addHook('portalSelected', self.portalSelected);
 
         $('#toolbox').append('<a onclick="window.plugin.fanfieldPlanner.openDialog(); return false;">Plan Fanfield</a>');
-        // Placeholder for future LayerGroups
     };
 
     self.openDialog = function () {
@@ -171,12 +176,226 @@ function wrapper(plugin_info) {
             self.updateDialog();
         });
 
-        // Placeholder for the main planning button
+        // Main planning button
         $('#plan-fanfield-btn').click(function () {
-            $('#fanfield-plan-text').val('Planning logic not yet implemented...');
-            // self.generateFanfieldPlan(); // This will be implemented next
+            try {
+                const plan = self.generateFanfieldPlan();
+                const planText = self.planToText(plan);
+                $('#fanfield-plan-text').val(planText);
+            } catch (e) {
+                console.error("Fanfield planning error:", e);
+                $('#fanfield-plan-text').val("An error occurred during planning:\n" + e.message);
+            }
         });
     };
+
+    // ++ Main Planning Logic ++
+
+    self.generateFanfieldPlan = function () {
+        if (!self.anchorPortal || self.basePortals.length < 2) {
+            throw new Error("Please select one anchor and at least two base portals.");
+        }
+
+        $('#fanfield-plan-text').val('Optimizing travel path for base portals...');
+        const baseGuids = self.basePortals.map(p => p.guid);
+        const optimizedBasePath = self.findShortestPath(baseGuids);
+
+        let plan = [];
+        let linkCount = 0;
+        let fieldCount = 0;
+        let totalDistance = 0;
+        let keysNeeded = {}; // {guid: count}
+
+        // Initialize keys needed
+        keysNeeded[self.anchorPortal.guid] = baseGuids.length; // for phase 1
+        baseGuids.forEach(guid => {
+            keysNeeded[guid] = 0;
+        });
+
+        // == Phase 1: Build the base fanfield ==
+        plan.push({ type: 'header', text: 'Phase 1: Build Base Fanfield' });
+
+        let lastVisitedGuid = null;
+        optimizedBasePath.forEach((guid, index) => {
+            // Action: Go to portal
+            let distance = 0;
+            if (lastVisitedGuid) {
+                distance = self.distance(window.portals[lastVisitedGuid].getLatLng(), window.portals[guid].getLatLng());
+                totalDistance += distance;
+            }
+            plan.push({ type: 'visit', guid: guid, distance: distance, from: lastVisitedGuid });
+
+            // Action: Link to anchor
+            plan.push({ type: 'link', from: guid, to: self.anchorPortal.guid });
+            linkCount++;
+
+            // Action: Link to previous base portals to form fields
+            for (let i = 0; i < index; i++) {
+                const prevBaseGuid = optimizedBasePath[i];
+                plan.push({ type: 'link', from: guid, to: prevBaseGuid });
+                linkCount++;
+                fieldCount++; // Each link to a previous base portal creates a new field with the anchor
+                keysNeeded[guid]++;
+            }
+
+            lastVisitedGuid = guid;
+        });
+
+        // == Phase 2: The Finale ==
+        plan.push({ type: 'header', text: 'Phase 2: Grand Finale' });
+
+        // Action: Go to anchor
+        let distance = self.distance(window.portals[lastVisitedGuid].getLatLng(), window.portals[self.anchorPortal.guid].getLatLng());
+        totalDistance += distance;
+        plan.push({ type: 'visit', guid: self.anchorPortal.guid, distance: distance, from: lastVisitedGuid });
+
+        // Action: Destroy and rebuild
+        plan.push({ type: 'destroy', guid: self.anchorPortal.guid });
+
+        // Action: Link from anchor to all base portals
+        baseGuids.forEach(guid => {
+            plan.push({ type: 'link', from: self.anchorPortal.guid, to: guid });
+            linkCount++;
+        });
+        fieldCount += baseGuids.length - 1; // Linking to N portals from one point creates N-1 fields.
+        
+        plan.push({type: 'summary', linkCount, fieldCount, totalDistance, keysNeeded });
+
+        return plan;
+    };
+
+    self.planToText = function(plan) {
+        if (!plan) return "No plan generated.";
+        let planText = "";
+        let step = 1;
+
+        plan.forEach(action => {
+            switch(action.type) {
+                case 'header':
+                    planText += `\n--- ${action.text} ---\n`;
+                    step = 1;
+                    break;
+                case 'visit':
+                    let visitText = `Step ${step++}: Go to portal ${self.getPortalLink(action.guid)}.`;
+                    if (action.from) {
+                        const fromLL = window.portals[action.from].getLatLng();
+                        const toLL = window.portals[action.guid].getLatLng();
+                        const bearing = self.bearing(fromLL, toLL);
+                        visitText += ` (${self.formatDistance(action.distance)}, ${self.formatBearing(bearing)})`;
+                    }
+                    planText += visitText + '\n';
+                    break;
+                case 'link':
+                    planText += `    - Link to ${self.getPortalLink(action.to)}\n`;
+                    break;
+                case 'destroy':
+                    planText += `Step ${step++}: Destroy and recapture portal ${self.getPortalLink(action.guid)}.\n`;
+                    break;
+                case 'summary':
+                    planText += "\n--- SUMMARY ---\n";
+                    planText += `Total Fields: ${action.fieldCount}\n`;
+                    planText += `Total Links: ${action.linkCount}\n`;
+                    planText += `Estimated Travel Distance: ${self.formatDistance(action.totalDistance)}\n\n`;
+                    planText += "Keys Required:\n";
+                    for (const guid in action.keysNeeded) {
+                        if (action.keysNeeded[guid] > 0) {
+                            planText += `  - ${action.keysNeeded[guid]}x keys for ${self.getPortalLink(guid)}\n`;
+                        }
+                    }
+                    break;
+            }
+        });
+        return planText;
+    };
+
+    // ++ Helper Functions ++
+
+    self.getPortalLink = function(guid) {
+        const portal = window.portals[guid];
+        if (!portal) return `[Unknown Portal: ${guid}]`;
+        const details = portal.options.data;
+        const lat = details.latE6 / 1E6;
+        const lng = details.lngE6 / 1E6;
+        const perma = `https://intel.ingress.com/intel?ll=${lat},${lng}&z=17&pll=${lat},${lng}`;
+        return `<a href="${perma}" target="_blank">${details.title}</a>`;
+    };
+
+    self.distance = function(p1, p2) {
+        return p1.distanceTo(p2);
+    };
+    
+    self.bearing = function(p1, p2) {
+        const toRad = Math.PI / 180;
+        const toDeg = 180 / Math.PI;
+        const lat1 = p1.lat * toRad;
+        const lon1 = p1.lng * toRad;
+        const lat2 = p2.lat * toRad;
+        const lon2 = p2.lng * toRad;
+        const y = Math.sin(lon2 - lon1) * Math.cos(lat2);
+        const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+        return (Math.atan2(y, x) * toDeg + 360) % 360;
+    };
+
+    self.calculatePathLength = function(path) {
+        let totalLength = 0;
+        for (let i = 1; i < path.length; i++) {
+            let p1 = window.portals[path[i-1]]?.getLatLng();
+            let p2 = window.portals[path[i]]?.getLatLng();
+            if(p1 && p2) {
+                totalLength += self.distance(p1, p2);
+            }
+        }
+        return totalLength;
+    };
+
+    self.findShortestPath = function(portalGuids) {
+        if (portalGuids.length <= 1) return portalGuids;
+        let bestPath = portalGuids.slice();
+        // Simple sort as a starting point (e.g., by latitude)
+        bestPath.sort((a,b) => window.portals[a].getLatLng().lat - window.portals[b].getLatLng().lat);
+        let bestLength = self.calculatePathLength(bestPath);
+
+        // Run optimization for a limited number of iterations
+        for (let i = 0; i < (portalGuids.length * portalGuids.length * 2); i++) {
+            let newPath = bestPath.slice();
+            let index1 = Math.floor(Math.random() * newPath.length);
+            let index2 = Math.floor(Math.random() * newPath.length);
+            [newPath[index1], newPath[index2]] = [newPath[index2], newPath[index1]];
+            
+            let newLength = self.calculatePathLength(newPath);
+
+            if (newLength < bestLength) {
+                bestPath = newPath;
+                bestLength = newLength;
+            }
+        }
+        return bestPath;
+    };
+    
+    self.buildDirection = function(compass1, compass2, angle) {
+        if (angle < 0) angle += 360;
+        if (angle == 0) return compass1;
+        if (angle == 45) return compass1 + compass2;
+        if (angle > 45) return self.buildDirection(compass2, compass1, 90-angle);
+        return compass1 + ' ' + Math.round(angle) + '° ' + compass2;
+    };
+
+    self.formatBearing = function(bearing) {
+        bearing = (bearing + 360) % 360;
+        if (bearing <= 90) return self.buildDirection('N', 'E', bearing);
+        else if (bearing <= 180) return self.buildDirection('S', 'E', 180 - bearing);
+        else if (bearing <= 270) return self.buildDirection('S', 'W', bearing - 180);
+        else return self.buildDirection('N', 'W', 360 - bearing);
+    };
+
+    self.formatDistance = function(distanceMeters) {
+        if (distanceMeters < 1000) {
+            return `${Math.round(distanceMeters)}m`;
+        } else {
+            return `${(distanceMeters / 1000).toFixed(2)}km`;
+        }
+    };
+
 
 
     // PLUGIN END

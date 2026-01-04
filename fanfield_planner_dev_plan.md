@@ -35,7 +35,7 @@ The plugin will guide the user through planning a multi-layered control field st
     *   Display images and names of selected Anchor and Base portals within the dialog.
     *   Provide visual cues (e.g., messages) to guide the user on what to select next.
 
-### Phase 2: Core Logic Implementation
+### Phase 2: Core Logic Implementation (Completed)
 
 1.  **Portal Selection Handling (`self.portalSelected`):**
     *   Modify the standard `portalSelected` hook to update `self.anchorPortal` or `self.basePortals` based on the active UI mode.
