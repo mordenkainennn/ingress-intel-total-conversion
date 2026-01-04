@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-fanfield-planner@mordenkainennn
 // @name           IITC Plugin: mordenkainennn's Fanfield Planner
-// @version        1.1
+// @version        1.3
 // @description    Plugin for planning fanfields/pincushions in IITC
 // @author         mordenkainennn
 // @category       Layer
@@ -398,12 +398,14 @@ function wrapper(plugin_info) {
 
     self.getPortalLink = function (guid) {
         const portal = window.portals[guid];
-        if (!portal) return `[Unknown Portal: ${guid}]`;
+        if (!portal) return `[Unknown Portal]`;
         const details = portal.options.data;
-        // const lat = details.latE6 / 1E6;
-        // const lng = details.lngE6 / 1E6;
-        // const perma = `https://intel.ingress.com/intel?ll=${lat},${lng}&z=17&pll=${lat},${lng}`;
-        return details.title; // Return only the title, remove the link
+        // A portal's title is not guaranteed to be loaded. It may be empty or even just the portal's lat/lng as a string.
+        // Check for a non-empty title that doesn't look like coordinates.
+        if (details && details.title && isNaN(details.title.replace(/[\s.,]/g, ''))) {
+            return details.title;
+        }
+        return `[Portal name not loaded]`; // Fallback text
     };
 
     self.distance = function (p1, p2) {
