@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-drone-planner@mordenkainennn
 // @name           IITC Plugin: mordenkainennn's Drone Flight Planner
-// @version        0.0.2
+// @version        0.0.3
 // @description    Plugin for planning drone flights in IITC
 // @author         mordenkainennn
 // @category       Layer
