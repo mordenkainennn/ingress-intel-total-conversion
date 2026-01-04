@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-fanfield-planner@mordenkainennn
 // @name           IITC Plugin: mordenkainennn's Fanfield Planner
-// @version        1.3
+// @version        1.6
 // @description    Plugin for planning fanfields/pincushions in IITC
 // @author         mordenkainennn
 // @category       Layer
@@ -73,28 +73,28 @@ function wrapper(plugin_info) {
 
     self.updateDialog = function () {
         // Update Anchor
-        const anchorDiv = $('#fanfield-anchor-portal-details');
+        const anchorDiv = $("#fanfield-anchor-portal-details");
         anchorDiv.empty();
         if (self.anchorPortal) {
             anchorDiv.append(`
                 <div class="fanfield-portal-item">
                     <img src="${self.anchorPortal.details.image || window.DEFAULT_PORTAL_IMG}" alt="${self.anchorPortal.details.title}" />
-                    <span>${self.anchorPortal.details.title}</span>
+                    <span>${self.getPortalName(self.anchorPortal.guid)}</span>
                 </div>`);
         } else {
             anchorDiv.append('<div class="placeholder">Please select one anchor portal.</div>');
         }
 
         // Update Base Portals
-        const baseListDiv = $('#fanfield-base-portals-list');
+        const baseListDiv = $("#fanfield-base-portals-list");
         baseListDiv.empty();
-        $('#fanfield-base-count').text(self.basePortals.length);
+        $("#fanfield-base-count").text(self.basePortals.length);
         if (self.basePortals.length > 0) {
             self.basePortals.forEach((p, index) => {
                 baseListDiv.append(`
                     <div class="fanfield-portal-item">
                         <img src="${p.details.image || window.DEFAULT_PORTAL_IMG}" alt="${p.details.title}" />
-                        <span>${p.details.title}</span>
+                        <span>${self.getPortalName(p.guid)}</span>
                         <a class="fanfield-remove-btn" data-index="${index}" title="Remove"> X </a>
                     </div>`);
             });
@@ -104,28 +104,26 @@ function wrapper(plugin_info) {
 
         // Update Button State
         if (self.anchorPortal && self.basePortals.length >= 2) {
-            $('#plan-fanfield-btn').prop('disabled', false);
+            $("#plan-fanfield-btn").prop('disabled', false);
         } else {
-            $('#plan-fanfield-btn').prop('disabled', true);
+            $("#plan-fanfield-btn").prop('disabled', true);
         }
     };
 
     self.portalSelected = function (data) {
         if (!self.dialogIsOpen()) return;
 
-        // Using the _details property as it's confirmed to work in the user's environment via homogeneous-fields plugin
         const portalDetails = window.portals[data.selectedPortalGuid]?._details;
         if (!portalDetails) {
             console.warn(`Fanfield Planner: Could not retrieve portal details for ${data.selectedPortalGuid}. Portal may not be fully loaded.`);
             return;
         }
 
-        const mode = $('input[name="fanfield-select-mode"]:checked').val();
+        const mode = $("input[name='fanfield-select-mode']:checked").val();
 
         if (mode === 'anchor') {
             self.anchorPortal = { guid: data.selectedPortalGuid, details: portalDetails };
         } else { // mode === 'base'
-            // Avoid duplicates
             if (!self.basePortals.some(p => p.guid === data.selectedPortalGuid)) {
                 self.basePortals.push({ guid: data.selectedPortalGuid, details: portalDetails });
             }
@@ -134,7 +132,6 @@ function wrapper(plugin_info) {
     };
 
     self.dialogIsOpen = function () {
-        // Corrected selector: jQuery UI prepends "dialog-" to the id.
         return ($("#dialog-fanfield-planner-view").length > 0 && $("#dialog-fanfield-planner-view").dialog('isOpen'));
     };
 
@@ -146,7 +143,6 @@ function wrapper(plugin_info) {
 
         $('#toolbox').append('<a onclick="window.plugin.fanfieldPlanner.openDialog(); return false;">Plan Fanfield</a>');
 
-        // Initialize LayerGroups for drawing
         self.linksLayerPhase1 = new L.LayerGroup();
         self.fieldsLayerPhase1 = new L.LayerGroup();
         self.linksLayerPhase2 = new L.LayerGroup();
@@ -165,7 +161,7 @@ function wrapper(plugin_info) {
                 id: 'fanfield-planner-view',
                 html: self.dialog_html,
                 width: 500,
-                minHeight: 460, // Adjust as needed
+                minHeight: 460,
             });
             self.attachEventHandler();
             self.updateDialog();
@@ -178,32 +174,30 @@ function wrapper(plugin_info) {
             self.basePortals = [];
             self.updateDialog();
             $('#fanfield-plan-text').val('');
-            self.clearLayers(); // Clear map drawings as well
+            self.clearLayers();
         });
 
-        // Event delegation for remove buttons
         $(document).on('click', '.fanfield-remove-btn', function () {
             const indexToRemove = $(this).data('index');
             self.basePortals.splice(indexToRemove, 1);
             self.updateDialog();
         });
 
-        // Main planning button
         $('#plan-fanfield-btn').click(function () {
             try {
                 const plan = self.generateFanfieldPlan();
                 const planText = self.planToText(plan);
                 $('#fanfield-plan-text').val(planText);
-                self.drawPlan(plan); // Call drawPlan here
+                self.drawPlan(plan);
             } catch (e) {
                 console.error("Fanfield planning error:", e);
                 $('#fanfield-plan-text').val("An error occurred during planning:\n" + e.message);
-                self.clearLayers(); // Clear old drawings on error
+                self.clearLayers();
             }
         });
     };
 
-    // ++ Drawing Functions ++
+    // ++ Drawing Functions ++ 
     self.clearLayers = function () {
         self.linksLayerPhase1.clearLayers();
         self.fieldsLayerPhase1.clearLayers();
@@ -259,35 +253,64 @@ function wrapper(plugin_info) {
         });
     };
 
-    // ++ Main Planning Logic ++
+    // ++ Main Planning Logic ++ 
+    self.sortBasePortalsByAngle = function(baseGuids, anchorGuid) {
+        const anchorLatLng = window.portals[anchorGuid].getLatLng();
+        return baseGuids.sort((a, b) => {
+            const bearingA = self.bearing(anchorLatLng, window.portals[a].getLatLng());
+            const bearingB = self.bearing(anchorLatLng, window.portals[b].getLatLng());
+            return bearingA - bearingB;
+        });
+    };
+
+    self.findShortestPathForSortedBase = function(sortedBase) {
+        if (sortedBase.length <= 1) return sortedBase;
+        
+        const pathLR = sortedBase.slice();
+        const pathRL = sortedBase.slice().reverse();
+
+        let distLR = 0;
+        for(let i=1; i<pathLR.length; i++) {
+            distLR += self.distance(window.portals[pathLR[i-1]].getLatLng(), window.portals[pathLR[i]].getLatLng());
+        }
+
+        let distRL = 0;
+        for(let i=1; i<pathRL.length; i++) {
+            distRL += self.distance(window.portals[pathRL[i-1]].getLatLng(), window.portals[pathRL[i]].getLatLng());
+        }
+        
+        return distLR < distRL ? pathLR : pathRL;
+    };
 
     self.generateFanfieldPlan = function () {
         if (!self.anchorPortal || self.basePortals.length < 2) {
             throw new Error("Please select one anchor and at least two base portals.");
         }
 
-        $('#fanfield-plan-text').val('Optimizing travel path for base portals...');
+        $('#fanfield-plan-text').val('Sorting base portals by angle...');
         const baseGuids = self.basePortals.map(p => p.guid);
-        const optimizedBasePath = self.findShortestPath(baseGuids);
+        
+        const sortedBasePath = self.sortBasePortalsByAngle(baseGuids, self.anchorPortal.guid);
+        const optimizedTravelPath = self.findShortestPathForSortedBase(sortedBasePath);
+        
+        const startBaseGuid = optimizedTravelPath[0];
 
         let plan = [];
         let linkCount = 0;
         let fieldCount = 0;
         let totalDistance = 0;
-        let keysNeeded = {}; // {guid: count}
+        let keysNeeded = {};
 
-        // Initialize keys needed
-        keysNeeded[self.anchorPortal.guid] = baseGuids.length; // for phase 1
-        baseGuids.forEach(guid => {
-            keysNeeded[guid] = 0;
-        });
+        baseGuids.forEach(guid => { keysNeeded[guid] = 0; });
+        keysNeeded[self.anchorPortal.guid] = 0;
 
         // == Phase 1: Build the base fanfield ==
         plan.push({ type: 'header', text: 'Phase 1: Build Base Fanfield' });
 
         let lastVisitedGuid = null;
-        optimizedBasePath.forEach((guid, index) => {
-            // Action: Go to portal
+        let visitedInTravelOrder = [];
+
+        optimizedTravelPath.forEach((guid) => {
             let distance = 0;
             if (lastVisitedGuid) {
                 distance = self.distance(window.portals[lastVisitedGuid].getLatLng(), window.portals[guid].getLatLng());
@@ -295,53 +318,56 @@ function wrapper(plugin_info) {
             }
             plan.push({ type: 'visit', guid: guid, distance: distance, from: lastVisitedGuid, phase: 1 });
 
-            // Action: Link to anchor
+            // Link to Anchor
             plan.push({ type: 'link', from: guid, to: self.anchorPortal.guid, phase: 1 });
             linkCount++;
-            keysNeeded[guid]++; // Key needed for linking to anchor
+            keysNeeded[self.anchorPortal.guid]++;
 
-            // Action: Link to previous base portals to form fields
-            for (let i = 0; i < index; i++) {
-                const prevBaseGuid = optimizedBasePath[i];
-                plan.push({ type: 'link', from: guid, to: prevBaseGuid, phase: 1 });
+            // Link to previous in travel order
+            if (lastVisitedGuid) {
+                plan.push({ type: 'link', from: guid, to: lastVisitedGuid, phase: 1 });
                 linkCount++;
-
-                // Field formed by (currentBase, Anchor, prevBase)
-                plan.push({ type: 'field', p1: guid, p2: self.anchorPortal.guid, p3: prevBaseGuid, phase: 1 });
+                keysNeeded[lastVisitedGuid]++;
+                plan.push({ type: 'field', p1: guid, p2: self.anchorPortal.guid, p3: lastVisitedGuid, phase: 1 });
                 fieldCount++;
-                keysNeeded[guid]++; // Key needed for linking to prevBase
             }
-
+            
+            // Link to start portal for multi-layering
+            if (visitedInTravelOrder.length >= 2) {
+                plan.push({ type: 'link', from: guid, to: startBaseGuid, phase: 1 });
+                linkCount++;
+                keysNeeded[startBaseGuid]++;
+                plan.push({ type: 'field', p1: guid, p2: lastVisitedGuid, p3: startBaseGuid, phase: 1 });
+                fieldCount++;
+            }
+            
             lastVisitedGuid = guid;
+            visitedInTravelOrder.push(guid);
         });
 
         // == Phase 2: The Finale ==
         plan.push({ type: 'header', text: 'Phase 2: Grand Finale' });
 
-        // Action: Go to anchor
-        let distance = self.distance(window.portals[lastVisitedGuid].getLatLng(), window.portals[self.anchorPortal.guid].getLatLng());
-        totalDistance += distance;
-        plan.push({ type: 'visit', guid: self.anchorPortal.guid, distance: distance, from: lastVisitedGuid, phase: 2 });
-        // Action: Destroy and rebuild
+        let distanceToAnchor = self.distance(window.portals[lastVisitedGuid].getLatLng(), window.portals[self.anchorPortal.guid].getLatLng());
+        totalDistance += distanceToAnchor;
+        plan.push({ type: 'visit', guid: self.anchorPortal.guid, distance: distanceToAnchor, from: lastVisitedGuid, phase: 2 });
+        
         plan.push({ type: 'destroy', guid: self.anchorPortal.guid, phase: 2 });
 
-        // Action: Link from anchor to all base portals
-        for (let i = 0; i < optimizedBasePath.length; i++) {
-            const currentBase = optimizedBasePath[i];
+        for (let i = 0; i < sortedBasePath.length; i++) {
+            const currentBase = sortedBasePath[i];
             plan.push({ type: 'link', from: self.anchorPortal.guid, to: currentBase, phase: 2 });
             linkCount++;
-            keysNeeded[self.anchorPortal.guid]++; // Key needed for linking from anchor
-
-            // Form fields in Phase 2: Anchor, prevBase, currentBase
-            // This is valid if i > 0, because we need two base portals to form a triangle with the anchor
+            keysNeeded[currentBase]++;
+            
             if (i > 0) {
-                const prevBase = optimizedBasePath[i - 1];
+                const prevBase = sortedBasePath[i-1];
                 plan.push({ type: 'field', p1: self.anchorPortal.guid, p2: prevBase, p3: currentBase, phase: 2 });
                 fieldCount++;
             }
         }
-
-        plan.push({ type: 'summary', linkCount, fieldCount, totalDistance, keysNeeded, basePortalsCount: baseGuids.length });
+        
+        plan.push({type: 'summary', linkCount, fieldCount, totalDistance, keysNeeded, basePortalsCount: baseGuids.length });
 
         return plan;
     };
@@ -358,7 +384,7 @@ function wrapper(plugin_info) {
                     step = 1;
                     break;
                 case 'visit':
-                    let visitText = `Step ${step++} (Phase ${action.phase}): Go to portal ${self.getPortalLink(action.guid)}.`;
+                    let visitText = `Step ${step++} (Phase ${action.phase}): Go to portal ${self.getPortalName(action.guid)}.`;
                     if (action.from) {
                         const fromLL = window.portals[action.from].getLatLng();
                         const toLL = window.portals[action.guid].getLatLng();
@@ -368,13 +394,13 @@ function wrapper(plugin_info) {
                     planText += visitText + '\n';
                     break;
                 case 'link':
-                    planText += `    - (Phase ${action.phase}) Link from ${self.getPortalLink(action.from)} to ${self.getPortalLink(action.to)}\n`;
+                    planText += `    - (Phase ${action.phase}) Link from ${self.getPortalName(action.from)} to ${self.getPortalName(action.to)}\n`;
                     break;
                 case 'field':
-                    planText += `    -> (Phase ${action.phase}) FIELD created: ${self.getPortalLink(action.p1)}, ${self.getPortalLink(action.p2)}, ${self.getPortalLink(action.p3)}\n`;
+                    planText += `    -> (Phase ${action.phase}) FIELD created: ${self.getPortalName(action.p1)}, ${self.getPortalName(action.p2)}, ${self.getPortalName(action.p3)}\n`;
                     break;
                 case 'destroy':
-                    planText += `Step ${step++} (Phase ${action.phase}): Destroy and recapture portal ${self.getPortalLink(action.guid)}.\n`;
+                    planText += `Step ${step++} (Phase ${action.phase}): Destroy and recapture portal ${self.getPortalName(action.guid)}.\n`;
                     break;
                 case 'summary':
                     planText += "\n--- SUMMARY ---\n";
@@ -385,7 +411,7 @@ function wrapper(plugin_info) {
                     planText += "Keys Required:\n";
                     for (const guid in action.keysNeeded) {
                         if (action.keysNeeded[guid] > 0) {
-                            planText += `  - ${action.keysNeeded[guid]}x keys for ${self.getPortalLink(guid)}\n`;
+                            planText += `  - ${action.keysNeeded[guid]}x keys for ${self.getPortalName(guid)}\n`;
                         }
                     }
                     break;
@@ -394,16 +420,16 @@ function wrapper(plugin_info) {
         return planText;
     };
 
-    // ++ Helper Functions ++
-
-    self.getPortalLink = function (guid) {
+    // ++ Helper Functions ++ 
+    self.getPortalName = function (guid) {
         const portal = window.portals[guid];
-        if (!portal) return `[Unknown Portal]`;
+        if (!portal) return `[Unknown Portal]`
         const details = portal.options.data;
-        // A portal's title is not guaranteed to be loaded. It may be empty or even just the portal's lat/lng as a string.
-        // Check for a non-empty title that doesn't look like coordinates.
-        if (details && details.title && isNaN(details.title.replace(/[\s.,]/g, ''))) {
-            return details.title;
+        
+        const isCoordinate = /^-?[\d.]+, ?-?[\d.]+$/.test(details.title);
+
+        if (details && details.title && !isCoordinate) {
+             return details.title;
         }
         return `[Portal name not loaded]`; // Fallback text
     };
@@ -439,11 +465,9 @@ function wrapper(plugin_info) {
     self.findShortestPath = function (portalGuids) {
         if (portalGuids.length <= 1) return portalGuids;
         let bestPath = portalGuids.slice();
-        // Simple sort as a starting point (e.g., by latitude)
         bestPath.sort((a, b) => window.portals[a].getLatLng().lat - window.portals[b].getLatLng().lat);
         let bestLength = self.calculatePathLength(bestPath);
 
-        // Run optimization for a limited number of iterations
         for (let i = 0; i < (portalGuids.length * portalGuids.length * 2); i++) {
             let newPath = bestPath.slice();
             let index1 = Math.floor(Math.random() * newPath.length);
@@ -484,16 +508,13 @@ function wrapper(plugin_info) {
         }
     };
 
-
-
-    // PLUGIN END
     var setup = self.setup;
     setup.info = plugin_info;
 
     if (!window.bootPlugins) window.bootPlugins = [];
     window.bootPlugins.push(setup);
     if (window.iitcLoaded && typeof setup === 'function') setup();
-} // wrapper end
+}
 
 var script = document.createElement('script');
 var info = {};
