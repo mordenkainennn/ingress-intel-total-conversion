@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-fanfield-planner@mordenkainennn
 // @name           IITC Plugin: mordenkainennn's Fanfield Planner
-// @version        1.0
+// @version        1.1
 // @description    Plugin for planning fanfields/pincushions in IITC
 // @author         mordenkainennn
 // @category       Layer
@@ -400,10 +400,10 @@ function wrapper(plugin_info) {
         const portal = window.portals[guid];
         if (!portal) return `[Unknown Portal: ${guid}]`;
         const details = portal.options.data;
-        const lat = details.latE6 / 1E6;
-        const lng = details.lngE6 / 1E6;
-        const perma = `https://intel.ingress.com/intel?ll=${lat},${lng}&z=17&pll=${lat},${lng}`;
-        return `<a href="${perma}" target="_blank">${details.title}</a>`;
+        // const lat = details.latE6 / 1E6;
+        // const lng = details.lngE6 / 1E6;
+        // const perma = `https://intel.ingress.com/intel?ll=${lat},${lng}&z=17&pll=${lat},${lng}`;
+        return details.title; // Return only the title, remove the link
     };
 
     self.distance = function (p1, p2) {
