@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-fanfield-planner@mordenkainennn
 // @name           IITC Plugin: mordenkainennn's Fanfield Planner
-// @version        1.7
+// @version        1.9
 // @description    Plugin for planning fanfields/pincushions in IITC
 // @author         mordenkainennn
 // @category       Layer
@@ -288,6 +288,21 @@ function wrapper(plugin_info) {
         return distLR < distRL ? pathLR : pathRL;
     };
 
+    // Intersection Helpers
+    self.latLngIsEqual = function (a, b) {
+        return Math.abs(a.lat - b.lat) < 1e-9 && Math.abs(a.lng - b.lng) < 1e-9;
+    };
+
+    self.ccw = function (p1, p2, p3) {
+        return (p3.lat - p1.lat) * (p2.lng - p1.lng) > (p2.lat - p1.lat) * (p3.lng - p1.lng);
+    };
+
+    self.segmentsIntersect = function (p1, p2, p3, p4) {
+        // Exclude cases where segments share an endpoint (not a crossing)
+        if (self.latLngIsEqual(p1, p3) || self.latLngIsEqual(p1, p4) || self.latLngIsEqual(p2, p3) || self.latLngIsEqual(p2, p4)) return false;
+        return (self.ccw(p1, p3, p4) != self.ccw(p2, p3, p4)) && (self.ccw(p1, p2, p3) != self.ccw(p1, p2, p4));
+    };
+
     self.generateFanfieldPlan = function () {
         if (!self.anchorPortal || self.basePortals.length < 2) {
             throw new Error("Please select one anchor and at least two base portals.");
@@ -295,117 +310,134 @@ function wrapper(plugin_info) {
 
         const baseGuids = self.basePortals.map(p => p.guid);
 
-        // Safety check to ensure portals are in view/cache
         const missingPortals = baseGuids.filter(guid => !window.portals[guid]);
         if (!window.portals[self.anchorPortal.guid] || missingPortals.length > 0) {
             throw new Error("Some selected portals are not currently loaded in the view. Please zoom in or reload data to ensure all portals are visible.");
         }
 
-        $('#fanfield-plan-text').val('Calculating best path and key requirements...');
+        $('#fanfield-plan-text').val('Checking geometry and calculating path...');
 
         const sortedBasePath = self.sortBasePortalsByAngle(baseGuids, self.anchorPortal.guid);
         const optimizedTravelPath = self.findShortestPathForSortedBase(sortedBasePath);
-        const startBaseGuid = optimizedTravelPath[0];
+        const anchorLL = window.portals[self.anchorPortal.guid].getLatLng();
 
-        // == Pre-calculate Keys Needed ==
-        // This helps the agent know exactly how many keys to farm at each step.
+        // == Pass 1: Simulate Geometry & Tally Keys ==
         let keysNeeded = {};
         baseGuids.forEach(guid => { keysNeeded[guid] = 0; });
         keysNeeded[self.anchorPortal.guid] = 0;
 
-        // Phase 1 Needs:
-        // Anchor: Each base links to Anchor.
-        keysNeeded[self.anchorPortal.guid] += baseGuids.length;
+        let stepActions = []; // { guid, links: [{to, type}] }
+        let rays = []; // Array of [p1, p2] representing Anchor-Base links used for obstruction checks
 
         optimizedTravelPath.forEach((guid, index) => {
-            if (index > 0) {
-                // Link to previous base
-                const prevVisitedGuid = optimizedTravelPath[index - 1];
-                keysNeeded[prevVisitedGuid]++;
+            const currentLL = window.portals[guid].getLatLng();
+            let links = [];
 
-                // Link to start base (Multi-layering)
-                if (index > 1) {
-                    keysNeeded[startBaseGuid]++;
+            // 1. Link to Anchor (Always valid)
+            links.push({ to: self.anchorPortal.guid, type: 'anchor' });
+            // Anchor keys are typically farmed beforehand, but we track consumption.
+            keysNeeded[self.anchorPortal.guid]++;
+
+            if (index > 0) {
+                const prevGuid = optimizedTravelPath[index - 1];
+                const prevLL = window.portals[prevGuid].getLatLng();
+
+                // 2. Link to Previous (Chain)
+                // Check if Current->Prev crosses any existing Anchor->Base rays (excluding Prev's own ray)
+                let safeToPrev = true;
+                for (let r = 0; r < rays.length - 1; r++) {
+                    if (self.segmentsIntersect(currentLL, prevLL, rays[r][0], rays[r][1])) {
+                        safeToPrev = false; break;
+                    }
+                }
+                if (safeToPrev) {
+                    links.push({ to: prevGuid, type: 'chain' });
+                    keysNeeded[prevGuid]++;
+                }
+
+                // 3. Greedy Back-linking (Layering/Triangulation)
+                // Try to link to ALL previous portals (pk where k < index - 1) to create multiple layers
+                // and max fields, instead of just connecting to the start portal.
+                for (let k = index - 2; k >= 0; k--) {
+                    const backGuid = optimizedTravelPath[k];
+                    const backLL = window.portals[backGuid].getLatLng();
+
+                    let isSafe = true;
+                    // Check if segment (current -> back) intersects any rays of intermediate portals.
+                    // Intermediate rays are at indices (k + 1) to (index - 1).
+                    for (let r = k + 1; r < index; r++) {
+                        if (self.segmentsIntersect(currentLL, backLL, rays[r][0], rays[r][1])) {
+                            isSafe = false; break;
+                        }
+                    }
+
+                    if (isSafe) {
+                        links.push({ to: backGuid, type: 'layer' });
+                        keysNeeded[backGuid]++;
+                    }
                 }
             }
+
+            stepActions.push({ guid: guid, links: links });
+            rays.push([anchorLL, currentLL]);
         });
 
-        // Phase 2 Needs:
-        // Anchor links to every base.
+        // Phase 2 Key Count (Simple Fan from Anchor)
         baseGuids.forEach(guid => { keysNeeded[guid]++; });
 
-        // == Generate Plan Steps ==
+        // == Pass 2: Generate Plan Text & Objects ==
         let plan = [];
         let linkCount = 0;
         let fieldCount = 0;
         let totalDistance = 0;
-
-        // Phase 1
-        plan.push({ type: 'header', text: 'Phase 1: Build Base Fanfield (Layers)' });
-
         let lastVisitedGuid = null;
 
-        optimizedTravelPath.forEach((guid, index) => {
+        plan.push({ type: 'header', text: 'Phase 1: Build Base Fanfield (Greedy Triangulation)' });
+
+        stepActions.forEach((step) => {
+            const currentGuid = step.guid;
             let distance = 0;
             if (lastVisitedGuid) {
-                distance = self.distance(window.portals[lastVisitedGuid].getLatLng(), window.portals[guid].getLatLng());
+                distance = self.distance(window.portals[lastVisitedGuid].getLatLng(), window.portals[currentGuid].getLatLng());
                 totalDistance += distance;
             }
 
-            // Pass the pre-calculated key requirement to the visit step
             plan.push({
                 type: 'visit',
-                guid: guid,
+                guid: currentGuid,
                 distance: distance,
                 from: lastVisitedGuid,
                 phase: 1,
-                keysToFarm: keysNeeded[guid]
+                keysToFarm: keysNeeded[currentGuid]
             });
 
-            // 1. Link to Anchor
-            plan.push({ type: 'link', from: guid, to: self.anchorPortal.guid, phase: 1 });
-            linkCount++;
-
-            if (index > 0) {
-                // 2. Link to immediate previous neighbor (closes gap)
-                const prevVisitedGuid = optimizedTravelPath[index - 1];
-                plan.push({ type: 'link', from: guid, to: prevVisitedGuid, phase: 1 });
+            // Process simulated links
+            step.links.forEach(link => {
+                plan.push({ type: 'link', from: currentGuid, to: link.to, phase: 1 });
                 linkCount++;
 
-                plan.push({ type: 'field', p1: guid, p2: self.anchorPortal.guid, p3: prevVisitedGuid, phase: 1 });
-                fieldCount++;
-
-                // 3. Link to the Start Base to create Layers / Onion Fields
-                if (index > 1) {
-                    plan.push({ type: 'link', from: guid, to: startBaseGuid, phase: 1 });
-                    linkCount++;
-
-                    plan.push({ type: 'field', p1: guid, p2: self.anchorPortal.guid, p3: startBaseGuid, phase: 1 });
+                // Determine fields
+                if (link.type === 'chain') {
+                    // Chain creates field (Current, Anchor, Prev)
+                    // We know Anchor link exists.
+                    plan.push({ type: 'field', p1: currentGuid, p2: self.anchorPortal.guid, p3: link.to, phase: 1 });
+                    fieldCount++;
+                } else if (link.type === 'layer') {
+                    // Layer creates field (Current, Anchor, Back)
+                    plan.push({ type: 'field', p1: currentGuid, p2: self.anchorPortal.guid, p3: link.to, phase: 1 });
                     fieldCount++;
                 }
-            }
+            });
 
-            lastVisitedGuid = guid;
+            lastVisitedGuid = currentGuid;
         });
 
         // Phase 2
         plan.push({ type: 'header', text: 'Phase 2: Re-throw from Anchor (Optional)' });
-
-        // Note: Phase 2 might be geometrically blocked if Phase 1 created "long chords" (Start Base links).
-        // It is kept here if the user wishes to flip the fields or use it for key farming logic.
-
         let distanceToAnchor = self.distance(window.portals[lastVisitedGuid].getLatLng(), window.portals[self.anchorPortal.guid].getLatLng());
         totalDistance += distanceToAnchor;
 
-        // Anchor key requirement was calculated as total needed for Phase 1 linking
-        // But since we are AT the anchor in Phase 2, we don't strictly "farm" them here for future use,
-        // we likely should have farmed them before Phase 1. 
-        // However, for consistency, we show if keys are needed (e.g. for future plans).
-        // Actually, Anchor keys are consumed IN Phase 1. We needed them BEFORE starting Phase 1.
-        // The plan assumes you have them.
-
         plan.push({ type: 'visit', guid: self.anchorPortal.guid, distance: distanceToAnchor, from: lastVisitedGuid, phase: 2, keysToFarm: 0 });
-
         plan.push({ type: 'destroy', guid: self.anchorPortal.guid, phase: 2 });
 
         for (let i = 0; i < sortedBasePath.length; i++) {
