@@ -17,7 +17,7 @@ The plugin's core logic is based on a "path-driven, dynamic generation" model as
     - Anchor Portal (`A`) selection.
     - Base Portals (`B0`, `B1`) selection.
 - **Portal Identification:** Automatically identify all portals located inside the primary `A-B0-B1` triangle.
-- **Path Generation:** Generate a simple, sequential travel path from `B0` to `B1` visiting all interior portals.
+- **Path Generation:** Generate a sequential travel path from `B0` to `B1`. **Note:** This path generation does not aim for distance optimization, but ensures all interior portals are visited exactly once.
 - **"Outbound Trip" Plan Generation:**
     - Implement the **Phase 1** logic from the design document.
     - Generate a step-by-step text plan instructing the player to travel from `B0` to `B1`.
@@ -38,9 +38,13 @@ The plugin's core logic is based on a "path-driven, dynamic generation" model as
 - **"Return Trip" Plan Generation:**
     - Implement the **Phase 2** logic.
     - Simulate the player's return trip from `B1` to `B0`.
-- **Dynamic Linking Algorithm:**
-    - As the return path is simulated, greedily decide which new links to create between portals.
-    - This algorithm must perform real-time constraint checks at every step:
+- **Dynamic Linking Algorithm (Constrained Greedy):**
+    - As the return path is simulated, the algorithm will intelligently decide which new links to create based on a "Constrained Greedy" strategy, rather than a pure greedy approach.
+    - **Key Heuristics:** The decision-making will be guided by safety heuristics to ensure global plan viability. Initial heuristics include:
+        - **Connectivity First:** Avoid creating links that would isolate any unvisited portals on the return path.
+        - **Prefer Active Face Subdivision:** Prioritize links that subdivide the current largest active area.
+        - **Conserve Link Capacity:** Avoid creating local high-degree hubs (except for the main Anchor) by penalizing choices that unnecessarily consume link slots on a portal.
+    - **Real-time Constraint Checks:** At every step, the algorithm must perform hard checks for:
         - **Intersection Check:** Ensure new links do not cross any existing links.
         - **Link Capacity Check:** Ensure the source portal has available outgoing link slots (respecting SBUL limits).
 - **Plan Integration:** Add the newly generated link and field creation steps to the overall plan output.
