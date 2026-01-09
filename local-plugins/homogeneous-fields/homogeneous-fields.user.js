@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-homogeneous-fields@mordenkainennn
 // @name           IITC Plugin: 57Cell's Field Planner [mordenkainennn]
-// @version        2.1.9.20250810
+// @version        2.1.10.20260109
 // @description    Plugin for planning fields in IITC
 // @author         57Cell (Michael Hartley) and ChatGPT 4.0, modified by mordenkainennn
 // @category       Layer
@@ -736,11 +736,12 @@ function wrapper(plugin_info) {
             if (item.action === 'capture') {
                 portalCount++;
                 sbulText = item.sbul === 0 ? "" : ` (${item.sbul} Softbank${(item.sbul == 1 ? "" : "s")})`;
+                let keysTextForCapture = item.keys > 0 ? ` (${item.keys} keys)` : "";
                 if (item.vectorHere == null) {
-                    let CaptureText = `Capture ${item.portal.name}${sbulText}`
+                    let CaptureText = `Capture ${item.portal.name}${sbulText}${keysTextForCapture}`
                     planText += `${++stepPos}.`.padStart(4, '\xa0') + ` ${CaptureText}\n`;
                 } else {
-                    let CaptureText = `capture ${item.portal.name}${sbulText}`
+                    let CaptureText = `capture ${item.portal.name}${sbulText}${keysTextForCapture}`
                     planText += `${++stepPos}.`.padStart(4, '\xa0') + ` Go ${item.vectorHere}, ${CaptureText}\n`;
                 }
                 linkPos = 'a';
@@ -956,6 +957,9 @@ function wrapper(plugin_info) {
             allLinks = [],
             stepNo = 0;
 
+        // calculate the keys needed
+        let keysNeeded = self.calculateKeysNeeded(portalData, path);
+
         let prevPortalId = null;
         // add the steps of the path
         for (let portalId of path) {
@@ -965,7 +969,7 @@ function wrapper(plugin_info) {
             links.sort((n, m) => portalData[n].depth - portalData[m].depth);
             // calculate outgoing links and count softbanks
             let outgoingLinks = links.filter(linkId => path.indexOf(linkId) < path.indexOf(portalId));
-            let sbul = outgoingLinks.length <= 8 ? 0 : Math.floor((outgoingLinks.length-1)/8);            
+            let sbul = outgoingLinks.length <= 8 ? 0 : Math.floor((outgoingLinks.length-1)/8);
             let vec = null;
             let distance = 0;
             if (prevPortalId != null) {
@@ -975,7 +979,7 @@ function wrapper(plugin_info) {
                 let diffLat = thisLL.lat - prevLL.lat;
                 let diffLng = thisLL.lng - prevLL.lng;
                 let bearing = Math.round(Math.atan2(diffLng * Math.cos(thisLL.lat * Math.PI / 180), diffLat) * 180 / Math.PI);
-                let bearingText = self.formatBearing(bearing);                
+                let bearingText = self.formatBearing(bearing);
                 let distTex = self.formatDistance(distance)
                 vec = distTex+" "+bearingText;
             }
@@ -986,11 +990,12 @@ function wrapper(plugin_info) {
                 portal: a,
                 sbul: sbul,
                 vectorHere: vec,
-                distance : distance
+                distance : distance,
+                keys: keysNeeded[portalId] || 0
             });
 
             prevPortalId = portalId;
-            
+
             for (let linkId of outgoingLinks) {
                 // keep track of all links we've already made
                 let b = portalData[linkId];
@@ -1019,9 +1024,6 @@ function wrapper(plugin_info) {
                 };
             }
         }
-
-        // calculate the keys needed
-        let keysNeeded = self.calculateKeysNeeded(portalData, path);
 
         let totalKeysActual = 0;
         $.each(portalData, function(portalId, portal) {
