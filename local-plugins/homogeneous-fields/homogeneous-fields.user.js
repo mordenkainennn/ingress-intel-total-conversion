@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-homogeneous-fields@mordenkainennn
 // @name           IITC Plugin: 57Cell's Field Planner [mordenkainennn]
-// @version        2.1.12.20260109
+// @version        2.1.13.20260109
 // @description    Plugin for planning fields in IITC
 // @author         57Cell (Michael Hartley) and ChatGPT 4.0, modified by mordenkainennn
 // @category       Layer
@@ -24,7 +24,7 @@
 // ==/UserScript==
 
 pluginName = "57Cell's Field Planner";
-version = "2.1.12";
+version = "2.1.13";
 changeLog = [
     {
         version: '2.1.9.20250810',
@@ -1088,9 +1088,9 @@ function wrapper(plugin_info) {
     '</div></div>';
 
     // ATTENTION! DO NOT EVER TOUCH THE STYLES WITHOUT INTENSE TESTING!
-    self.dialog_html = '<div id="hcf-plan-container" style="display: flex; gap: 10px; height: 100%;">' +
+    self.dialog_html = '<div>' + // Simple wrapper
         '    <!-- Left Column -->' +
-        '    <div id="hcf-left-panel" style="flex: 3; display: flex; flex-direction: column;">' +
+        '    <div id="hcf-left-panel" style="float: left; width: 65%;">' +
         '       <div style="display: flex;justify-content: space-between;align-items: center;">' +
         '          <span>I\'ll generate a fielding plan with corners:</span>' +
         '          <span>Color: <input type="color" id="hcf-colorPicker" value="#ff0000"></span>' +
@@ -1100,6 +1100,10 @@ function wrapper(plugin_info) {
                 self.cornerPreviewPlaceholderHTML +
                 self.cornerPreviewPlaceholderHTML +
         '       </div></div>\n' +
+        '       <div style="margin: 2px 0;">' +
+        '         <input type="checkbox" id="lock-corners-checkbox" style="vertical-align: middle;">' +
+        '         <label for="lock-corners-checkbox">Lock Corners & Find Mode</label>' +
+        '       </div>' +
         '       <fieldset style="margin: 2px;">\n'+
         '         <legend>Options</legend>\n'+
         '         <label for="field-type">Field type: </label>\n' +
@@ -1129,11 +1133,11 @@ function wrapper(plugin_info) {
         '         <button id="hcf-clear-btn" style="cursor: pointer">Clear</button>'+
         '         <button id="more-info" style="cursor: pointer" style="margin: 2px;">More Info</button>'+
         '       </div>\n' +
-        '       <textarea readonly id="hcf-plan-text" style="flex-grow: 1; width: auto; margin:2px; resize:none; min-height: 150px;"></textarea>\n'+
+        '       <textarea readonly id="hcf-plan-text" style="width: 98%; margin:2px; resize:none; min-height: 150px;"></textarea>\n'+
         '    </div>' +
         '    <!-- Right Column -->' +
-        '    <div id="hcf-right-panel" style="flex: 1; display: flex; flex-direction: column; min-width: 200px;">' +
-        '       <div style="flex: 1; display: flex; flex-direction: column; min-height: 50px;">' +
+        '    <div id="hcf-right-panel" style="float: right; width: 34%; box-sizing: border-box; padding-left: 10px;">' +
+        '       <div style="height: 45%; display: flex; flex-direction: column; min-height: 50px;">' +
         '          <label for="hcf-included-portals">Included Portals</label>' +
         '          <select id="hcf-included-portals" multiple style="width: 100%; flex-grow: 1;"></select>' +
         '       </div>' +
@@ -1141,12 +1145,34 @@ function wrapper(plugin_info) {
         '          <button id="hcf-move-to-excluded" title="Exclude selected">&gt;&gt;</button>' +
         '          <button id="hcf-move-to-included" title="Include selected">&lt;&lt;</button>' +
         '       </div>' +
-        '       <div style="flex: 1; display: flex; flex-direction: column; min-height: 50px;">' +
+        '       <div style="height: 45%; display: flex; flex-direction: column; min-height: 50px;">' +
         '          <label for="hcf-excluded-portals">Excluded Portals</label>' +
         '          <select id="hcf-excluded-portals" multiple style="width: 100%; flex-grow: 1;"></select>' +
         '       </div>' +
         '    </div>' +
         '</div>';
+
+    self.manualLayout = function(dialogContent, ui) {
+        var container = $(dialogContent);
+        
+        // Use ui.size.width if available (from resize event), 
+        // otherwise fall back to container's width (for open event)
+        var totalWidth = ui && ui.size ? ui.size.width : container.width();
+
+        var rightPanel = container.find('#hcf-right-panel');
+        var leftPanel = container.find('#hcf-left-panel');
+
+        var rightWidth = 320; // Fixed width for the list is good UX
+        var leftWidth = totalWidth - rightWidth - 15; // Account for padding/margins
+
+        if (leftWidth < 200) { // prevent left panel from becoming too crushed
+             leftWidth = 200;
+             rightWidth = totalWidth - leftWidth - 15;
+        }
+
+        leftPanel.width(leftWidth);
+        rightPanel.width(rightWidth);
+    };
 
     // Attach click event to find-hcf-plan-button after the dialog is created
     self.openDialog = function() {
@@ -1471,6 +1497,16 @@ function wrapper(plugin_info) {
         $("#hcf-move-to-excluded").click(() => moveSelectedOptions('#hcf-included-portals', '#hcf-excluded-portals'));
         $("#hcf-move-to-included").click(() => moveSelectedOptions('#hcf-excluded-portals', '#hcf-included-portals'));
 
+        $('#hcf-included-portals, #hcf-excluded-portals').on('click', function(e) {
+            if (window.map.hasLayer(self.highlightLayergroup)) {
+                self.highlightLayergroup.clearLayers();
+            }
+            const guid = $(e.target).val();
+            if (guid) {
+                self.animateTriangle(guid);
+            }
+        });
+
     } // end of attachEventHandler
 
     self.find_hcf_plan = function() {
@@ -1545,22 +1581,39 @@ function wrapper(plugin_info) {
     };
 
     self.portalSelected = function(data) {
-        // ignore if dialog closed
-        if (!self.dialogIsOpen()) {
-            return;
-        };
+        if (self.dialogIsOpen() && $('#lock-corners-checkbox').is(':checked')) {
+            const portalGuid = data.selectedPortalGuid;
 
+            // Find the option element in either list
+            const option = $(`#hcf-included-portals option[value="${portalGuid}"], #hcf-excluded-portals option[value="${portalGuid}"]`);
 
-        // Ignore if already selected
+            if (option.length > 0) {
+                // Deselect all other options in both lists
+                $('#hcf-included-portals option, #hcf-excluded-portals option').prop('selected', false);
+                
+                // Select the found option
+                option.prop('selected', true);
+
+                // Scroll the list to bring the selected option into view
+                const list = option.parent();
+                list.scrollTop(0); // Reset scroll
+                if (option.offset()) { // Check if option is visible
+                    list.scrollTop(option.offset().top - list.offset().top + list.scrollTop());
+                }
+            }
+            return; // End function to prevent corner selection
+        }
+
+        // --- Original corner selection logic follows ---
+        if (!self.dialogIsOpen()) { return; }
+
         let portalDetails = window.portals[data.selectedPortalGuid]._details;
         if (portalDetails === undefined) return;
         if (self.selectedPortals.some(({guid}) => guid === data.selectedPortalGuid)) return;
 
-        // Add selected portal to list
-        // debugger;
         self.selectedPortals.push({guid: data.selectedPortalGuid, details: portalDetails});
         while (self.selectedPortals.length > 3) {
-            self.selectedPortals.shift(); // remove the first item
+            self.selectedPortals.shift();
         }
 
         self.updateDialog();
