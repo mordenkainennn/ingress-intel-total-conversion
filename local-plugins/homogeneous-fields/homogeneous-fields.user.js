@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-homogeneous-fields@mordenkainennn
 // @name           IITC Plugin: 57Cell's Field Planner [mordenkainennn]
-// @version        2.1.11.20260109
+// @version        2.1.12.20260109
 // @description    Plugin for planning fields in IITC
 // @author         57Cell (Michael Hartley) and ChatGPT 4.0, modified by mordenkainennn
 // @category       Layer
@@ -24,7 +24,7 @@
 // ==/UserScript==
 
 pluginName = "57Cell's Field Planner";
-version = "2.1.9";
+version = "2.1.12";
 changeLog = [
     {
         version: '2.1.9.20250810',
@@ -1132,7 +1132,7 @@ function wrapper(plugin_info) {
         '       <textarea readonly id="hcf-plan-text" style="flex-grow: 1; width: auto; margin:2px; resize:none; min-height: 150px;"></textarea>\n'+
         '    </div>' +
         '    <!-- Right Column -->' +
-        '    <div id="hcf-right-panel" style="flex: 2; display: flex; flex-direction: column; min-width: 200px;">' +
+        '    <div id="hcf-right-panel" style="flex: 1; display: flex; flex-direction: column; min-width: 200px;">' +
         '       <div style="flex: 1; display: flex; flex-direction: column; min-height: 50px;">' +
         '          <label for="hcf-included-portals">Included Portals</label>' +
         '          <select id="hcf-included-portals" multiple style="width: 100%; flex-grow: 1;"></select>' +
@@ -1155,7 +1155,7 @@ function wrapper(plugin_info) {
                 title: 'Fielding Plan View',
                 id: 'hcf-plan-view',
                 html: self.dialog_html,
-                width: '70%',
+                width: '95%',
                 minHeight: 460,
             });
             self.attachEventHandler();
