@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-homogeneous-fields@mordenkainennn
 // @name           IITC Plugin: 57Cell's Field Planner [mordenkainennn]
-// @version        2.1.10.20260109
+// @version        2.1.11.20260109
 // @description    Plugin for planning fields in IITC
 // @author         57Cell (Michael Hartley) and ChatGPT 4.0, modified by mordenkainennn
 // @category       Layer
@@ -1088,48 +1088,65 @@ function wrapper(plugin_info) {
     '</div></div>';
 
     // ATTENTION! DO NOT EVER TOUCH THE STYLES WITHOUT INTENSE TESTING!
-    self.dialog_html = '<div id="hcf-plan-container" ' +
-        '                    style="height: inherit; display: flex; flex-direction: column; align-items: stretch;">\n' +
-        '   <div style="display: flex;justify-content: space-between;align-items: center;">' +
-        '      <span>I\'ll generate a fielding plan with corners:</span>' +
-        '      <span>Color: <input type="color" id="hcf-colorPicker" value="#ff0000"></span>' +
-        '   </div>' +
-        '    <div id="hcf-portal-details"><div id="hcf-portal-images" style="display: flex;justify-content: space-evenly;"' +
-        self.cornerPreviewPlaceholderHTML +
-        self.cornerPreviewPlaceholderHTML +
-        self.cornerPreviewPlaceholderHTML +
-        '</div></div>\n' +
-        '    <fieldset style="margin: 2px;">\n'+
-        '      <legend>Options</legend>\n'+
-        '      <label for="field-type">Field type: </label>\n' +
-        '      <input type="radio" id="field-type-hcf" name="field-type" value="hcf" checked>\n' +
-        '      <label for="field-type-hcf" title="generate a homogeneous fielding plan">Homogeneous Fields</label>\n' +
-        '      <input type="radio" id="field-type-general" name="field-type" value="general">\n' +
-        '      <label for="field-type-general" title="generate a general maximum fielding plan">General Maximum Fielding</label>\n' +
-        '      <input type="radio" id="field-type-cobweb" name="field-type" value="cobweb">\n' +
-        '      <label for="field-type-cobweb" title="generate a cobweb fielding plan">Cobweb Plan</label>\n' +
-        '      <div id="hcf-mode-container">\n' +
-        '        <label for="hcf-mode">Geometry: </label>\n' +
-        '        <input type="radio" id="hcf-mode-random" name="hcf-mode" value="random" checked>\n' +
-        '        <label for="hcf-mode-random" title="generate a geometrically randomised plan">Random</label>\n' +
-        '        <input type="radio" id="hcf-mode-perfect" name="hcf-mode" value="perfect">\n' +
-        '        <label for="hcf-mode-perfect" title="generate a geometrically perfectly balanced plan">Perfect</label>\n' +
-        '      </div>\n' +
-        '      <div id="hcf-layers-container">\n' +
-        '        <label for="layers">Layers: </label>\n' +
-        '        <input type="number" id="layers" min="1" max="6" value="3">\n' +
-        '      </div>\n' +
-        '    </fieldset>\n' +
-        '    <div id="hcf-buttons-container" style="margin: 3px;">\n' +
-        '      <button id="find-hcf-plan" style="cursor: pointer" style="margin: 2px;">Find Fielding Plan</button>'+
-        '      <button id="hcf-to-dt-btn" style="cursor: pointer" hidden>Export to DrawTools</button>'+
-        '      <button id="hcf-to-arc-btn" style="cursor: pointer" hidden>Export to Arc</button>'+
-        '      <button id="hcf-simulator-btn" style="cursor: pointer" hidden>Simulate</button>'+
-        '      <button id="hcf-clear-btn" style="cursor: pointer">Clear</button>'+
-        '      <button id="more-info" style="cursor: pointer" style="margin: 2px;">More Info</button>'+
-        '    </div>\n' +
-        '    <textarea readonly id="hcf-plan-text" style="height:inherit;min-height:150px;width: auto;margin:2px;resize:none"></textarea>\n'+
-        '</div>\n';
+    self.dialog_html = '<div id="hcf-plan-container" style="display: flex; gap: 10px; height: 100%;">' +
+        '    <!-- Left Column -->' +
+        '    <div id="hcf-left-panel" style="flex: 3; display: flex; flex-direction: column;">' +
+        '       <div style="display: flex;justify-content: space-between;align-items: center;">' +
+        '          <span>I\'ll generate a fielding plan with corners:</span>' +
+        '          <span>Color: <input type="color" id="hcf-colorPicker" value="#ff0000"></span>' +
+        '       </div>' +
+        '       <div id="hcf-portal-details"><div id="hcf-portal-images" style="display: flex;justify-content: space-evenly;">' +
+                self.cornerPreviewPlaceholderHTML +
+                self.cornerPreviewPlaceholderHTML +
+                self.cornerPreviewPlaceholderHTML +
+        '       </div></div>\n' +
+        '       <fieldset style="margin: 2px;">\n'+
+        '         <legend>Options</legend>\n'+
+        '         <label for="field-type">Field type: </label>\n' +
+        '         <input type="radio" id="field-type-hcf" name="field-type" value="hcf" checked>\n' +
+        '         <label for="field-type-hcf" title="generate a homogeneous fielding plan">Homogeneous Fields</label>\n' +
+        '         <input type="radio" id="field-type-general" name="field-type" value="general">\n' +
+        '         <label for="field-type-general" title="generate a general maximum fielding plan">General Maximum Fielding</label>\n' +
+        '         <input type="radio" id="field-type-cobweb" name="field-type" value="cobweb">\n' +
+        '         <label for="field-type-cobweb" title="generate a cobweb fielding plan">Cobweb Plan</label>\n' +
+        '         <div id="hcf-mode-container">\n' +
+        '           <label for="hcf-mode">Geometry: </label>\n' +
+        '           <input type="radio" id="hcf-mode-random" name="hcf-mode" value="random" checked>\n' +
+        '           <label for="hcf-mode-random" title="generate a geometrically randomised plan">Random</label>\n' +
+        '           <input type="radio" id="hcf-mode-perfect" name="hcf-mode" value="perfect">\n' +
+        '           <label for="hcf-mode-perfect" title="generate a geometrically perfectly balanced plan">Perfect</label>\n' +
+        '         </div>\n' +
+        '         <div id="hcf-layers-container">\n' +
+        '           <label for="layers">Layers: </label>\n' +
+        '           <input type="number" id="layers" min="1" max="6" value="3">\n' +
+        '         </div>\n' +
+        '       </fieldset>\n' +
+        '       <div id="hcf-buttons-container" style="margin: 3px;">\n' +
+        '         <button id="find-hcf-plan" style="cursor: pointer" style="margin: 2px;">Find Fielding Plan</button>'+
+        '         <button id="hcf-to-dt-btn" style="cursor: pointer" hidden>Export to DrawTools</button>'+
+        '         <button id="hcf-to-arc-btn" style="cursor: pointer" hidden>Export to Arc</button>'+
+        '         <button id="hcf-simulator-btn" style="cursor: pointer" hidden>Simulate</button>'+
+        '         <button id="hcf-clear-btn" style="cursor: pointer">Clear</button>'+
+        '         <button id="more-info" style="cursor: pointer" style="margin: 2px;">More Info</button>'+
+        '       </div>\n' +
+        '       <textarea readonly id="hcf-plan-text" style="flex-grow: 1; width: auto; margin:2px; resize:none; min-height: 150px;"></textarea>\n'+
+        '    </div>' +
+        '    <!-- Right Column -->' +
+        '    <div id="hcf-right-panel" style="flex: 2; display: flex; flex-direction: column; min-width: 200px;">' +
+        '       <div style="flex: 1; display: flex; flex-direction: column; min-height: 50px;">' +
+        '          <label for="hcf-included-portals">Included Portals</label>' +
+        '          <select id="hcf-included-portals" multiple style="width: 100%; flex-grow: 1;"></select>' +
+        '       </div>' +
+        '       <div style="display: flex; justify-content: center; margin: 5px 0;">' +
+        '          <button id="hcf-move-to-excluded" title="Exclude selected">&gt;&gt;</button>' +
+        '          <button id="hcf-move-to-included" title="Include selected">&lt;&lt;</button>' +
+        '       </div>' +
+        '       <div style="flex: 1; display: flex; flex-direction: column; min-height: 50px;">' +
+        '          <label for="hcf-excluded-portals">Excluded Portals</label>' +
+        '          <select id="hcf-excluded-portals" multiple style="width: 100%; flex-grow: 1;"></select>' +
+        '       </div>' +
+        '    </div>' +
+        '</div>';
 
     // Attach click event to find-hcf-plan-button after the dialog is created
     self.openDialog = function() {
@@ -1138,12 +1155,12 @@ function wrapper(plugin_info) {
                 title: 'Fielding Plan View',
                 id: 'hcf-plan-view',
                 html: self.dialog_html,
-                width: '40%',
+                width: '70%',
                 minHeight: 460,
             });
             self.attachEventHandler();
             self.updateDialog();
-            $('#dialog-hcf-plan-view').css("height", "370px");
+            $('#dialog-hcf-plan-view').css("height", "auto");
         }
     };
 
@@ -1444,6 +1461,16 @@ function wrapper(plugin_info) {
             self.updateLayer();
         });
 
+        // Handlers for moving portals between lists
+        function moveSelectedOptions(sourceListId, destListId) {
+            $(sourceListId + ' option:selected').each(function() {
+                $(destListId).append($(this));
+            });
+        }
+        
+        $("#hcf-move-to-excluded").click(() => moveSelectedOptions('#hcf-included-portals', '#hcf-excluded-portals'));
+        $("#hcf-move-to-included").click(() => moveSelectedOptions('#hcf-excluded-portals', '#hcf-included-portals'));
+
     } // end of attachEventHandler
 
     self.find_hcf_plan = function() {
@@ -1460,11 +1487,16 @@ function wrapper(plugin_info) {
         let mode = $( "input[type=radio][name=hcf-mode]:checked" ).val();
         let fieldType = $( "input[type=radio][name=field-type]:checked" ).val();
 
+        let portalsToConsider = [];
+        $('#hcf-included-portals option').each(function() {
+            portalsToConsider.push($(this).val());
+        });
+
         let hcf = null;
         // Try to construct HCF
         $("#hcf-plan-text").val(`Calculating ${level} layers...`);
         try {
-            hcf = self.findHCF(level, corners, null, mode, fieldType);
+            hcf = self.findHCF(level, corners, portalsToConsider, mode, fieldType);
         }
         finally {
             $("#hcf-plan-text").val("");
@@ -1542,6 +1574,31 @@ function wrapper(plugin_info) {
         return ($("#dialog-hcf-info-view").hasClass("ui-dialog-content") && $("#dialog-hcf-info-view").dialog('isOpen'));
     };
 
+    self.populatePortalLists = function() {
+        $('#hcf-included-portals, #hcf-excluded-portals').empty();
+        if (self.selectedPortals.length !== 3) return;
+
+        let corners = self.selectedPortals.map(p => p.guid);
+        let portalsInTriangle = self.getPortalsInTriangle(corners, Object.keys(window.portals));
+        
+        // Exclude the three corner portals themselves
+        let cornerGuids = new Set(corners);
+        portalsInTriangle = portalsInTriangle.filter(guid => !cornerGuids.has(guid));
+
+        portalsInTriangle.sort((a, b) => {
+            let nameA = window.portals[a].options.data.title.toLowerCase();
+            let nameB = window.portals[b].options.data.title.toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
+
+        let includedList = $('#hcf-included-portals');
+        portalsInTriangle.forEach(guid => {
+            let portal = window.portals[guid];
+            let portalName = portal.options.data.title;
+            $('<option>').val(guid).text(portalName).appendTo(includedList);
+        });
+    };
+
     self.updateDialog = function() {
         // Update portal details in dialog
         let portalDetailsDiv = $('#hcf-portal-details');
@@ -1589,11 +1646,12 @@ function wrapper(plugin_info) {
         // Enable "Find HCF Plan" button if three portals have been selected
         if (self.selectedPortals.length === 3) {
             $('#find-hcf-plan').prop('disabled', false);
-            $('#find-hcf-plan').css('cursor', 'pointer')
+            $('#find-hcf-plan').css('cursor', 'pointer');
+            self.populatePortalLists();
         } else {
-            $('#find-hcf-plan').prop('disabled', false);
-            $('#find-hcf-plan').css('cursor', 'not-allowed')
-
+            $('#find-hcf-plan').prop('disabled', true);
+            $('#find-hcf-plan').css('cursor', 'not-allowed');
+            $('#hcf-included-portals, #hcf-excluded-portals').empty();
         };
 
     };
