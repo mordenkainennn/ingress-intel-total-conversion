@@ -1,0 +1,8 @@
+The plugins in this folder are released under 
+
+* A creative commons sharealike attribution license: https://creativecommons.org/licenses/by-sa/4.0/deed.enversion 
+* Or, if downloaded before August 3, 2024, you may choose to be bound by the GNU GPL version 3 instead.
+
+Both licenses allow you to use and adapt the source code, as long as any modifications (and their source code) are released 
+under the same conditions, and attribution is made to the original author. 
+
