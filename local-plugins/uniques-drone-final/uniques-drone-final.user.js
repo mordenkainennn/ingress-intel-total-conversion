@@ -2,7 +2,7 @@
 // @author         3ch01c, mordenkainennn
 // @name           Uniques (Drone Final)
 // @category       Misc
-// @version        1.0.0
+// @version        1.0.1
 // @description    Allow manual entry of portals visited/captured/drone-visited. Use the 'highlighter-uniques' plugin to show the uniques on the map, and 'sync' to share between multiple browsers or desktop/mobile.
 // @id             uniques-drone-final
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -30,6 +30,10 @@ function wrapper(plugin_info) {
 
   var changelog = [
     {
+      version: '1.0.1',
+      changes: ['Resolved conflicts with original uniques plugin by ensuring unique feature names and localStorage keys.'],
+    },
+    {
       version: '1.0.0',
       changes: ['Complete rewrite to add drone support and fix all loading/conflict issues.'],
     },
@@ -44,9 +48,9 @@ function wrapper(plugin_info) {
 
   // maps the JS property names to localStorage keys
   self.FIELDS = {
-    uniques: 'plugin-uniques-data',
-    updateQueue: 'plugin-uniques-data-queue',
-    updatingQueue: 'plugin-uniques-data-updating-queue',
+    uniques: 'plugin-uniques-drone-final-data',
+    updateQueue: 'plugin-uniques-drone-final-data-queue',
+    updatingQueue: 'plugin-uniques-drone-final-data-updating-queue',
   };
 
   self.uniques = {};
@@ -206,7 +210,7 @@ function wrapper(plugin_info) {
   };
 
   self.updateCheckedAndHighlight = function (guid) {
-    window.runHooks('pluginUniquesUpdateUniques', { guid: guid });
+    window.runHooks('pluginUniquesDroneFinalUpdate', { guid: guid });
 
     if (guid === window.selectedPortal) {
       var uniqueInfo = self.uniques[guid],
@@ -363,7 +367,7 @@ function wrapper(plugin_info) {
   // Call after IITC and all plugin loaded
   self.registerFieldForSyncing = function () {
     if (!window.plugin.sync) return;
-    window.plugin.sync.registerMapForSync('uniques', 'uniques', self.syncCallback, self.syncInitialed);
+    window.plugin.sync.registerMapForSync('uniquesDroneFinal', 'uniques', self.syncCallback, self.syncInitialed);
   };
 
   // Call after local or remote change uploaded
@@ -372,7 +376,7 @@ function wrapper(plugin_info) {
       self.storeLocal('uniques');
       // All data is replaced if other client update the data during this client
       // offline,
-      // fire 'pluginUniquesRefreshAll' to notify a full update
+      // fire 'pluginUniquesDroneFinalRefreshAll' to notify a full update
       if (fullUpdated) {
         // a full update - update the selected portal sidebar
         if (window.selectedPortal) {
@@ -383,7 +387,7 @@ function wrapper(plugin_info) {
           window.resetHighlightedPortals();
         }
 
-        window.runHooks('pluginUniquesRefreshAll');
+        window.runHooks('pluginUniquesDroneFinalRefreshAll');
         return;
       }
 
@@ -396,7 +400,7 @@ function wrapper(plugin_info) {
         delete self.updateQueue[e.property];
         self.storeLocal('updateQueue');
         self.updateCheckedAndHighlight(e.property);
-        window.runHooks('pluginUniquesUpdateUniques', { guid: e.property });
+        window.runHooks('pluginUniquesDroneFinalUpdate', { guid: e.property });
       }
     }
   };
@@ -513,7 +517,7 @@ function wrapper(plugin_info) {
   };
 
   self.setupPortalsList = function () {
-    window.addHook('pluginUniquesUpdateUniques', function (data) {
+    window.addHook('pluginUniquesDroneFinalUpdate', function (data) {
       var info = self.uniques[data.guid];
       if (!info) info = { visited: false, captured: false, droneVisited: false };
 
@@ -522,7 +526,7 @@ function wrapper(plugin_info) {
       $(`[data-list-uniques="${data.guid}"].drone`).prop('checked', !!info.droneVisited);
     });
 
-    window.addHook('pluginUniquesRefreshAll', function () {
+    window.addHook('pluginUniquesDroneFinalRefreshAll', function () {
       $('[data-list-uniques]').each(function (i, element) {
         var guid = element.getAttribute('data-list-uniques');
 
@@ -655,7 +659,7 @@ function wrapper(plugin_info) {
     self.setupCSS();
     self.setupContent();
     self.loadLocal('uniques');
-    window.addPortalHighlighter('Uniques', self.highlighter);
+    window.addPortalHighlighter('Uniques (Drone)', self.highlighter);
     window.addHook('portalDetailsUpdated', self.onPortalDetailsUpdated);
     window.addHook('publicChatDataAvailable', self.onPublicChatDataAvailable);
     self.registerFieldForSyncing();
