@@ -47,6 +47,14 @@ function wrapper(plugin_info) {
   window.plugin.uniquesDroneFinal = function () {};
   var self = window.plugin.uniquesDroneFinal;
 
+  // Engineering Improvement: Sync Constants
+  self.SYNC_PLUGIN_NAME = 'uniquesDroneFinal';
+  self.SYNC_FIELD_NAME = 'uniques';
+
+  // Engineering Improvement: Sync Constants
+  self.SYNC_PLUGIN_NAME = 'uniquesDroneFinal';
+  self.SYNC_FIELD_NAME = 'uniques';
+
   // delay in ms
   self.SYNC_DELAY = 5000;
 
@@ -364,14 +372,21 @@ function wrapper(plugin_info) {
       self.storeLocal('updatingQueue');
       self.storeLocal('updateQueue');
 
-      window.plugin.sync.updateMap('uniques', 'uniques', Object.keys(self.updatingQueue));
+      const ok = window.plugin.sync.updateMap(
+        self.SYNC_PLUGIN_NAME,
+        self.SYNC_FIELD_NAME,
+        Object.keys(self.updatingQueue)
+      );
+      if (!ok) {
+        console.warn(`[${self.SYNC_PLUGIN_NAME}] sync updateMap failed: RegisteredMap not found`);
+      }
     }, self.SYNC_DELAY);
   };
 
   // Call after IITC and all plugin loaded
   self.registerFieldForSyncing = function () {
     if (!window.plugin.sync) return;
-    window.plugin.sync.registerMapForSync('uniquesDroneFinal', 'uniques', self.syncCallback, self.syncInitialed);
+    window.plugin.sync.registerMapForSync(self.SYNC_PLUGIN_NAME, self.SYNC_FIELD_NAME, self.syncCallback, self.syncInitialed);
   };
 
   // Call after local or remote change uploaded
