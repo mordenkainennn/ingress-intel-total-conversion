@@ -2,7 +2,7 @@
 // @author         3ch01c, mordenkainennn
 // @name           Uniques (Drone Final)
 // @category       Misc
-// @version        1.0.1
+// @version        1.0.2
 // @description    Allow manual entry of portals visited/captured/drone-visited. Use the 'highlighter-uniques' plugin to show the uniques on the map, and 'sync' to share between multiple browsers or desktop/mobile.
 // @id             uniques-drone-final
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -29,6 +29,10 @@ function wrapper(plugin_info) {
   /* exported setup, changelog --eslint */
 
   var changelog = [
+    {
+      version: '1.0.2',
+      changes: ['Ensured all feature names (highlighter, storage keys, sync tasks, hooks) are unique to prevent conflicts.'],
+    },
     {
       version: '1.0.1',
       changes: ['Resolved conflicts with original uniques plugin by ensuring unique feature names and localStorage keys.'],
