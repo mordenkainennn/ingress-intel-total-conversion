@@ -1,4 +1,3 @@
-
 跟用户用中文交流
 
 每次修改文件前，重新读取文件内容，以防匹配失败
@@ -79,3 +78,29 @@ The project uses GitHub Actions for continuous integration. The CI pipeline is d
 这个项目是fork的一个github的仓库，主要用于编写自用插件或者把iitc自带的插件进行改进或者扩充。所有位于 `local-plugins` 目录下的都是改进后或者自建的插件。如果需要改善iitc自带插件，必须在`local-plugins`目录建立自带插件的副本上进行修改，不可以修改`plugins`目录中的自带插件。
 
 这个项目的仓库位于`https://github.com/mordenkainennn/ingress-intel-total-conversion`,改进的插件和自建插件的meta.js和元信息都按照这个地址进行修改。
+
+## IITC Plugin Changelog Structure Reference
+
+When writing `changelog` for IITC plugins (typically within the `.user.js` file), please adhere to the following structure for consistency and automatic parsing by IITC's core:
+
+```javascript
+var changelog = [
+    {
+        version: 'X.Y.Z', // Required: Version string (e.g., '1.0.0', '1.2.3.YYYYMMDD')
+        changes: [        // Required: Array of strings, each describing a change
+            'NEW: Added new feature or functionality.',
+            'FIX: Corrected a bug or issue.',
+            'UPD: Updated existing feature or dependency.',
+            'REM: Removed feature or functionality.',
+            // Prefix changes with 'NEW:', 'FIX:', 'UPD:', 'REM:' for clarity.
+        ],
+    },
+    {
+        version: 'A.B.C',
+        changes: [
+            'Another change description.',
+        ],
+    },
+    // ... more version entries (newest first is common practice)
+];
+```
