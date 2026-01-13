@@ -2,7 +2,7 @@
 // @author         3ch01c, mordenkainennn
 // @name           Uniques (Drone Final)
 // @category       Misc
-// @version        1.1.0
+// @version        1.1.1
 // @description    Allow manual entry and import of portals visited, captured, scanned, and drone-visited.
 // @id             uniques-drone-final
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -29,6 +29,10 @@ function wrapper(plugin_info) {
   /* exported setup, changelog --eslint */
 
   var changelog = [
+    {
+      version: '1.1.1',
+      changes: ['Fixed a syntax error that caused the script to fail loading in Tampermonkey.'],
+    },
     {
       version: '1.1.0',
       changes: ['Added full support for "Scout Controlled" status and an "Import from Official History" feature.', 'Reworked color scheme to align with Niantic standards where possible.'],
@@ -310,7 +314,7 @@ function wrapper(plugin_info) {
         $(cell).addClass('portal-list-uniques');
 
         function createBox(cls, title, checked, changeFunc) {
-          $('<input>').prop({ type: 'checkbox', className: cls, title, checked, })
+          $('<input>').prop({ type: 'checkbox', className: cls, title: title, checked: checked })
             .attr('data-list-uniques', guid)
             .appendTo(cell)[0]
             .addEventListener('change', (ev) => {
