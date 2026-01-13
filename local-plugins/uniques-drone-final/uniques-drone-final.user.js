@@ -31,19 +31,16 @@ function wrapper(plugin_info) {
   var changelog = [
     {
       version: '1.1.0',
-      changes: ['Added full support for "Scout Controlled" status and an "Import from Official History" feature.', 'Reworked color scheme to align with Niantic standards where possible.'],
-    },
-    {
-      version: '1.0.2',
-      changes: ['Ensured all feature names (highlighter, storage keys, sync tasks, hooks) are unique to prevent conflicts.'],
-    },
-    {
-      version: '1.0.1',
-      changes: ['Resolved conflicts with original uniques plugin by ensuring unique feature names and localStorage keys.'],
+      changes: [
+        'NEW: Added full support for "Scanned" (Scout Controlled) status and an "Import from Official History" feature.',
+        'UPD: Reworked map highlighter color scheme and priority for all states to align with Niantic standards where possible.',
+        'FIX: Corrected a subtle syntax error in a helper function that caused the entire script to fail parsing in Tampermonkey.',
+        'FIX: Ensured all internal feature names (highlighter, storage keys, sync tasks, hooks) are unique to prevent conflicts.',
+      ],
     },
     {
       version: '1.0.0',
-      changes: ['Complete rewrite to add drone support and fix all loading/conflict issues.'],
+      changes: ['NEW: Complete rewrite to add Drone support and initial standalone plugin functionality.'],
     },
   ];
 
@@ -76,6 +73,7 @@ function wrapper(plugin_info) {
     }
     $('#portaldetails > .imgpreview').after(self.contentHTML);
     self.updateCheckedAndHighlight(window.selectedPortal);
+    self.addImportToolLink(window.selectedPortal); // Add this call here
   };
 
   self.updateCheckedAndHighlight = function (guid) {
@@ -236,24 +234,40 @@ function wrapper(plugin_info) {
       if (details && details.history) {
         var uniqueInfo = self.ensureUniqueInfo(guid);
         var changed = false;
+        // Process in priority order of official data to ensure correctness
         if (details.history.captured && !uniqueInfo.captured) {
-          uniqueInfo.captured = true;
-          uniqueInfo.visited = true;
+          self.updateStatus(guid, 'captured', true);
           changed = true;
         } else if (details.history.visited && !uniqueInfo.visited) {
-          uniqueInfo.visited = true;
+          self.updateStatus(guid, 'visited', true);
           changed = true;
         }
+        // Scout Controlled is independent, not mutually exclusive, but we update only if not already there
         if (details.history.scoutControlled && !uniqueInfo.scoutControlled) {
-          uniqueInfo.scoutControlled = true;
+          self.updateStatus(guid, 'scoutControlled', true);
           changed = true;
         }
         if(changed) count++;
       }
     }
-    self.storeLocal('uniques');
     alert('Imported official history for ' + count + ' portals.');
+    // force a full redraw of all highlighters
     if (self.isHighlightActive) window.resetHighlightedPortals();
+  };
+
+  self.addImportToolLink = function () {
+    var linkDetails = $('.linkdetails');
+    if (linkDetails.length > 0) {
+      var importLink = $('<a>')
+        .text('Import History')
+        .attr('title', 'Import official history for this portal')
+        .click(function() {
+          window.plugin.uniquesDroneFinal.importFromOfficialHistory();
+          // Prevent the event from bubbling up to other handlers (like closing the sidebar)
+          return false;
+        });
+      linkDetails.append($('<aside>').append(importLink));
+    }
   };
 
   self.setupCSS = function () {
@@ -270,8 +284,7 @@ function wrapper(plugin_info) {
       '<br>' +
       '<label><input type="checkbox" id="scoutControlled" onclick="window.plugin.uniquesDroneFinal.updateScoutControlled($(this).prop(\'checked\'))"> Scanned</label>' +
       '<label><input type="checkbox" id="drone" onclick="window.plugin.uniquesDroneFinal.updateDroneVisited($(this).prop(\'checked\'))"> Drone</label>' +
-      '</div>' +
-      '<div id="uniques-import-link"><a onclick="window.plugin.uniquesDroneFinal.importFromOfficialHistory()">Import from Official History</a></div>';
+      '</div>'; // Removed the import link from here
     self.disabledMessage = '<div id="uniques-container" class="help" title="Your browser does not support localStorage">Plugin Uniques disabled</div>';
   };
 
