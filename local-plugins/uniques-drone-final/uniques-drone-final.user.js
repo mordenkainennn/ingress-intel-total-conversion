@@ -32,7 +32,7 @@ function wrapper(plugin_info) {
     {
       version: '1.1.0',
       changes: [
-        'NEW: Added full support for "Scanned" (Scout Controlled) status and an "Import from Official History" feature.',
+        'NEW: Added full support for "Scout Controlled" status and an "Import from Official History" feature.',
         'UPD: Reworked map highlighter color scheme and priority for all states to align with Niantic standards where possible.',
         'FIX: Corrected a subtle syntax error in a helper function that caused the entire script to fail parsing in Tampermonkey.',
         'FIX: Ensured all internal feature names (highlighter, storage keys, sync tasks, hooks) are unique to prevent conflicts.',
@@ -73,7 +73,24 @@ function wrapper(plugin_info) {
     }
     $('#portaldetails > .imgpreview').after(self.contentHTML);
     self.updateCheckedAndHighlight(window.selectedPortal);
-    self.addImportToolLink(window.selectedPortal); // Add this call here
+    self.addImportToolLink();
+  };
+
+  self.addImportToolLink = function () {
+    var linkDetails = $('#portaldetails .linkdetails');
+    // Check if our link already exists to avoid duplicates
+    if (linkDetails.length > 0 && $('#uniques-import-toolbox-link').length === 0) {
+      var importLink = $('<a>')
+        .text('Import History')
+        .attr('id', 'uniques-import-toolbox-link')
+        .attr('title', 'Import official history for all visible portals')
+        .click(function() {
+          self.importFromOfficialHistory();
+          return false;
+        });
+      // Append after the existing links, on its own line
+      linkDetails.after($('<aside>').append(importLink));
+    }
   };
 
   self.updateCheckedAndHighlight = function (guid) {
@@ -234,7 +251,6 @@ function wrapper(plugin_info) {
       if (details && details.history) {
         var uniqueInfo = self.ensureUniqueInfo(guid);
         var changed = false;
-        // Process in priority order of official data to ensure correctness
         if (details.history.captured && !uniqueInfo.captured) {
           self.updateStatus(guid, 'captured', true);
           changed = true;
@@ -242,7 +258,6 @@ function wrapper(plugin_info) {
           self.updateStatus(guid, 'visited', true);
           changed = true;
         }
-        // Scout Controlled is independent, not mutually exclusive, but we update only if not already there
         if (details.history.scoutControlled && !uniqueInfo.scoutControlled) {
           self.updateStatus(guid, 'scoutControlled', true);
           changed = true;
@@ -250,29 +265,14 @@ function wrapper(plugin_info) {
         if(changed) count++;
       }
     }
+    self.storeLocal('uniques');
     alert('Imported official history for ' + count + ' portals.');
-    // force a full redraw of all highlighters
     if (self.isHighlightActive) window.resetHighlightedPortals();
-  };
-
-  self.addImportToolLink = function () {
-    var linkDetails = $('.linkdetails');
-    if (linkDetails.length > 0) {
-      var importLink = $('<a>')
-        .text('Import History')
-        .attr('title', 'Import official history for this portal')
-        .click(function() {
-          window.plugin.uniquesDroneFinal.importFromOfficialHistory();
-          // Prevent the event from bubbling up to other handlers (like closing the sidebar)
-          return false;
-        });
-      linkDetails.append($('<aside>').append(importLink));
-    }
   };
 
   self.setupCSS = function () {
     $('<style>').prop('type', 'text/css').html(
-      '#uniques-container{display:block;text-align:center;margin:6px 3px 1px}#uniques-container label{margin:0 .5em}#uniques-container input{vertical-align:middle}#uniques-import-link{display:block;text-align:center;margin:5px 0}.portal-list-uniques input[type=checkbox]{padding:0;height:auto;margin-top:-5px;margin-bottom:-5px}'
+      '#uniques-container{display:block;text-align:center;margin:6px 3px 1px}#uniques-container label{margin:0 .5em}#uniques-container input{vertical-align:middle}.portal-list-uniques input[type=checkbox]{padding:0;height:auto;margin-top:-5px;margin-bottom:-5px}'
     ).appendTo('head');
   };
 
@@ -284,7 +284,7 @@ function wrapper(plugin_info) {
       '<br>' +
       '<label><input type="checkbox" id="scoutControlled" onclick="window.plugin.uniquesDroneFinal.updateScoutControlled($(this).prop(\'checked\'))"> Scanned</label>' +
       '<label><input type="checkbox" id="drone" onclick="window.plugin.uniquesDroneFinal.updateDroneVisited($(this).prop(\'checked\'))"> Drone</label>' +
-      '</div>'; // Removed the import link from here
+      '</div>';
     self.disabledMessage = '<div id="uniques-container" class="help" title="Your browser does not support localStorage">Plugin Uniques disabled</div>';
   };
 
