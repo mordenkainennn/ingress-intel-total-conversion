@@ -2,7 +2,7 @@
 // @author         3ch01c, mordenkainennn
 // @name           Uniques (Drone Final)
 // @category       Misc
-// @version        1.1.1
+// @version        1.1.0
 // @description    Allow manual entry and import of portals visited, captured, scanned, and drone-visited.
 // @id             uniques-drone-final
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -22,17 +22,13 @@ function wrapper(plugin_info) {
   //PLUGIN AUTHORS: writing a plugin outside of the IITC build environment? if so, delete these lines!!
   //(leaving them in place might break the 'About IITC' page or break update checks)
   plugin_info.buildName = 'local';
-  plugin_info.dateTimeVersion = '20260111.170000';
+  plugin_info.dateTimeVersion = '20260111.180000';
   plugin_info.pluginId = 'uniques-drone-final';
   //END PLUGIN AUTHORS NOTE
 
   /* exported setup, changelog --eslint */
 
   var changelog = [
-    {
-      version: '1.1.1',
-      changes: ['Fixed a syntax error that caused the script to fail loading in Tampermonkey.'],
-    },
     {
       version: '1.1.0',
       changes: ['Added full support for "Scout Controlled" status and an "Import from Official History" feature.', 'Reworked color scheme to align with Niantic standards where possible.'],
@@ -57,7 +53,6 @@ function wrapper(plugin_info) {
 
   self.SYNC_PLUGIN_NAME = 'uniquesDroneFinal';
   self.SYNC_FIELD_NAME = 'uniques';
-
   self.SYNC_DELAY = 5000;
 
   self.FIELDS = {
@@ -69,14 +64,12 @@ function wrapper(plugin_info) {
   self.uniques = {};
   self.updateQueue = {};
   self.updatingQueue = {};
-
   self.enableSync = false;
-
   self.disabledMessage = null;
   self.contentHTML = null;
   self.isHighlightActive = false;
 
-  self.onPortalDetailsUpdated = function (data) {
+  self.onPortalDetailsUpdated = function () {
     if (typeof Storage === 'undefined') {
       $('#portaldetails > .imgpreview').after(self.disabledMessage);
       return;
@@ -90,16 +83,14 @@ function wrapper(plugin_info) {
 
     if (guid === window.selectedPortal) {
       var uniqueInfo = self.uniques[guid] || {};
-      $('#visited').prop('checked', uniqueInfo.visited || false);
-      $('#captured').prop('checked', uniqueInfo.captured || false);
-      $('#scoutControlled').prop('checked', uniqueInfo.scoutControlled || false);
-      $('#drone').prop('checked', uniqueInfo.droneVisited || false);
+      $('#visited').prop('checked', !!uniqueInfo.visited);
+      $('#captured').prop('checked', !!uniqueInfo.captured);
+      $('#scoutControlled').prop('checked', !!uniqueInfo.scoutControlled);
+      $('#drone').prop('checked', !!uniqueInfo.droneVisited);
     }
 
-    if (self.isHighlightActive) {
-      if (window.portals[guid]) {
-        window.setMarkerStyle(window.portals[guid], guid === window.selectedPortal);
-      }
+    if (self.isHighlightActive && window.portals[guid]) {
+      window.setMarkerStyle(window.portals[guid], guid === window.selectedPortal);
     }
   };
 
@@ -191,14 +182,12 @@ function wrapper(plugin_info) {
 
   self.storeLocal = function (name) {
     var key = self.FIELDS[name];
-    if (key === undefined) return;
-    localStorage[key] = JSON.stringify(self[name]);
+    if (key) localStorage[key] = JSON.stringify(self[name]);
   };
 
   self.loadLocal = function (name) {
     var key = self.FIELDS[name];
-    if (key === undefined) return;
-    if (localStorage[key] !== undefined) {
+    if (key && localStorage[key]) {
       self[name] = JSON.parse(localStorage[key]);
     }
   };
@@ -246,18 +235,23 @@ function wrapper(plugin_info) {
       var details = portal.getDetails();
       if (details && details.history) {
         var uniqueInfo = self.ensureUniqueInfo(guid);
+        var changed = false;
         if (details.history.captured && !uniqueInfo.captured) {
-          self.updateStatus(guid, 'captured', true);
-          count++;
+          uniqueInfo.captured = true;
+          uniqueInfo.visited = true;
+          changed = true;
         } else if (details.history.visited && !uniqueInfo.visited) {
-          self.updateStatus(guid, 'visited', true);
-          count++;
+          uniqueInfo.visited = true;
+          changed = true;
         }
         if (details.history.scoutControlled && !uniqueInfo.scoutControlled) {
-          self.updateStatus(guid, 'scoutControlled', true);
+          uniqueInfo.scoutControlled = true;
+          changed = true;
         }
+        if(changed) count++;
       }
     }
+    self.storeLocal('uniques');
     alert('Imported official history for ' + count + ' portals.');
     if (self.isHighlightActive) window.resetHighlightedPortals();
   };
