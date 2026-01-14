@@ -1,6 +1,6 @@
 // ==UserScript==
 // @author         3ch01c, mordenkainennn
-// @name           Uniques (Drone Final)
+// @name           Uniques Tools
 // @category       Misc
 // @version        1.2.0
 // @description    Allow manual entry and import of portals visited, captured, scanned, and drone-visited.
