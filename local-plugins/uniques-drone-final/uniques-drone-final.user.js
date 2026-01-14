@@ -1,10 +1,10 @@
 // ==UserScript==
 /* global IITC */
 // @author         3ch01c, mordenkainennn
-// @name           Uniques (Drone Final)
+// @name           Uniques Tools
 // @category       Misc
-// @version        1.2.0
-// @description    Allow manual entry and import of portals visited, captured, scanned, and drone-visited.
+// @version        1.3.0
+// @description    Modified version of the stock Uniques plugin to add support for Drone view, manual entry, and import of portal history.
 // @id             uniques-drone-final
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/main/local-plugins/uniques-drone-final/uniques-drone-final.meta.js
@@ -23,13 +23,17 @@ function wrapper(plugin_info) {
   //PLUGIN AUTHORS: writing a plugin outside of the IITC build environment? if so, delete these lines!!
   //(leaving them in place might break the 'About IITC' page or break update checks)
   plugin_info.buildName = 'local';
-  plugin_info.dateTimeVersion = '20260113.180001';
+  plugin_info.dateTimeVersion = '20260113.180002';
   plugin_info.pluginId = 'uniques-drone-final';
   //END PLUGIN AUTHORS NOTE
 
   /* exported setup, changelog --eslint */
 
   var changelog = [
+    {
+      version: '1.3.0',
+      changes: ['UPD: Renamed plugin to "Uniques Tools" and updated description.'],
+    },
     {
       version: '1.2.0',
       changes: [
