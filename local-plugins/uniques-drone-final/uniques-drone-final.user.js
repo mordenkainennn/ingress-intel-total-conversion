@@ -1,8 +1,9 @@
 // ==UserScript==
+/* global IITC */
 // @author         3ch01c, mordenkainennn
 // @name           Uniques (Drone Final)
 // @category       Misc
-// @version        1.1.0
+// @version        1.2.0
 // @description    Allow manual entry and import of portals visited, captured, scanned, and drone-visited.
 // @id             uniques-drone-final
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -22,13 +23,20 @@ function wrapper(plugin_info) {
   //PLUGIN AUTHORS: writing a plugin outside of the IITC build environment? if so, delete these lines!!
   //(leaving them in place might break the 'About IITC' page or break update checks)
   plugin_info.buildName = 'local';
-  plugin_info.dateTimeVersion = '20260111.180000';
+  plugin_info.dateTimeVersion = '20260113.180001';
   plugin_info.pluginId = 'uniques-drone-final';
   //END PLUGIN AUTHORS NOTE
 
   /* exported setup, changelog --eslint */
 
   var changelog = [
+    {
+      version: '1.2.0',
+      changes: [
+        'UPD: Refactored "Import History" button into a "Uniques Tools" dialog.',
+        'FIX: Moved the toolbox button to a more appropriate location using the correct API.',
+      ],
+    },
     {
       version: '1.1.0',
       changes: [
@@ -73,24 +81,6 @@ function wrapper(plugin_info) {
     }
     $('#portaldetails > .imgpreview').after(self.contentHTML);
     self.updateCheckedAndHighlight(window.selectedPortal);
-    self.addImportToolLink();
-  };
-
-  self.addImportToolLink = function () {
-    var linkDetails = $('#portaldetails .linkdetails');
-    // Check if our link already exists to avoid duplicates
-    if (linkDetails.length > 0 && $('#uniques-import-toolbox-link').length === 0) {
-      var importLink = $('<a>')
-        .text('Import History')
-        .attr('id', 'uniques-import-toolbox-link')
-        .attr('title', 'Import official history for all visible portals')
-        .click(function() {
-          self.importFromOfficialHistory();
-          return false;
-        });
-      // Append after the existing links, on its own line
-      linkDetails.after($('<aside>').append(importLink));
-    }
   };
 
   self.updateCheckedAndHighlight = function (guid) {
@@ -270,6 +260,25 @@ function wrapper(plugin_info) {
     if (self.isHighlightActive) window.resetHighlightedPortals();
   };
 
+  self.openUniquesToolsDialog = function () {
+    var html = '<div class="uniques-tools-dialog" style="text-align: center;">' +
+               '<button type="button" style="margin: 5px;">Import History</button>' +
+               '</div>';
+
+    var dialog = window.dialog({
+      title: 'Uniques Tools',
+      html: html,
+      width: 'auto',
+      modal: true,
+    });
+
+    // find the button inside the dialog and attach the click handler
+    dialog.find('button').on('click', function() {
+      self.importFromOfficialHistory();
+      dialog.dialog('close');
+    });
+  };
+
   self.setupCSS = function () {
     $('<style>').prop('type', 'text/css').html(
       '#uniques-container{display:block;text-align:center;margin:6px 3px 1px}#uniques-container label{margin:0 .5em}#uniques-container input{vertical-align:middle}.portal-list-uniques input[type=checkbox]{padding:0;height:auto;margin-top:-5px;margin-bottom:-5px}'
@@ -351,6 +360,12 @@ function wrapper(plugin_info) {
     if (window.plugin.portalslist) {
       self.setupPortalsList();
     }
+
+    IITC.toolbox.addButton({
+      label: 'Uniques Tools',
+      action: self.openUniquesToolsDialog,
+      title: 'Show Uniques Tools',
+    });
   };
 
   setup.info = plugin_info; //add the script info data to the function as a property
