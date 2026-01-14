@@ -1,16 +1,27 @@
 跟用户用中文交流
 
+这个项目是fork的一个github的仓库，主要用于编写自用插件或者把iitc自带的插件进行改进或者扩充。所有位于 `local-plugins` 目录下的都是改进后或者自建的插件。如果需要改善iitc自带插件，必须在`local-plugins`目录建立自带插件的副本上进行修改，不可以修改`plugins`目录中的自带插件。
+
+这个项目的仓库位于`https://github.com/mordenkainennn/ingress-intel-total-conversion`,改进的插件和自建插件的meta.js文件 user.js文件和元信息都按照这个地址进行修改。
+
 每次修改文件前，重新读取文件内容，以防匹配失败
 
 修改代码前必须得到确认
 
 遇到错误先仔细阅读代码，找到原因和解决方式，得到确认后才能修改代码
 
-在设计任何新功能是时候，界面选择使用英语
+在设计任何新功能的时候，界面选择使用英语
+
+除非用户主动提出，否则不要进行git操作
+
+修改完代码以后，先有用户测试，测试通过后再修改版本号和changelog，然后进行代码提交工作
 
 在进行git操作的时候，如果没有特别说明，有gemini来决定commit message如何撰写，同时commit message要使用中文撰写。由于系统原因，命令行可能无法正确处理中文和引号，所以要先把commit message保存到临时文件中，然后让 Git 从这个文件中读取提交信息，提交完成后再删除这个文件。
 
-除非用户主动提出，否则不要进行git操作
+禁止使用eslint检查代码！
+
+
+
 
 
 # GEMINI.md: Ingress Intel Total Conversion (IITC-CE)
@@ -75,9 +86,6 @@ The project uses ESLint and Prettier to enforce a consistent coding style. The c
 The project uses GitHub Actions for continuous integration. The CI pipeline is defined in `.github/workflows/build.yml`. It automatically builds the project, runs tests, and creates releases when new tags are pushed.
 
 
-这个项目是fork的一个github的仓库，主要用于编写自用插件或者把iitc自带的插件进行改进或者扩充。所有位于 `local-plugins` 目录下的都是改进后或者自建的插件。如果需要改善iitc自带插件，必须在`local-plugins`目录建立自带插件的副本上进行修改，不可以修改`plugins`目录中的自带插件。
-
-这个项目的仓库位于`https://github.com/mordenkainennn/ingress-intel-total-conversion`,改进的插件和自建插件的meta.js和元信息都按照这个地址进行修改。
 
 ## IITC Plugin Changelog Structure Reference
 
