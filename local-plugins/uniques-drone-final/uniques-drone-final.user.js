@@ -3,7 +3,7 @@
 // @author         3ch01c, mordenkainennn
 // @name           Uniques Tools
 // @category       Misc
-// @version        1.3.0
+// @version        1.4.0
 // @description    Modified version of the stock Uniques plugin to add support for Drone view, manual entry, and import of portal history.
 // @id             uniques-drone-final
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -30,6 +30,18 @@ function wrapper(plugin_info) {
   /* exported setup, changelog --eslint */
 
   var changelog = [
+    {
+      version: '1.4.0',
+      changes: [
+        'NEW: Added Drone Location Marker feature.',
+        'NEW: Marker is automatically set when "Drone" checkbox is checked.',
+        'NEW: Marker is persistent across sessions (local storage).',
+        'NEW: Marker can be manually removed via "Uniques Tools" dialog.',
+        'FIX: Resolved issue where stock "Uniques" plugin caused duplicate UI elements on mobile.',
+        'FIX: Added a warning and visual indicator (red toolbox button) if the stock "Uniques" plugin is active.',
+        'FIX: Addressed critical bug that caused the plugin to fail loading and the toolbox button to be missing.'
+      ],
+    },
     {
       version: '1.3.0',
       changes: ['UPD: Renamed plugin to "Uniques Tools" and updated description.'],
@@ -78,6 +90,79 @@ function wrapper(plugin_info) {
     self.contentHTML = null;
     self.isHighlightActive = false;
 
+    self.DRONE_LOCATION_KEY = 'plugin-uniques-drone-location';
+    self.droneLocationGuid = null;
+    self.droneLayer = null;
+
+    self.saveDroneLocation = function() {
+        if (self.droneLocationGuid) {
+            localStorage.setItem(self.DRONE_LOCATION_KEY, self.droneLocationGuid);
+        } else {
+            localStorage.removeItem(self.DRONE_LOCATION_KEY);
+        }
+    };
+
+    self.loadDroneLocation = function() {
+        var data = localStorage.getItem(self.DRONE_LOCATION_KEY);
+        if (data) {
+            self.droneLocationGuid = data;
+        }
+    };
+
+    self.setDroneLocation = function (guid) {
+        setTimeout(function() {
+            if (self.droneLocationGuid === guid) return;
+            self.droneLocationGuid = guid;
+            self.saveDroneLocation();
+            self.updateDroneMarker();
+        }, 0);
+    };
+
+    self.removeDroneLocation = function () {
+        setTimeout(function() {
+            self.droneLocationGuid = null;
+            self.saveDroneLocation();
+            self.updateDroneMarker();
+        }, 0);
+    };
+
+    self.updateDroneMarker = function () {
+        if (!self.droneLayer) return;
+        self.droneLayer.clearLayers();
+        var guid = self.droneLocationGuid;
+        if (!guid) return;
+
+        var portal = window.portals[guid];
+        if (portal) {
+            self.drawDroneMarker(portal);
+        } else {
+            window.portalDetail.request(guid);
+        }
+    };
+
+    self.drawDroneMarker = function (portal) {
+        if (!portal || portal.options.guid !== self.droneLocationGuid) return;
+
+        var latlng = portal.getLatLng();
+        var title = portal.options.data.title;
+
+        var droneIcon = L.icon({
+            iconUrl: 'https://gongjupal.com/ingress/drone-marker.png',
+            iconSize: [40, 40],
+            iconAnchor: [20, 40],
+        });
+
+        var marker = L.marker(latlng, {
+            icon: droneIcon,
+            title: 'Drone Location: ' + title,
+            guid: portal.options.guid,
+            interactive: false,
+        });
+
+        self.droneLayer.clearLayers();
+        marker.addTo(self.droneLayer);
+    };
+
     self.onPortalDetailsUpdated = function () {
         if (typeof Storage === 'undefined') {
             $('#portaldetails > .imgpreview').after(self.disabledMessage);
@@ -123,6 +208,10 @@ function wrapper(plugin_info) {
 
         if (property === 'captured' && value) uniqueInfo.visited = true;
         if (property === 'visited' && !value) uniqueInfo.captured = false;
+
+        if (property === 'droneVisited' && value === true) {
+            self.setDroneLocation(guid);
+        }
 
         self.updateCheckedAndHighlight(guid);
         self.sync(guid);
@@ -276,7 +365,8 @@ function wrapper(plugin_info) {
 
         var html = '<div class="uniques-tools-dialog" style="text-align: center;">' +
                    warningHTML +
-                   '<button type="button" style="margin: 5px;">Import History</button>' +
+                   '<button type="button" class="import-history" style="margin: 5px;">Import History</button>' +
+                   '<button type="button" class="remove-drone-marker" style="margin: 5px;">Remove Drone Marker</button>' +
                    '</div>';
     
         var dialog = window.dialog({
@@ -287,8 +377,12 @@ function wrapper(plugin_info) {
         });
     
         // find the button inside the dialog and attach the click handler
-        dialog.find('button').on('click', function() {
+        dialog.find('button.import-history').on('click', function() {
           self.importFromOfficialHistory();
+          dialog.dialog('close');
+        });
+        dialog.find('button.remove-drone-marker').on('click', function() {
+          self.removeDroneLocation();
           dialog.dialog('close');
         });
     };
@@ -367,9 +461,18 @@ function wrapper(plugin_info) {
         self.setupCSS();
         self.setupContent();
         self.loadLocal('uniques');
+        self.loadDroneLocation();
         window.addPortalHighlighter('Uniques (Drone)', self.highlighter);
         window.addHook('portalDetailsUpdated', self.onPortalDetailsUpdated);
         self.registerFieldForSyncing();
+
+        // Drone marker setup
+        self.droneLayer = new L.LayerGroup();
+        window.addLayerGroup('Drone Location', self.droneLayer, true);
+        window.addHook('portalAdded', (data) => self.drawDroneMarker(data.portal));
+
+        // Defer initial draw to ensure all other setup is complete
+        setTimeout(() => self.updateDroneMarker(), 0);
 
         if (window.plugin.portalslist) {
             self.setupPortalsList();
