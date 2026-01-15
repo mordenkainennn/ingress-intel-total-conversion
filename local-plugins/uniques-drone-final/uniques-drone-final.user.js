@@ -267,7 +267,15 @@ function wrapper(plugin_info) {
     };
 
     self.openUniquesToolsDialog = function () {
+        var warningHTML = '';
+        if (window.plugin.uniques) {
+            warningHTML = '<div style="color: red; margin-bottom: 10px;">' +
+                          '<b>Warning:</b> The stock "Uniques" plugin is also active. To prevent conflicts, please disable it in the layer chooser (under the "Misc" category).' +
+                          '</div>';
+        }
+
         var html = '<div class="uniques-tools-dialog" style="text-align: center;">' +
+                   warningHTML +
                    '<button type="button" style="margin: 5px;">Import History</button>' +
                    '</div>';
     
@@ -369,9 +377,17 @@ function wrapper(plugin_info) {
 
         IITC.toolbox.addButton({
             label: 'Uniques Tools',
+            id: 'uniques-tools-button',
             action: self.openUniquesToolsDialog,
             title: 'Show Uniques Tools',
         });
+
+        // Add a check for the stock 'uniques' plugin and modify the button style if active
+        setTimeout(function() {
+            if (window.plugin.uniques) {
+                $('#uniques-tools-button a').css('color', 'red');
+            }
+        }, 1000); // delay to allow other plugins to load
     };
 
     setup.info = plugin_info; //add the script info data to the function as a property
