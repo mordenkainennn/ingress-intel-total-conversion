@@ -3,7 +3,7 @@
 // @author         3ch01c, mordenkainennn
 // @name           Uniques Tools
 // @category       Misc
-// @version        1.4.0
+// @version        1.4.1
 // @description    Modified version of the stock Uniques plugin to add support for Drone view, manual entry, and import of portal history.
 // @id             uniques-drone-final
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -15,53 +15,57 @@
 // ==/UserScript==
 
 function wrapper(plugin_info) {
-  // ensure plugin framework is there, even if iitc is not yet loaded
-  if (typeof window.plugin !== 'function') {
-    window.plugin = function () {};
-  }
+    // ensure plugin framework is there, even if iitc is not yet loaded
+    if (typeof window.plugin !== 'function') {
+        window.plugin = function () { };
+    }
 
-  //PLUGIN AUTHORS: writing a plugin outside of the IITC build environment? if so, delete these lines!!
-  //(leaving them in place might break the 'About IITC' page or break update checks)
-  plugin_info.buildName = 'local';
-  plugin_info.dateTimeVersion = '20260113.180002';
-  plugin_info.pluginId = 'uniques-drone-final';
-  //END PLUGIN AUTHORS NOTE
+    //PLUGIN AUTHORS: writing a plugin outside of the IITC build environment? if so, delete these lines!!
+    //(leaving them in place might break the 'About IITC' page or break update checks)
+    plugin_info.buildName = 'local';
+    plugin_info.dateTimeVersion = '20260113.180002';
+    plugin_info.pluginId = 'uniques-drone-final';
+    //END PLUGIN AUTHORS NOTE
 
-  /* exported setup, changelog --eslint */
+    /* exported setup, changelog --eslint */
 
-  var changelog = [
-    {
-      version: '1.4.0',
-      changes: [
-        'NEW: Added Drone Location Marker feature.',
-        'NEW: Marker is automatically set when "Drone" checkbox is checked.',
-        'NEW: Marker is persistent across sessions (local storage).',
-        'NEW: Marker can be manually removed via "Uniques Tools" dialog.',
-        'FIX: Resolved issue where stock "Uniques" plugin caused duplicate UI elements on mobile.',
-        'FIX: Added a warning and visual indicator (red toolbox button) if the stock "Uniques" plugin is active.',
-        'FIX: Addressed critical bug that caused the plugin to fail loading and the toolbox button to be missing.'
-      ],
-    },
-    {
-      version: '1.3.0',
-      changes: ['UPD: Renamed plugin to "Uniques Tools" and updated description.'],
-    },
-    {
-      version: '1.2.0',
-      changes: [
-        'UPD: Refactored "Import History" button into a "Uniques Tools" dialog.',
-        'FIX: Moved the toolbox button to a more appropriate location using the correct API.',
-      ],
-    },
-    {
-      version: '1.1.0',
-      changes: [
-        'NEW: Added full support for "Scanned" (Scout Controlled) status and an "Import from Official History" feature.',
-        'UPD: Reworked map highlighter color scheme and priority for all states to align with Niantic standards where possible.',
-        'FIX: Corrected a subtle syntax error in a helper function that caused the entire script to fail parsing in Tampermonkey.',
-        'FIX: Ensured all internal feature names (highlighter, storage keys, sync tasks, hooks) are unique to prevent conflicts.',
-      ],
-    },
+    var changelog = [
+        {
+            version: '1.4.1',
+            changes: ['FIX: Shortened the warning message for stock "Uniques" plugin conflict to improve dialog aesthetics.'],
+        },
+        {
+            version: '1.4.0',
+            changes: [
+                'NEW: Added Drone Location Marker feature.',
+                'NEW: Marker is automatically set when "Drone" checkbox is checked.',
+                'NEW: Marker is persistent across sessions (local storage).',
+                'NEW: Marker can be manually removed via "Uniques Tools" dialog.',
+                'FIX: Resolved issue where stock "Uniques" plugin caused duplicate UI elements on mobile.',
+                'FIX: Added a warning and visual indicator (red toolbox button) if the stock "Uniques" plugin is active.',
+                'FIX: Addressed critical bug that caused the plugin to fail loading and the toolbox button to be missing.'
+            ],
+        },
+        {
+            version: '1.3.0',
+            changes: ['UPD: Renamed plugin to "Uniques Tools" and updated description.'],
+        },
+        {
+            version: '1.2.0',
+            changes: [
+                'UPD: Refactored "Import History" button into a "Uniques Tools" dialog.',
+                'FIX: Moved the toolbox button to a more appropriate location using the correct API.',
+            ],
+        },
+        {
+            version: '1.1.0',
+            changes: [
+                'NEW: Added full support for "Scanned" (Scout Controlled) status and an "Import from Official History" feature.',
+                'UPD: Reworked map highlighter color scheme and priority for all states to align with Niantic standards where possible.',
+                'FIX: Corrected a subtle syntax error in a helper function that caused the entire script to fail parsing in Tampermonkey.',
+                'FIX: Ensured all internal feature names (highlighter, storage keys, sync tasks, hooks) are unique to prevent conflicts.',
+            ],
+        },
         {
             version: '1.0.0',
             changes: ['NEW: Complete rewrite to add Drone support and initial standalone plugin functionality.'],
@@ -94,7 +98,7 @@ function wrapper(plugin_info) {
     self.droneLocationGuid = null;
     self.droneLayer = null;
 
-    self.saveDroneLocation = function() {
+    self.saveDroneLocation = function () {
         if (self.droneLocationGuid) {
             localStorage.setItem(self.DRONE_LOCATION_KEY, self.droneLocationGuid);
         } else {
@@ -102,7 +106,7 @@ function wrapper(plugin_info) {
         }
     };
 
-    self.loadDroneLocation = function() {
+    self.loadDroneLocation = function () {
         var data = localStorage.getItem(self.DRONE_LOCATION_KEY);
         if (data) {
             self.droneLocationGuid = data;
@@ -110,7 +114,7 @@ function wrapper(plugin_info) {
     };
 
     self.setDroneLocation = function (guid) {
-        setTimeout(function() {
+        setTimeout(function () {
             if (self.droneLocationGuid === guid) return;
             self.droneLocationGuid = guid;
             self.saveDroneLocation();
@@ -119,7 +123,7 @@ function wrapper(plugin_info) {
     };
 
     self.removeDroneLocation = function () {
-        setTimeout(function() {
+        setTimeout(function () {
             self.droneLocationGuid = null;
             self.saveDroneLocation();
             self.updateDroneMarker();
@@ -359,31 +363,31 @@ function wrapper(plugin_info) {
         var warningHTML = '';
         if (window.plugin.uniques) {
             warningHTML = '<div style="color: red; margin-bottom: 10px;">' +
-                          '<b>Warning:</b> The stock "Uniques" plugin is also active. To prevent conflicts, please disable it in the layer chooser (under the "Misc" category).' +
-                          '</div>';
+                '<b>Warning:</b> Conflicting "Uniques" plugin active.<br>Disable it to prevent issues.' +
+                '</div>';
         }
 
         var html = '<div class="uniques-tools-dialog" style="text-align: center;">' +
-                   warningHTML +
-                   '<button type="button" class="import-history" style="margin: 5px;">Import History</button>' +
-                   '<button type="button" class="remove-drone-marker" style="margin: 5px;">Remove Drone Marker</button>' +
-                   '</div>';
-    
+            warningHTML +
+            '<button type="button" class="import-history" style="margin: 5px;">Import History</button>' +
+            '<button type="button" class="remove-drone-marker" style="margin: 5px;">Remove Drone Marker</button>' +
+            '</div>';
+
         var dialog = window.dialog({
-          title: 'Uniques Tools',
-          html: html,
-          width: 'auto',
-          modal: true,
+            title: 'Uniques Tools',
+            html: html,
+            width: 'auto',
+            modal: true,
         });
-    
+
         // find the button inside the dialog and attach the click handler
-        dialog.find('button.import-history').on('click', function() {
-          self.importFromOfficialHistory();
-          dialog.dialog('close');
+        dialog.find('button.import-history').on('click', function () {
+            self.importFromOfficialHistory();
+            dialog.dialog('close');
         });
-        dialog.find('button.remove-drone-marker').on('click', function() {
-          self.removeDroneLocation();
-          dialog.dialog('close');
+        dialog.find('button.remove-drone-marker').on('click', function () {
+            self.removeDroneLocation();
+            dialog.dialog('close');
         });
     };
 
@@ -486,7 +490,7 @@ function wrapper(plugin_info) {
         });
 
         // Add a check for the stock 'uniques' plugin and modify the button style if active
-        setTimeout(function() {
+        setTimeout(function () {
             if (window.plugin.uniques) {
                 $('#uniques-tools-button a').css('color', 'red');
             }
