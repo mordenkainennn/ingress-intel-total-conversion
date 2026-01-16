@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC Plugin: Uniques Tools</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Coda', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+             font-size: 1.2em;
+             color: #ffce00;
+        }
+        p, li {
+            color: #ccc;
+        }
+        strong {
+            color: #ffce00;
+        }
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .note strong {
+            color: #ffce00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index_zh-cn.html">中文</a>
+    </div>
+
+    <div class="container">
+        <h1>Uniques Tools</h1>
+
+        <p><strong>Uniques Tools</strong> is an enhanced version of the standard "Uniques" plugin built into IITC-CE. It expands upon the original's functionality to provide agents with more powerful and detailed tracking of their portal history.</p>
+        <p>The original plugin's purpose is to help agents track which portals they have <strong>visited</strong> and <strong>captured</strong>. This plugin takes that concept to the next level.</p>
+
+        <h2>New Features</h2>
+        <ul>
+            <li>
+                <h3>Full Drone Support</h3>
+                <p>Track portals visited via Drone View. The plugin automatically remembers the last 3 drone locations, displays special markers on the map (last, previous, oldest), and allows you to quickly jump to the last location using the "Find Last Location" button.</p>
+            </li>
+            <li>
+                <h3>Scout Controller Tracking</h3>
+                <p>A new "Scanned" status to manually track portals you have scout controlled. This helps in planning and tracking for the Scout Controller medal.</p>
+            </li>
+            <li>
+                <h3>Import Official History</h3>
+                <p>A powerful feature to import your visited, captured, and scanned history directly from Ingress's official data for all portals currently in view. Access it via the "Uniques Tools" dialog.</p>
+            </li>
+            <li>
+                <h3>Enhanced Highlighting</h3>
+                <p>A more detailed and clear color scheme for the map highlighter:</p>
+                <ul>
+                    <li><code>Red</code>: Unvisited</li>
+                    <li><code>Yellow</code>: Scout Controlled (but not visited/captured)</li>
+                    <li><code>Cyan</code>: Drone Visited (but not visited/captured)</li>
+                    <li><code>Purple</code>: Visited (but not captured)</li>
+                    <li><code>No Highlight</code>: Captured</li>
+                </ul>
+            </li>
+             <li>
+                <h3>Centralized Tools Dialog</h3>
+                <p>A convenient "Uniques Tools" button in the IITC toolbox provides access to all major functions like importing history and managing drone data.</p>
+            </li>
+        </ul>
+
+        <h2>How to Use</h2>
+        <h3>Portal Details Panel</h3>
+        <p>When you select a portal, you will see four checkboxes below the portal image: <code>Visited</code>, <code>Captured</code>, <code>Scanned</code>, and <code>Drone</code>. Simply check the appropriate box to manually update its status. The data is saved locally and can be synced if you use the "Sync" plugin.</p>
+
+        <h3>"Uniques Tools" Dialog</h3>
+        <p>Find the "Uniques Tools" button in the IITC toolbox on the right. Clicking it opens a dialog where you can:</p>
+        <ul>
+            <li><strong>Import History:</strong> Click this to update your local data with official game history for portals in the current view.</li>
+            <li><strong>Clear Drone History:</strong> Removes all drone location markers and history data.</li>
+            <li><strong>Find Last Location:</strong> Pans and zooms the map to the most recent portal visited by your drone.</li>
+        </ul>
+
+        <div class="note">
+            <p><strong>Important Note:</strong> This plugin is a replacement for the stock "Uniques" plugin. To avoid conflicts and duplicate UI elements, it is <strong>highly recommended</strong> to disable the built-in "Uniques" plugin from the IITC Settings panel (Layers -> Highlighter -> Uniques). Our plugin will display a warning and turn its toolbox button red if it detects the stock plugin is also active.</p>
+        </div>
+    </div>
+
+</body>
+</html>
