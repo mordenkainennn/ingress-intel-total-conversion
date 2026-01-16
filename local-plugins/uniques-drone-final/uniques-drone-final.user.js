@@ -3,7 +3,7 @@
 // @author         3ch01c, mordenkainennn
 // @name           Uniques Tools
 // @category       Misc
-// @version        1.4.1
+// @version        1.5.0
 // @description    Modified version of the stock Uniques plugin to add support for Drone view, manual entry, and import of portal history.
 // @id             uniques-drone-final
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -30,6 +30,15 @@ function wrapper(plugin_info) {
     /* exported setup, changelog --eslint */
 
     var changelog = [
+        {
+            version: '1.5.0',
+            changes: [
+                'NEW: Drone location history now tracks the last 3 visited portals.',
+                'NEW: Added separate markers for the 2nd and 3rd most recent drone locations.',
+                'NEW: Drone location history is now synchronized across devices.',
+                'FIX: Refactored drone location sync logic to prevent plugin crashes.',
+            ],
+        },
         {
             version: '1.4.1',
             changes: ['FIX: Shortened the warning message for stock "Uniques" plugin conflict to improve dialog aesthetics.'],
@@ -94,76 +103,74 @@ function wrapper(plugin_info) {
     self.contentHTML = null;
     self.isHighlightActive = false;
 
-    self.DRONE_LOCATION_KEY = 'plugin-uniques-drone-location';
-    self.droneLocationGuid = null;
+    self.DRONE_HISTORY_SYNC_KEY = '__drone_history__';
+    self.droneLocationHistory = [];
     self.droneLayer = null;
+    self.droneIcons = [];
 
-    self.saveDroneLocation = function () {
-        if (self.droneLocationGuid) {
-            localStorage.setItem(self.DRONE_LOCATION_KEY, self.droneLocationGuid);
-        } else {
-            localStorage.removeItem(self.DRONE_LOCATION_KEY);
-        }
-    };
-
-    self.loadDroneLocation = function () {
-        var data = localStorage.getItem(self.DRONE_LOCATION_KEY);
-        if (data) {
-            self.droneLocationGuid = data;
-        }
-    };
-
-    self.setDroneLocation = function (guid) {
+    self.addDroneLocation = function (guid) {
         setTimeout(function () {
-            if (self.droneLocationGuid === guid) return;
-            self.droneLocationGuid = guid;
-            self.saveDroneLocation();
-            self.updateDroneMarker();
+            // Remove from array if it exists
+            var index = self.droneLocationHistory.indexOf(guid);
+            if (index > -1) {
+                self.droneLocationHistory.splice(index, 1);
+            }
+            // Add to the front
+            self.droneLocationHistory.unshift(guid);
+            // Trim to max 3
+            self.droneLocationHistory = self.droneLocationHistory.slice(0, 3);
+
+            self.uniques[self.DRONE_HISTORY_SYNC_KEY] = self.droneLocationHistory;
+            self.sync(self.DRONE_HISTORY_SYNC_KEY);
+            self.updateDroneMarkers();
         }, 0);
     };
 
-    self.removeDroneLocation = function () {
+    self.clearDroneHistory = function () {
         setTimeout(function () {
-            self.droneLocationGuid = null;
-            self.saveDroneLocation();
-            self.updateDroneMarker();
+            self.droneLocationHistory = [];
+            delete self.uniques[self.DRONE_HISTORY_SYNC_KEY];
+            self.sync(self.DRONE_HISTORY_SYNC_KEY);
+            self.updateDroneMarkers();
         }, 0);
     };
 
-    self.updateDroneMarker = function () {
+    self.updateDroneMarkers = function () {
         if (!self.droneLayer) return;
         self.droneLayer.clearLayers();
-        var guid = self.droneLocationGuid;
-        if (!guid) return;
 
-        var portal = window.portals[guid];
-        if (portal) {
-            self.drawDroneMarker(portal);
-        } else {
-            window.portalDetail.request(guid);
-        }
+        self.droneLocationHistory.forEach(function (guid, index) {
+            var portal = window.portals[guid];
+            if (portal) {
+                self.drawDroneMarker(portal, index);
+            } else {
+                // if portal details are not available, request them
+                window.portalDetail.request(guid).then(function() {
+                    var p = window.portals[guid];
+                    if (p) self.drawDroneMarker(p, index);
+                });
+            }
+        });
     };
 
-    self.drawDroneMarker = function (portal) {
-        if (!portal || portal.options.guid !== self.droneLocationGuid) return;
+    self.drawDroneMarker = function (portal, index) {
+        // check if portal is still in our history
+        if (!portal || self.droneLocationHistory.indexOf(portal.options.guid) === -1) {
+            return;
+        }
 
         var latlng = portal.getLatLng();
         var title = portal.options.data.title;
-
-        var droneIcon = L.icon({
-            iconUrl: 'https://gongjupal.com/ingress/drone-marker.png',
-            iconSize: [40, 40],
-            iconAnchor: [20, 40],
-        });
+        var recency = ['(Last)', '(Previous)', '(Oldest)'][index];
+        var icon = self.droneIcons[index];
+        if (!icon) return;
 
         var marker = L.marker(latlng, {
-            icon: droneIcon,
-            title: 'Drone Location: ' + title,
+            icon: icon,
+            title: 'Drone Location ' + recency + ': ' + title,
             guid: portal.options.guid,
             interactive: false,
         });
-
-        self.droneLayer.clearLayers();
         marker.addTo(self.droneLayer);
     };
 
@@ -214,7 +221,7 @@ function wrapper(plugin_info) {
         if (property === 'visited' && !value) uniqueInfo.captured = false;
 
         if (property === 'droneVisited' && value === true) {
-            self.setDroneLocation(guid);
+            self.addDroneLocation(guid);
         }
 
         self.updateCheckedAndHighlight(guid);
@@ -256,17 +263,34 @@ function wrapper(plugin_info) {
 
     self.syncCallback = function (pluginName, fieldName, e, fullUpdated) {
         if (fieldName !== self.SYNC_FIELD_NAME) return;
-        self.storeLocal('uniques');
+        self.storeLocal('uniques'); // store the merged uniques data
+
+        // Drone History specific logic
+        var droneHistoryData = self.uniques[self.DRONE_HISTORY_SYNC_KEY];
+        self.droneLocationHistory = (Array.isArray(droneHistoryData) && droneHistoryData) || [];
+
         if (fullUpdated) {
+            // Full sync, redraw everything
+            self.updateDroneMarkers();
             if (window.selectedPortal) self.updateCheckedAndHighlight(window.selectedPortal);
             if (self.isHighlightActive) window.resetHighlightedPortals();
             window.runHooks('pluginUniquesDroneFinalRefreshAll');
             return;
         }
+
         if (!e) return;
+
+        if (e.property === self.DRONE_HISTORY_SYNC_KEY) {
+            // just the drone history was updated
+            self.updateDroneMarkers();
+            return;
+        }
+
         if (e.isLocal) {
+            // a portal unique status was updated locally
             delete self.updatingQueue[e.property];
         } else {
+            // a portal unique status was updated from sync
             delete self.updateQueue[e.property];
             self.storeLocal('updateQueue');
             self.updateCheckedAndHighlight(e.property);
@@ -370,7 +394,7 @@ function wrapper(plugin_info) {
         var html = '<div class="uniques-tools-dialog" style="text-align: center;">' +
             warningHTML +
             '<button type="button" class="import-history" style="margin: 5px;">Import History</button>' +
-            '<button type="button" class="remove-drone-marker" style="margin: 5px;">Remove Drone Marker</button>' +
+            '<button type="button" class="clear-drone-history" style="margin: 5px;">Clear Drone History</button>' +
             '</div>';
 
         var dialog = window.dialog({
@@ -385,8 +409,8 @@ function wrapper(plugin_info) {
             self.importFromOfficialHistory();
             dialog.dialog('close');
         });
-        dialog.find('button.remove-drone-marker').on('click', function () {
-            self.removeDroneLocation();
+        dialog.find('button.clear-drone-history').on('click', function () {
+            self.clearDroneHistory();
             dialog.dialog('close');
         });
     };
@@ -465,18 +489,32 @@ function wrapper(plugin_info) {
         self.setupCSS();
         self.setupContent();
         self.loadLocal('uniques');
-        self.loadDroneLocation();
         window.addPortalHighlighter('Uniques (Drone)', self.highlighter);
         window.addHook('portalDetailsUpdated', self.onPortalDetailsUpdated);
         self.registerFieldForSyncing();
 
         // Drone marker setup
+        var iconSize = [40, 40];
+        var iconAnchor = [20, 40];
+        self.droneIcons = [
+            L.icon({ iconUrl: 'https://gongjupal.com/ingress/drone-marker.png', iconSize: iconSize, iconAnchor: iconAnchor }),
+            L.icon({ iconUrl: 'https://gongjupal.com/ingress/Drone1.png', iconSize: iconSize, iconAnchor: iconAnchor }),
+            L.icon({ iconUrl: 'https://gongjupal.com/ingress/Drone2.png', iconSize: iconSize, iconAnchor: iconAnchor }),
+        ];
+
         self.droneLayer = new L.LayerGroup();
         window.addLayerGroup('Drone Location', self.droneLayer, true);
-        window.addHook('portalAdded', (data) => self.drawDroneMarker(data.portal));
+
+        // Add a hook to draw markers when portal details are loaded
+        window.addHook('portalAdded', function (data) {
+            var index = self.droneLocationHistory.indexOf(data.portal.options.guid);
+            if (index !== -1) {
+                self.drawDroneMarker(data.portal, index);
+            }
+        });
 
         // Defer initial draw to ensure all other setup is complete
-        setTimeout(() => self.updateDroneMarker(), 0);
+        setTimeout(() => self.updateDroneMarkers(), 1000);
 
         if (window.plugin.portalslist) {
             self.setupPortalsList();
