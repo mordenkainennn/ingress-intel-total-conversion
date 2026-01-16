@@ -3,7 +3,7 @@
 // @author         3ch01c, mordenkainennn
 // @name           Uniques Tools
 // @category       Misc
-// @version        1.5.0
+// @version        1.5.1
 // @description    Modified version of the stock Uniques plugin to add support for Drone view, manual entry, and import of portal history.
 // @id             uniques-drone-final
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -30,6 +30,13 @@ function wrapper(plugin_info) {
     /* exported setup, changelog --eslint */
 
     var changelog = [
+        {
+            version: '1.5.1',
+            changes: [
+                'NEW: Added a "Find Last Location" button to the Uniques Tools dialog to zoom to the last drone-visited portal.',
+                'FIX: Corrected the zoom-to-portal logic to be more reliable by using portal details API for off-screen portals.',
+            ],
+        },
         {
             version: '1.5.0',
             changes: [
@@ -133,6 +140,28 @@ function wrapper(plugin_info) {
             self.sync(self.DRONE_HISTORY_SYNC_KEY);
             self.updateDroneMarkers();
         }, 0);
+    };
+
+    self.zoomToLastDroneLocation = function () {
+        if (self.droneLocationHistory.length > 0) {
+            var guid = self.droneLocationHistory[0];
+            var portal = window.portals[guid];
+            if (portal) {
+                // portal is visible on screen
+                window.map.setView(portal.getLatLng(), 17);
+                if(window.selectedPortal !== guid) window.selectPortal(guid);
+            } else {
+                // portal not on screen, request details
+                window.portalDetail.request(guid).then(function(details) {
+                    if (details) {
+                         window.map.setView([details.latE6/1E6, details.lngE6/1E6], 17);
+                         if(window.selectedPortal !== guid) window.selectPortal(guid);
+                    }
+                });
+            }
+        } else {
+            alert('No drone history found.');
+        }
     };
 
     self.updateDroneMarkers = function () {
@@ -391,10 +420,14 @@ function wrapper(plugin_info) {
                 '</div>';
         }
 
+        var isHistoryEmpty = self.droneLocationHistory.length === 0;
+
         var html = '<div class="uniques-tools-dialog" style="text-align: center;">' +
             warningHTML +
             '<button type="button" class="import-history" style="margin: 5px;">Import History</button>' +
             '<button type="button" class="clear-drone-history" style="margin: 5px;">Clear Drone History</button>' +
+            '<br>' +
+            '<button type="button" class="zoom-last-drone" style="margin: 5px;"' + (isHistoryEmpty ? ' disabled' : '') + '>Find Last Location</button>' +
             '</div>';
 
         var dialog = window.dialog({
@@ -411,6 +444,10 @@ function wrapper(plugin_info) {
         });
         dialog.find('button.clear-drone-history').on('click', function () {
             self.clearDroneHistory();
+            dialog.dialog('close');
+        });
+        dialog.find('button.zoom-last-drone').on('click', function () {
+            self.zoomToLastDroneLocation();
             dialog.dialog('close');
         });
     };
