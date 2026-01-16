@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-homogeneous-fields@mordenkainennn
 // @name           IITC Plugin: 57Cell's Field Planner [mordenkainennn]
-// @version        2.1.13.20260109
+// @version        2.1.14.20260116
 // @description    Plugin for planning fields in IITC
 // @author         57Cell (Michael Hartley) and ChatGPT 4.0, modified by mordenkainennn
 // @category       Layer
@@ -24,8 +24,17 @@
 // ==/UserScript==
 
 pluginName = "57Cell's Field Planner";
-version = "2.1.13";
+version = "2.1.14";
 changeLog = [
+    {
+        version: '2.1.14.20260116',
+        changes: [
+            'FIX: Refactored dialog layout to use Flexbox, resolving multiple rendering and resizing issues.',
+            'UPD: The "Included Portals" and "Excluded Portals" lists now correctly use available vertical space in a 2:1 ratio.',
+            'UPD: Increased default dialog height for a better initial view.',
+            'UPD: Reduced width of the portal list panel to provide more space for the main plan.',
+        ],
+    },
     {
         version: '2.1.9.20250810',
         changes: [
@@ -167,7 +176,7 @@ changeLog = [
 ];
 
 function wrapper(plugin_info) {
-    if (typeof window.plugin !== 'function') window.plugin = function() {};
+    if (typeof window.plugin !== 'function') window.plugin = function () { };
     plugin_info.buildName = '';
     plugin_info.dateTimeVersion = '2024-02-02-180000';
     plugin_info.pluginId = '57CellsFieldPlanner';
@@ -175,7 +184,7 @@ function wrapper(plugin_info) {
     // PLUGIN START
     console.log('Field Planner | loading plugin')
     var changelog = changeLog;
-    let self = window.plugin.homogeneousFields = function() {};
+    let self = window.plugin.homogeneousFields = function () { };
 
     // helper function to convert portal ID to portal object
     function portalIdToObject(portalId) {
@@ -189,7 +198,7 @@ function wrapper(plugin_info) {
             return {
                 id: portalId, // ID of the portal
                 name: portal.title, // title of the portal
-                latLng: new L.latLng(lat,lng), // use LatLng Class to stay more flexible
+                latLng: new L.latLng(lat, lng), // use LatLng Class to stay more flexible
             };
         }
 
@@ -212,7 +221,7 @@ function wrapper(plugin_info) {
         clickable: false,
         interactive: false,
         smoothFactor: 10,
-        dashArray: [12, 5, 4, 5, 6, 5, 8, 5, "100000" ],
+        dashArray: [12, 5, 4, 5, 6, 5, 8, 5, "100000"],
     };
 
     // TODO: make fieldStyle editable in options dialog
@@ -226,7 +235,7 @@ function wrapper(plugin_info) {
     };
 
     // Add this after your global variables
-    self.HCF = function(level, corners, central, subHCFs) {
+    self.HCF = function (level, corners, central, subHCFs) {
         this.level = level;
         this.corners = corners;
         this.central = central;
@@ -236,13 +245,13 @@ function wrapper(plugin_info) {
     // initialize plan.
     self.plan = null;
 
-    self.updateLayer = function(){
+    self.updateLayer = function () {
         if (self.plan) {
             self.drawPlan(self.plan);
         }
     };
 
-    self.setup = function() {
+    self.setup = function () {
         // Add button to toolbox
         // if (IITC.iitcBuildDate > '2023-11-20-071719')
         console.debug('Field Planner | Checking IITC Version');
@@ -270,14 +279,14 @@ function wrapper(plugin_info) {
         self.highlightLayergroup = new L.LayerGroup();
         window.addLayerGroup('Fielding Plan (Highlights)', self.highlightLayergroup, true);
 
-        window.map.on('overlayadd overlayremove', function() {
-            setTimeout(function(){
+        window.map.on('overlayadd overlayremove', function () {
+            setTimeout(function () {
                 self.updateLayer();
-            },1);
+            }, 1);
         });
     };
 
-    self.pointInTriangle = function(pt, triangle) {
+    self.pointInTriangle = function (pt, triangle) {
         const convertTo3D = pt => {
             const lat = pt.lat * Math.PI / 180;
             const lng = pt.lng * Math.PI / 180;
@@ -304,18 +313,18 @@ function wrapper(plugin_info) {
         const inverDeno = 1 / (dot00 * dot11 - dot01 * dot01);
         const eps = 1e-6;
         const u = (dot11 * dot02 - dot01 * dot12) * inverDeno;
-        if (u <= eps || u >= 1-eps) return false;
+        if (u <= eps || u >= 1 - eps) return false;
 
         const v = (dot00 * dot12 - dot01 * dot02) * inverDeno;
-        if (v <= eps || v >= 1-eps) return false;
-        return u + v < 1-eps;
+        if (v <= eps || v >= 1 - eps) return false;
+        return u + v < 1 - eps;
     };
 
-    self.dotProduct = function(a, b) {
+    self.dotProduct = function (a, b) {
         return a.x * b.x + a.y * b.y + a.z * b.z;
     };
 
-    self.vectorSubtract = function(a, b) {
+    self.vectorSubtract = function (a, b) {
         return {
             x: a.x - b.x,
             y: a.y - b.y,
@@ -324,7 +333,7 @@ function wrapper(plugin_info) {
     };
 
     // Add this after your setup function
-    self.pointInTriangleOld = function(pt, triangle) {
+    self.pointInTriangleOld = function (pt, triangle) {
         const [p1, p2, p3] = triangle;
         if (pt === null)
             return false;
@@ -333,12 +342,12 @@ function wrapper(plugin_info) {
         const dX21 = p3.lng - p2.lng;
         const dY12 = p2.lat - p3.lat;
         const D = dY12 * (p1.lng - p3.lng) + dX21 * (p1.lat - p3.lat);
-        const s = (dY12 * (dX - p3.lng) + dX21 * (dY - p3.lat))/D;
-        const t = ((p3.lat - p1.lat) * (dX - p3.lng) + (p1.lng - p3.lng) * (dY - p3.lat))/D;
+        const s = (dY12 * (dX - p3.lng) + dX21 * (dY - p3.lat)) / D;
+        const t = ((p3.lat - p1.lat) * (dX - p3.lng) + (p1.lng - p3.lng) * (dY - p3.lat)) / D;
         return s > 0 && t > 0 && (s + t) < 1;
     };
 
-    self.getPortalsInTriangle = function(triangle, portalsToConsider) {
+    self.getPortalsInTriangle = function (triangle, portalsToConsider) {
         // convert portal ids to lat/lng objects
         const triangleLatLngs = triangle.map(portalId => {
             const portal = portalIdToObject(portalId);
@@ -359,7 +368,7 @@ function wrapper(plugin_info) {
     };
 
     // Add this after getPortalsInTriangle function
-    self.findCentralSplitter = function(portalsInTriangle) {
+    self.findCentralSplitter = function (portalsInTriangle) {
         if (portalsInTriangle.length === 0) {
             return null;
         }
@@ -367,11 +376,11 @@ function wrapper(plugin_info) {
         return portalsInTriangle[randomIndex];
     };
 
-    self.constructHCF = function(level, corners, central, subHCFs) {
+    self.constructHCF = function (level, corners, central, subHCFs) {
         return new self.HCF(level, corners, central, subHCFs);
     };
 
-    self.toLatLonObjects = function(GUIDs) {
+    self.toLatLonObjects = function (GUIDs) {
         let list = [];
 
         for (let i = 0; i < GUIDs.length; i++) {
@@ -385,7 +394,7 @@ function wrapper(plugin_info) {
         return list;
     }
 
-    self.getClosestToTarget = function(list, target) {
+    self.getClosestToTarget = function (list, target) {
         list.sort((a, b) => target.distanceTo(a.ll) - target.distanceTo(b.ll));
         return list[0].GUID;
     }
@@ -431,7 +440,7 @@ function wrapper(plugin_info) {
     * @param {array} corners Array of Portal GUIDs
     * @param {array} portalsToConsider
     */
-    self.findHCF = function(level, corners, portalsToConsider, mode, fieldType) {
+    self.findHCF = function (level, corners, portalsToConsider, mode, fieldType) {
         // console.info('function findHCF start')
         let portalsInTriangle = self.getPortalsInTriangle(corners, portalsToConsider);
         if ((level === 1 && fieldType == 'hcf') || (fieldType != 'hcf' && portalsInTriangle.length == 0)) {
@@ -439,7 +448,7 @@ function wrapper(plugin_info) {
             return self.constructHCF(level, corners, null, []);
         }
 
-        let portalsNeeded = [-1,0,1,4,13,40,121];
+        let portalsNeeded = [-1, 0, 1, 4, 13, 40, 121];
         if (fieldType == 'hcf' && portalsInTriangle.length < portalsNeeded[level]) // not enough portals, fail immediately
             return null;
         let candidates = Array.from(portalsInTriangle);  // create a copy of portalsInTriangle
@@ -460,16 +469,16 @@ function wrapper(plugin_info) {
 
             let subHCFs = [];
             for (let i = 0; i < 3; i++) {
-                let subCorners = [corners[(i + attempt)%3], corners[(i + 1 + attempt) % 3], central];
+                let subCorners = [corners[(i + attempt) % 3], corners[(i + 1 + attempt) % 3], central];
                 let subTrianglePortals = self.getPortalsInTriangle(subCorners, portalsInTriangle);
-                let insufficientPortals = subTrianglePortals.length < portalsNeeded[level-1];
+                let insufficientPortals = subTrianglePortals.length < portalsNeeded[level - 1];
                 let subHCF;
                 if (fieldType == 'hcf') {
                     subHCF = insufficientPortals ? null : self.findHCF(level - 1, subCorners, subTrianglePortals, mode, fieldType);
                 } else if (fieldType == 'general') {
                     subHCF = self.findHCF(level, subCorners, subTrianglePortals, mode, fieldType);
                 } else if (fieldType == 'cobweb') {
-                    subHCF = self.findHCF(level+1, subCorners, i == 0 ? subTrianglePortals : [], mode, fieldType);
+                    subHCF = self.findHCF(level + 1, subCorners, i == 0 ? subTrianglePortals : [], mode, fieldType);
                 }
                 if (fieldType == 'hcf' && subHCF === null) {
                     // Failed to construct sub-HCF
@@ -559,7 +568,7 @@ function wrapper(plugin_info) {
     }
 
     // function to generate the portal data structure
-    self.generatePortalData = function(hcf) {
+    self.generatePortalData = function (hcf) {
         let portalData = {};
         console.debug(hcf);
         populatePortalData(portalData, hcf, 0);
@@ -578,7 +587,7 @@ function wrapper(plugin_info) {
     };
 
     // function to calculate the keys needed for each portal in a path
-    self.calculateKeysNeeded = function(portalData, path) {
+    self.calculateKeysNeeded = function (portalData, path) {
         let keysNeeded = {};
 
         // initialize keys needed for each portal to zero
@@ -601,7 +610,7 @@ function wrapper(plugin_info) {
     };
 
     // function to check if a path requires Matryoska links
-    self.requiresMatryoskaLinks = function(portalData, path) {
+    self.requiresMatryoskaLinks = function (portalData, path) {
         for (let i = 0; i < path.length; i++) {
             let portalId = path[i];
             if (portalData[portalId].coverings.length > 0 && portalData[portalId].coverings.every(id => path.indexOf(id) < i)) {
@@ -612,7 +621,7 @@ function wrapper(plugin_info) {
     };
 
     // function to calculate the total length of a path
-    self.calculatePathLength = function(portalData, path) {
+    self.calculatePathLength = function (portalData, path) {
         let totalLength = 0;
         for (let i = 1; i < path.length; i++) {
             let portal1 = portalData[path[i - 1]].latLng;
@@ -623,7 +632,7 @@ function wrapper(plugin_info) {
     };
 
     // helper function to count the number of outgoing links from each portal in a path
-    self.countOutgoingLinks = function(path, portalData) {
+    self.countOutgoingLinks = function (path, portalData) {
         let outgoingLinks = {};
         for (let id of path) {
             let links = portalData[id].links;
@@ -641,7 +650,7 @@ function wrapper(plugin_info) {
     };
 
     // optimization algorithm to find the shortest path
-    self.findShortestPath = function(portalData, path, fieldType) {
+    self.findShortestPath = function (portalData, path, fieldType) {
         let disallowMatryoska = true; // TODO: make this a UI element
         let maxOutgoingLinksPermitted = 40; // TODO: put this in the UI
         let initialOutgoingLinks = self.countOutgoingLinks(path, portalData);
@@ -649,7 +658,7 @@ function wrapper(plugin_info) {
         let bestPath = path.slice();
         let bestLength = self.calculatePathLength(portalData, bestPath);
 
-        for (let i = 0; i < path.length*path.length; i++) {
+        for (let i = 0; i < path.length * path.length; i++) {
             // create a copy of the path
             let newPath = bestPath.slice();
 
@@ -705,13 +714,13 @@ function wrapper(plugin_info) {
     };
 
 
-    self.planToText = function(plan) {
-        const nextChar = function(c) {
+    self.planToText = function (plan) {
+        const nextChar = function (c) {
             if (c.length == 0)
                 return 'a';
-            let prefix = c.substring(0,c.length-1);
-            let suffix = c.charAt(c.length-1);
-            if (suffix == 'z') 
+            let prefix = c.substring(0, c.length - 1);
+            let suffix = c.charAt(c.length - 1);
+            if (suffix == 'z')
                 return nextChar(prefix) + 'a';
             return prefix + String.fromCharCode(suffix.charCodeAt(0) + 1);
         }
@@ -719,9 +728,9 @@ function wrapper(plugin_info) {
         let maxSBUL = plan.reduce((max, item) => Math.max(max, item.sbul || 0), 0);
         let planText = "", sbulText = "";
         if (maxSBUL > 4)
-            return "Sadly, the best plan I found still needs "+maxSBUL+" softbanks on at least one portal. If you want me to try again, click 'Find Fielding Plan' again."
+            return "Sadly, the best plan I found still needs " + maxSBUL + " softbanks on at least one portal. If you want me to try again, click 'Find Fielding Plan' again."
         if (maxSBUL > 2)
-            planText = "Warning: this plan can't be done solo. One of its portals needs "+maxSBUL+" softbanks.\n\n"
+            planText = "Warning: this plan can't be done solo. One of its portals needs " + maxSBUL + " softbanks.\n\n"
         let stepPos = 0,
             linkPos = 'a';
 
@@ -731,7 +740,7 @@ function wrapper(plugin_info) {
         let statsText = "\nStats:\n";
         let portalCount = 0, linkCount = 0, fieldCount = 0, totalDistance = 0;
 
-        $.each(plan, function(index, item) {
+        $.each(plan, function (index, item) {
             // let pos = `${index + 1}`;
             if (item.action === 'capture') {
                 portalCount++;
@@ -775,7 +784,7 @@ function wrapper(plugin_info) {
         return planText;
     }
 
-    self.clearLayers = function() {
+    self.clearLayers = function () {
         if (window.map.hasLayer(self.linksLayerGroup)) {
             self.linksLayerGroup.clearLayers();
         }
@@ -812,7 +821,7 @@ function wrapper(plugin_info) {
 
     }
 
-    self.exportDrawtoolsLink = function(p1, p2) {
+    self.exportDrawtoolsLink = function (p1, p2) {
         let alatlng = p1.latLng;
         let blatlng = p2.latLng;
         let layer = L.geodesicPolyline([alatlng, blatlng], window.plugin.drawTools.lineOptions);
@@ -822,11 +831,11 @@ function wrapper(plugin_info) {
     }
 
     // function to draw the plan to the plugin layer
-    self.drawPlan = function(plan) {
+    self.drawPlan = function (plan) {
         // initialize plugin layer
         self.clearLayers();
 
-        $.each(plan, function(index,planStep) {
+        $.each(plan, function (index, planStep) {
             if (planStep.action === 'link') {
                 let ll_from = planStep.fromPortal.latLng, ll_to = planStep.portal.latLng;
                 self.drawLink(ll_from, ll_to, self.linkStyle);
@@ -842,10 +851,10 @@ function wrapper(plugin_info) {
     }
 
     // function to export and draw the plan to the drawtools plugin layer
-    self.exportToDrawtools = function(plan) {
+    self.exportToDrawtools = function (plan) {
         // initialize plugin layer
         if (window.plugin.drawTools !== 'undefined') {
-            $.each(plan, function(index, planStep) {
+            $.each(plan, function (index, planStep) {
                 if (planStep.action === 'link') {
                     self.exportDrawtoolsLink(planStep.fromPortal, planStep.portal);
                 }
@@ -855,7 +864,7 @@ function wrapper(plugin_info) {
 
     // function to add a link to the arc plugin
     self.drawArc = function (p1, p2) {
-        if(typeof window.plugin.arcs != 'undefined') {
+        if (typeof window.plugin.arcs != 'undefined') {
             window.selectedPortal = p1.id;
             window.plugin.arcs.draw();
             window.selectedPortal = p2.id;
@@ -865,10 +874,10 @@ function wrapper(plugin_info) {
 
 
     // function to export the plan to the arc plugin
-    self.drawArcPlan = function(plan) {
+    self.drawArcPlan = function (plan) {
         // initialize plugin layer
-        if(typeof window.plugin.arcs !== 'undefined') {
-            $.each(plan, function(index, planStep) {
+        if (typeof window.plugin.arcs !== 'undefined') {
+            $.each(plan, function (index, planStep) {
                 if (planStep.action === 'link') {
                     self.drawArc(planStep.fromPortal, planStep.portal);
                 }
@@ -876,29 +885,29 @@ function wrapper(plugin_info) {
         }
     }
 
-    self.buildDirection = function(compass1, compass2, angle) {
+    self.buildDirection = function (compass1, compass2, angle) {
         if (angle == 0) return compass1;
         if (angle == 45) return compass1 + compass2;
-        if (angle > 45) return self.buildDirection(compass2, compass1, 90-angle);
+        if (angle > 45) return self.buildDirection(compass2, compass1, 90 - angle);
         return compass1 + ' ' + angle + '° ' + compass2;
     }
 
-    self.formatBearing = function(bearing) {
+    self.formatBearing = function (bearing) {
         var bearingFromNorth = false;
         bearing = (bearing + 360) % 360;
         if (bearingFromNorth)
             return bearing.toString().padStart(3, '0') + "°";
         if (bearing <= 90) return self.buildDirection('N', 'E', bearing);
-        else if (bearing <= 180) return self.buildDirection('S', 'E', 180-bearing);
-        else if (bearing <= 270) return self.buildDirection('S', 'W', bearing-180);
-        else return self.buildDirection('N', 'W', 360-bearing);
+        else if (bearing <= 180) return self.buildDirection('S', 'E', 180 - bearing);
+        else if (bearing <= 270) return self.buildDirection('S', 'W', bearing - 180);
+        else return self.buildDirection('N', 'W', 360 - bearing);
     }
 
-    self.formatDistance = function(distanceMeters) {
+    self.formatDistance = function (distanceMeters) {
         const feetInAMeter = 3.28084;
         const milesInAMeter = 0.000621371;
         const kmInAMeter = 0.001;
-        
+
         if (distanceMeters < 1000) {
             const distanceFeet = Math.round(distanceMeters * feetInAMeter);
             return `${Math.round(distanceMeters)}m (${distanceFeet}ft)`;
@@ -910,7 +919,7 @@ function wrapper(plugin_info) {
     }
 
     // function to generate the final plan
-    self.generatePlan = function(portalData, path, hcfLevel, fieldType) {
+    self.generatePlan = function (portalData, path, hcfLevel, fieldType) {
 
         /** @function getThirds
           * Returns the list of portals, a new link a->b potentially(!) produces a field with.
@@ -922,7 +931,7 @@ function wrapper(plugin_info) {
           * @param b {point} Point for a portal
           * @return {array} of portals
           */
-        const getThirds = function(list, newLink) {
+        const getThirds = function (list, newLink) {
             let a = newLink.fromPortal,
                 b = newLink.toPortal,
                 i, k,
@@ -943,7 +952,7 @@ function wrapper(plugin_info) {
             }
             for (i in linksOnA) {
                 for (k in linksOnB) {
-                    if (linksOnA[i].a.latLng.equals(linksOnB[k].a.latLng) || linksOnA[i].a.latLng.equals(linksOnB[k].b.latLng) )
+                    if (linksOnA[i].a.latLng.equals(linksOnB[k].a.latLng) || linksOnA[i].a.latLng.equals(linksOnB[k].b.latLng))
                         result.push(linksOnA[i].a);
                     if (linksOnA[i].b.latLng.equals(linksOnB[k].a.latLng) || linksOnA[i].b.latLng.equals(linksOnB[k].b.latLng))
                         result.push(linksOnA[i].b);
@@ -969,7 +978,7 @@ function wrapper(plugin_info) {
             links.sort((n, m) => portalData[n].depth - portalData[m].depth);
             // calculate outgoing links and count softbanks
             let outgoingLinks = links.filter(linkId => path.indexOf(linkId) < path.indexOf(portalId));
-            let sbul = outgoingLinks.length <= 8 ? 0 : Math.floor((outgoingLinks.length-1)/8);
+            let sbul = outgoingLinks.length <= 8 ? 0 : Math.floor((outgoingLinks.length - 1) / 8);
             let vec = null;
             let distance = 0;
             if (prevPortalId != null) {
@@ -981,7 +990,7 @@ function wrapper(plugin_info) {
                 let bearing = Math.round(Math.atan2(diffLng * Math.cos(thisLL.lat * Math.PI / 180), diffLat) * 180 / Math.PI);
                 let bearingText = self.formatBearing(bearing);
                 let distTex = self.formatDistance(distance)
-                vec = distTex+" "+bearingText;
+                vec = distTex + " " + bearingText;
             }
 
             plan.push({
@@ -990,7 +999,7 @@ function wrapper(plugin_info) {
                 portal: a,
                 sbul: sbul,
                 vectorHere: vec,
-                distance : distance,
+                distance: distance,
                 keys: keysNeeded[portalId] || 0
             });
 
@@ -999,7 +1008,7 @@ function wrapper(plugin_info) {
             for (let linkId of outgoingLinks) {
                 // keep track of all links we've already made
                 let b = portalData[linkId];
-                allLinks.push({a: a, b: b});
+                allLinks.push({ a: a, b: b });
 
                 // plan += `Link to ${b.name}\n`;#
                 plan.push({
@@ -1026,7 +1035,7 @@ function wrapper(plugin_info) {
         }
 
         let totalKeysActual = 0;
-        $.each(portalData, function(portalId, portal) {
+        $.each(portalData, function (portalId, portal) {
             plan.push({
                 action: 'farmkeys',
                 portal: portal,
@@ -1036,7 +1045,7 @@ function wrapper(plugin_info) {
         });
 
         if (fieldType == 'hcf') {
-            const totalPortalsExpected = (Math.pow(3, hcfLevel-1) + 5) / 2;
+            const totalPortalsExpected = (Math.pow(3, hcfLevel - 1) + 5) / 2;
             const totalKeysExpected = (Math.pow(3, hcfLevel) + 3) / 2;
             const totalPortalsActual = path.length;
             // Check if the total number of portals and keys match the expected values
@@ -1066,46 +1075,53 @@ function wrapper(plugin_info) {
         '<legend class="ui-dialog-titlebar" style="min-inline-size:0px;">&lt;empty&gt;</legend>select a portal</fieldset>\n';
 
 
-    self.info_dialog_html = '<div id="more-info-container" '+
-    '                    style="height: inherit; display: flex; flex-direction: column; align-items: stretch;">\n' +
-    '   <div style="display: flex;justify-content: space-between;align-items: center;">\n' +
-    '      <span>This is '+pluginName+' version '+version+'. Follow the links below if you would like to:\n' +
-    '        <ul>\n'+
-    '          <li style="visibility:hidden;"> <a href="https://www.youtube.com/watch?v=LGCOUXZDEjU" target="_blank">Learn how to use this plugin</a></li>\n'+
-    '          <li> <a href="https://www.youtube.com/playlist?list=PLQ2GCHa7ljyP9pl0fmz5Z8U8Rx3_VZMVl" target="_blank"">Watch some videos on Homogeneous Fields</a></li>\n'+
-    '          <li> <a href="https://youtu.be/yvvrHEtkxGc" target="_blank">Learn about the Cobweb fielding plan</a></li>\n'+
-    '          <li> <a href="https://www.youtube.com/playlist?list=PLQ2GCHa7ljyPucSuNPGagiBZVjFxkOMpC" target="_blank">See videos on maximising your fields</a></li>\n'+
-    '          <li> <a href="https://github.com/Heistergand/fanfields2/raw/master/iitc_plugin_fanfields2.user.js" target="_blank">Get a plugin for Fanfields</a></li>\n'+
-    '          <li> <a href="https://www.youtube.com/playlist?list=PLQ2GCHa7ljyMBxNRWm1rmH8_vp3GJvxzN" target="_blank">Find out more about Fanfields</a></li>\n'+
-    '        </ul>\n' +
-    '      Contributing authors:\n' +
-    '        <ul>\n'+
-    '          <li> <a href="https://youtu.be/M1O2SehnPGw" target="_blank"">ChatGPT 4.0</a></li>\n'+
-    '          <li> <a href="https://www.youtube.com/@57Cell" target="_blank">@57Cell</a></li>\n'+
-    '          <li> <a href="https://www.youtube.com/@Heistergand" target="_blank">@Heistergand</a></li>\n'+
-    '        </ul>\n' +
-    '      </span>\n' +
-    '</div></div>';
+    self.info_dialog_html = '<div id="more-info-container" ' +
+        '                    style="height: inherit; display: flex; flex-direction: column; align-items: stretch;">\n' +
+        '   <div style="display: flex;justify-content: space-between;align-items: center;">\n' +
+        '      <span>This is ' + pluginName + ' version ' + version + '. Follow the links below if you would like to:\n' +
+        '        <ul>\n' +
+        '          <li style="visibility:hidden;"> <a href="https://www.youtube.com/watch?v=LGCOUXZDEjU" target="_blank">Learn how to use this plugin</a></li>\n' +
+        '          <li> <a href="https://www.youtube.com/playlist?list=PLQ2GCHa7ljyP9pl0fmz5Z8U8Rx3_VZMVl" target="_blank"">Watch some videos on Homogeneous Fields</a></li>\n' +
+        '          <li> <a href="https://youtu.be/yvvrHEtkxGc" target="_blank">Learn about the Cobweb fielding plan</a></li>\n' +
+        '          <li> <a href="https://www.youtube.com/playlist?list=PLQ2GCHa7ljyPucSuNPGagiBZVjFxkOMpC" target="_blank">See videos on maximising your fields</a></li>\n' +
+        '          <li> <a href="https://github.com/Heistergand/fanfields2/raw/master/iitc_plugin_fanfields2.user.js" target="_blank">Get a plugin for Fanfields</a></li>\n' +
+        '          <li> <a href="https://www.youtube.com/playlist?list=PLQ2GCHa7ljyMBxNRWm1rmH8_vp3GJvxzN" target="_blank">Find out more about Fanfields</a></li>\n' +
+        '        </ul>\n' +
+        '      Contributing authors:\n' +
+        '        <ul>\n' +
+        '          <li> <a href="https://youtu.be/M1O2SehnPGw" target="_blank"">ChatGPT 4.0</a></li>\n' +
+        '          <li> <a href="https://www.youtube.com/@57Cell" target="_blank">@57Cell</a></li>\n' +
+        '          <li> <a href="https://www.youtube.com/@Heistergand" target="_blank">@Heistergand</a></li>\n' +
+        '        </ul>\n' +
+        '      </span>\n' +
+        '</div></div>';
 
     // ATTENTION! DO NOT EVER TOUCH THE STYLES WITHOUT INTENSE TESTING!
-    self.dialog_html = '<div>' + // Simple wrapper
+    self.dialog_html = '<style>' +
+        '#hcf-container-main { display: flex; width: 100%; flex: 1; min-height: 0; }' +
+        '#hcf-left-panel { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }' +
+        '#hcf-right-panel { flex: 0 0 160px; display: flex; flex-direction: column; min-height: 0; padding-left: 10px; }' +
+        '#hcf-plan-text { flex-grow: 1; width: 98%; margin:2px; resize:vertical; }' +
+        '.hcf-list-wrapper { display: flex; flex-direction: column; min-height: 0; }' +
+        '</style>' +
+        '<div id="hcf-container-main">' + // Main flex container
         '    <!-- Left Column -->' +
-        '    <div id="hcf-left-panel" style="float: left; width: 65%;">' +
+        '    <div id="hcf-left-panel">' +
         '       <div style="display: flex;justify-content: space-between;align-items: center;">' +
         '          <span>I\'ll generate a fielding plan with corners:</span>' +
         '          <span>Color: <input type="color" id="hcf-colorPicker" value="#ff0000"></span>' +
         '       </div>' +
         '       <div id="hcf-portal-details"><div id="hcf-portal-images" style="display: flex;justify-content: space-evenly;">' +
-                self.cornerPreviewPlaceholderHTML +
-                self.cornerPreviewPlaceholderHTML +
-                self.cornerPreviewPlaceholderHTML +
+        self.cornerPreviewPlaceholderHTML +
+        self.cornerPreviewPlaceholderHTML +
+        self.cornerPreviewPlaceholderHTML +
         '       </div></div>\n' +
         '       <div style="margin: 2px 0;">' +
         '         <input type="checkbox" id="lock-corners-checkbox" style="vertical-align: middle;">' +
         '         <label for="lock-corners-checkbox">Lock Corners & Find Mode</label>' +
         '       </div>' +
-        '       <fieldset style="margin: 2px;">\n'+
-        '         <legend>Options</legend>\n'+
+        '       <fieldset style="margin: 2px;">\n' +
+        '         <legend>Options</legend>\n' +
         '         <label for="field-type">Field type: </label>\n' +
         '         <input type="radio" id="field-type-hcf" name="field-type" value="hcf" checked>\n' +
         '         <label for="field-type-hcf" title="generate a homogeneous fielding plan">Homogeneous Fields</label>\n' +
@@ -1126,18 +1142,18 @@ function wrapper(plugin_info) {
         '         </div>\n' +
         '       </fieldset>\n' +
         '       <div id="hcf-buttons-container" style="margin: 3px;">\n' +
-        '         <button id="find-hcf-plan" style="cursor: pointer" style="margin: 2px;">Find Fielding Plan</button>'+
-        '         <button id="hcf-to-dt-btn" style="cursor: pointer" hidden>Export to DrawTools</button>'+
-        '         <button id="hcf-to-arc-btn" style="cursor: pointer" hidden>Export to Arc</button>'+
-        '         <button id="hcf-simulator-btn" style="cursor: pointer" hidden>Simulate</button>'+
-        '         <button id="hcf-clear-btn" style="cursor: pointer">Clear</button>'+
-        '         <button id="more-info" style="cursor: pointer" style="margin: 2px;">More Info</button>'+
+        '         <button id="find-hcf-plan" style="cursor: pointer" style="margin: 2px;">Find Fielding Plan</button>' +
+        '         <button id="hcf-to-dt-btn" style="cursor: pointer" hidden>Export to DrawTools</button>' +
+        '         <button id="hcf-to-arc-btn" style="cursor: pointer" hidden>Export to Arc</button>' +
+        '         <button id="hcf-simulator-btn" style="cursor: pointer" hidden>Simulate</button>' +
+        '         <button id="hcf-clear-btn" style="cursor: pointer">Clear</button>' +
+        '         <button id="more-info" style="cursor: pointer" style="margin: 2px;">More Info</button>' +
         '       </div>\n' +
-        '       <textarea readonly id="hcf-plan-text" style="width: 98%; margin:2px; resize:none; min-height: 150px;"></textarea>\n'+
+        '       <textarea readonly id="hcf-plan-text"></textarea>\n' +
         '    </div>' +
         '    <!-- Right Column -->' +
-        '    <div id="hcf-right-panel" style="float: right; width: 34%; box-sizing: border-box; padding-left: 10px;">' +
-        '       <div style="height: 45%; display: flex; flex-direction: column; min-height: 50px;">' +
+        '    <div id="hcf-right-panel">' +
+        '       <div class="hcf-list-wrapper" style="flex-grow: 2;">' +
         '          <label for="hcf-included-portals">Included Portals</label>' +
         '          <select id="hcf-included-portals" multiple style="width: 100%; flex-grow: 1;"></select>' +
         '       </div>' +
@@ -1145,53 +1161,36 @@ function wrapper(plugin_info) {
         '          <button id="hcf-move-to-excluded" title="Exclude selected">&gt;&gt;</button>' +
         '          <button id="hcf-move-to-included" title="Include selected">&lt;&lt;</button>' +
         '       </div>' +
-        '       <div style="height: 45%; display: flex; flex-direction: column; min-height: 50px;">' +
+        '       <div class="hcf-list-wrapper" style="flex-grow: 1;">' +
         '          <label for="hcf-excluded-portals">Excluded Portals</label>' +
         '          <select id="hcf-excluded-portals" multiple style="width: 100%; flex-grow: 1;"></select>' +
         '       </div>' +
         '    </div>' +
         '</div>';
 
-    self.manualLayout = function(dialogContent, ui) {
-        var container = $(dialogContent);
-        
-        // Use ui.size.width if available (from resize event), 
-        // otherwise fall back to container's width (for open event)
-        var totalWidth = ui && ui.size ? ui.size.width : container.width();
 
-        var rightPanel = container.find('#hcf-right-panel');
-        var leftPanel = container.find('#hcf-left-panel');
-
-        var rightWidth = 320; // Fixed width for the list is good UX
-        var leftWidth = totalWidth - rightWidth - 15; // Account for padding/margins
-
-        if (leftWidth < 200) { // prevent left panel from becoming too crushed
-             leftWidth = 200;
-             rightWidth = totalWidth - leftWidth - 15;
-        }
-
-        leftPanel.width(leftWidth);
-        rightPanel.width(rightWidth);
-    };
 
     // Attach click event to find-hcf-plan-button after the dialog is created
-    self.openDialog = function() {
+    self.openDialog = function () {
         if (!self.dialogIsOpen()) {
             dialog({
                 title: 'Fielding Plan View',
                 id: 'hcf-plan-view',
                 html: self.dialog_html,
                 width: '95%',
-                minHeight: 460,
+                minHeight: 575,
+                open: function () {
+                    // The .ui-dialog-content element needs to be a flex container for the layout to work.
+                    $(this).css({ display: 'flex', 'flex-direction': 'column', height: '100%' });
+                }
             });
             self.attachEventHandler();
             self.updateDialog();
-            $('#dialog-hcf-plan-view').css("height", "auto");
         }
     };
 
-        // Attach click event to find-hcf-plan-button after the dialog is created
-    self.open_info_dialog = function() {
+    // Attach click event to find-hcf-plan-button after the dialog is created
+    self.open_info_dialog = function () {
         if (!self.infoDialogIsOpen()) {
             dialog({
                 title: 'Plugin And Other Information',
@@ -1220,7 +1219,7 @@ function wrapper(plugin_info) {
      *
      * @param {string} portalGuid - The GUID of the portal.
      */
-    self.animateCircle = function(guid) {
+    self.animateCircle = function (guid) {
         if (self.animationStartTime === null) {
             // Set the timestamp when the animation starts, but only if it's null
             self.animationStartTime = performance.now();
@@ -1294,7 +1293,7 @@ function wrapper(plugin_info) {
      *
      * @param {string} guid - The GUID of the portal.
      */
-    self.animateTriangle = function(guid) {
+    self.animateTriangle = function (guid) {
         const portalLocation = map.latLngToContainerPoint(portals[guid].getLatLng()); // Convert to pixel coordinates
         const minTriangleRadius = 30;
         const maxTriangleRadius = 38;
@@ -1332,7 +1331,7 @@ function wrapper(plugin_info) {
 
             const triangleColor = interpolateColor(triangleColorStart, triangleColorEnd, (Math.sin((timestamp - colorPulseStartTime) * 2 * Math.PI * colorPulseFrequency / 1000) + 1) / 2); // Pulsate color between start and end color
             const sideLength = calculateSideLength(radius); // Calculate side length based on current radius
-            const sectorLength = sideLength / 3 ; // Divide side length into three sectors
+            const sectorLength = sideLength / 3; // Divide side length into three sectors
             triangle.setStyle({
                 color: `#${triangleColor}`,
                 dashArray: [sectorLength, sectorLength, 2 * sectorLength, sectorLength, 2 * sectorLength, sectorLength, sectorLength]
@@ -1388,42 +1387,42 @@ function wrapper(plugin_info) {
 
 
 
-    self.attachEventHandler = function() {
-        $("#hcf-simulator-btn").click(function() {
+    self.attachEventHandler = function () {
+        $("#hcf-simulator-btn").click(function () {
             self.simulator(self.plan);
         });
 
-        $("#hcf-to-arc-btn").click(function() {
+        $("#hcf-to-arc-btn").click(function () {
             self.drawArcPlan(self.plan);
             window.plugin.arcs.list();
         });
 
-        $("#field-type-general").change(function() {
+        $("#field-type-general").change(function () {
             if ($(this).is(":checked")) {
                 $("#hcf-layers-container").css("display", "none");
                 $("#hcf-mode-container").css("display", "block");
             }
         });
 
-        $("#field-type-cobweb").change(function() {
+        $("#field-type-cobweb").change(function () {
             if ($(this).is(":checked")) {
                 $("#hcf-layers-container").css("display", "none");
                 $("#hcf-mode-container").css("display", "none");
             }
         });
 
-        $("#field-type-hcf").change(function() {
+        $("#field-type-hcf").change(function () {
             if ($(this).is(":checked")) {
                 $("#hcf-layers-container").css("display", "block");
                 $("#hcf-mode-container").css("display", "block");
             }
         });
 
-        $("#hcf-to-dt-btn").click(function() {
+        $("#hcf-to-dt-btn").click(function () {
             self.exportToDrawtools(self.plan);
         });
 
-        $("#hcf-clear-btn").click(function() {
+        $("#hcf-clear-btn").click(function () {
             self.clearLayers();
             self.selectedPortals = [];
             self.plan = null;
@@ -1433,25 +1432,25 @@ function wrapper(plugin_info) {
 
         });
 
-        $("#find-hcf-plan").mousedown(function() {
+        $("#find-hcf-plan").mousedown(function () {
             // Clear text field
             // setTimeout($("#hcf-plan-text").val("Please wait..."), 1);
             $("#hcf-plan-text").val("Please wait...");
         });
 
-        $("#find-hcf-plan").click(function() {
+        $("#find-hcf-plan").click(function () {
             self.find_hcf_plan();
         });
 
-        $("#more-info").click(function() {
+        $("#more-info").click(function () {
             self.open_info_dialog();
         });
 
-        $("#hcf-portal-details").mouseover(function() {
+        $("#hcf-portal-details").mouseover(function () {
             if (window.map.hasLayer(self.highlightLayergroup)) {
                 self.highlightLayergroup.clearLayers();
             }
-            self.selectedPortals.forEach(({guid, details}) => {
+            self.selectedPortals.forEach(({ guid, details }) => {
                 if (currentAnimationStyle === ANIMATION_STYLE_DEFAULT) {
                     self.animateCircle(guid);
                 } else if (currentAnimationStyle === ANIMATION_STYLE_TRIANGLE) {
@@ -1461,7 +1460,7 @@ function wrapper(plugin_info) {
 
         });
 
-        $("#hcf-portal-details").mouseout(function() {
+        $("#hcf-portal-details").mouseout(function () {
             for (const guid in self.animationRequestIds) {
                 const requestId = self.animationRequestIds[guid];
                 cancelAnimationFrame(requestId);
@@ -1480,7 +1479,7 @@ function wrapper(plugin_info) {
         });
 
         // color picker event:
-        $("#hcf-colorPicker").change(function() {
+        $("#hcf-colorPicker").change(function () {
             console.debug('Field Planner | Selected color:', this.value); // Output the selected color
             self.linkStyle.color = this.value;
             self.fieldStyle.fillColor = this.value;
@@ -1489,15 +1488,15 @@ function wrapper(plugin_info) {
 
         // Handlers for moving portals between lists
         function moveSelectedOptions(sourceListId, destListId) {
-            $(sourceListId + ' option:selected').each(function() {
+            $(sourceListId + ' option:selected').each(function () {
                 $(destListId).append($(this));
             });
         }
-        
+
         $("#hcf-move-to-excluded").click(() => moveSelectedOptions('#hcf-included-portals', '#hcf-excluded-portals'));
         $("#hcf-move-to-included").click(() => moveSelectedOptions('#hcf-excluded-portals', '#hcf-included-portals'));
 
-        $('#hcf-included-portals, #hcf-excluded-portals').on('click', function(e) {
+        $('#hcf-included-portals, #hcf-excluded-portals').on('click', function (e) {
             if (window.map.hasLayer(self.highlightLayergroup)) {
                 self.highlightLayergroup.clearLayers();
             }
@@ -1509,7 +1508,7 @@ function wrapper(plugin_info) {
 
     } // end of attachEventHandler
 
-    self.find_hcf_plan = function() {
+    self.find_hcf_plan = function () {
         // Get selected portals and desired level
         // let corners = self.selectedPortals;
         let corners = self.selectedPortals.map(portal => portal.guid);
@@ -1520,11 +1519,11 @@ function wrapper(plugin_info) {
             return;
         }
         let level = parseInt($("#layers").val());
-        let mode = $( "input[type=radio][name=hcf-mode]:checked" ).val();
-        let fieldType = $( "input[type=radio][name=field-type]:checked" ).val();
+        let mode = $("input[type=radio][name=hcf-mode]:checked").val();
+        let fieldType = $("input[type=radio][name=field-type]:checked").val();
 
         let portalsToConsider = [];
-        $('#hcf-included-portals option').each(function() {
+        $('#hcf-included-portals option').each(function () {
             portalsToConsider.push($(this).val());
         });
 
@@ -1568,19 +1567,19 @@ function wrapper(plugin_info) {
                 $("#hcf-plan-text").val(self.planToText(self.plan));
                 self.drawPlan(self.plan);
 
-                if(typeof window.plugin.drawTools !== 'undefined') {
+                if (typeof window.plugin.drawTools !== 'undefined') {
                     $("#hcf-to-dt-btn").show();
                 };
 
                 // don't tell anyone:
-                if(typeof window.plugin.arcs !== 'undefined') {
+                if (typeof window.plugin.arcs !== 'undefined') {
                     $("#hcf-to-arc-btn").show();
                 };
             }
         }
     };
 
-    self.portalSelected = function(data) {
+    self.portalSelected = function (data) {
         if (self.dialogIsOpen() && $('#lock-corners-checkbox').is(':checked')) {
             const portalGuid = data.selectedPortalGuid;
 
@@ -1590,7 +1589,7 @@ function wrapper(plugin_info) {
             if (option.length > 0) {
                 // Deselect all other options in both lists
                 $('#hcf-included-portals option, #hcf-excluded-portals option').prop('selected', false);
-                
+
                 // Select the found option
                 option.prop('selected', true);
 
@@ -1609,9 +1608,9 @@ function wrapper(plugin_info) {
 
         let portalDetails = window.portals[data.selectedPortalGuid]._details;
         if (portalDetails === undefined) return;
-        if (self.selectedPortals.some(({guid}) => guid === data.selectedPortalGuid)) return;
+        if (self.selectedPortals.some(({ guid }) => guid === data.selectedPortalGuid)) return;
 
-        self.selectedPortals.push({guid: data.selectedPortalGuid, details: portalDetails});
+        self.selectedPortals.push({ guid: data.selectedPortalGuid, details: portalDetails });
         while (self.selectedPortals.length > 3) {
             self.selectedPortals.shift();
         }
@@ -1619,21 +1618,21 @@ function wrapper(plugin_info) {
         self.updateDialog();
     };
 
-    self.dialogIsOpen = function() {
+    self.dialogIsOpen = function () {
         return ($("#dialog-hcf-plan-view").hasClass("ui-dialog-content") && $("#dialog-hcf-plan-view").dialog('isOpen'));
     };
 
-    self.infoDialogIsOpen = function() {
+    self.infoDialogIsOpen = function () {
         return ($("#dialog-hcf-info-view").hasClass("ui-dialog-content") && $("#dialog-hcf-info-view").dialog('isOpen'));
     };
 
-    self.populatePortalLists = function() {
+    self.populatePortalLists = function () {
         $('#hcf-included-portals, #hcf-excluded-portals').empty();
         if (self.selectedPortals.length !== 3) return;
 
         let corners = self.selectedPortals.map(p => p.guid);
         let portalsInTriangle = self.getPortalsInTriangle(corners, Object.keys(window.portals));
-        
+
         // Exclude the three corner portals themselves
         let cornerGuids = new Set(corners);
         portalsInTriangle = portalsInTriangle.filter(guid => !cornerGuids.has(guid));
@@ -1652,7 +1651,7 @@ function wrapper(plugin_info) {
         });
     };
 
-    self.updateDialog = function() {
+    self.updateDialog = function () {
         // Update portal details in dialog
         let portalDetailsDiv = $('#hcf-portal-details');
 
@@ -1665,7 +1664,7 @@ function wrapper(plugin_info) {
         portalDetailsHTML += '<div id="hcf-portal-images" style="display: flex;justify-content: space-evenly;">\n';
         // debugger;
 
-        self.selectedPortals.forEach(({guid, details}) => {
+        self.selectedPortals.forEach(({ guid, details }) => {
             // ATTENTION! DO NOT EVER TOUCH THE STYLES WITHOUT INTENSE TESTING!
             portalDetailsHTML += '<fieldset ' +
                 'title="' + details.title + '" ' +
@@ -1682,12 +1681,12 @@ function wrapper(plugin_info) {
                 '"' + // end of style
                 'id="hcf-corner-preview-' + guid + '"' +
                 '>' +
-                '<legend class="ui-dialog-titlebar" style="min-inline-size: 0px;">'+details.title +'</legend></fieldset>\n';
+                '<legend class="ui-dialog-titlebar" style="min-inline-size: 0px;">' + details.title + '</legend></fieldset>\n';
         });
 
         // self.selectedPortalDetails
 
-        for (let i=0; i < (3 - self.selectedPortals.length); i++) {
+        for (let i = 0; i < (3 - self.selectedPortals.length); i++) {
             // portalDetailsHTML += '<div>Please select ' + (3-self.selectedPortals.length) + ' more</div>\n';
             portalDetailsHTML += self.cornerPreviewPlaceholderHTML;
         }
@@ -1709,7 +1708,7 @@ function wrapper(plugin_info) {
 
     };
 
-    self.distance = function(portal1, portal2) {
+    self.distance = function (portal1, portal2) {
         return portal1.distanceTo(portal2);
     };
 
@@ -1721,10 +1720,10 @@ function wrapper(plugin_info) {
     // Add an info property for IITC's plugin system
     var setup = self.setup;
     setup.info = plugin_info;
-    
+
     // export changelog
     if (typeof changelog !== 'undefined') setup.info.changelog = changelog;
-    
+
     // Make sure window.bootPlugins exists and is an array
     if (!window.bootPlugins) window.bootPlugins = [];
     // Add our startup hook
@@ -1749,7 +1748,7 @@ if (typeof GM_info !== 'undefined' && GM_info && GM_info.script) {
 }
 
 // Create a text node and our IIFE inside of it
-var textContent = document.createTextNode('('+ wrapper +')('+ JSON.stringify(info) +')');
+var textContent = document.createTextNode('(' + wrapper + ')(' + JSON.stringify(info) + ')');
 // Add some content to the script element
 script.appendChild(textContent);
 // Finally, inject it... wherever.
