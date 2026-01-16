@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-drone-planner@mordenkainennn
 // @name           IITC Plugin: mordenkainennn's Drone Flight Planner
-// @version        0.0.3
+// @version        0.0.2
 // @description    Plugin for planning drone flights in IITC
 // @author         mordenkainennn
 // @category       Layer
@@ -24,8 +24,15 @@
 // ==/UserScript==
 
 pluginName = "mordenkainennn's Drone Planner";
-version = "0.0.1";
+version = "0.0.2";
 changeLog = [
+    {
+        version: '0.0.2.20260116',
+        changes: [
+            'NEW: Re-enabled "Perfect" optimization mode in the Drone Flight Planner dialog.',
+            'UPD: User testing shows "Perfect" mode significantly improves path quality (fewer moves) without unacceptable performance overhead.',
+        ],
+    },
     {
         version: '0.0.1.20251231',
         changes: [
@@ -777,8 +784,8 @@ function wrapper(plugin_info) {
         '      <label for="opt-greedy" title="Aims straight for the target portal. Might add more long links than it should.">Greedy</label>\n' +
         '      <input type="radio" id="opt-balanced" name="optimisation-type" value="balanced" />\n' +
         '      <label for="opt-balanced" title="Tries to quickly find a good path, but won\'t 100% always find the absolute best">Almost Perfect</label>\n' +
-        //        '      <input type="radio" id="opt-perfect" name="optimisation-type" value="perfect" />\n' +
-        //        '      <label for="opt-perfect" title="Slow and thorough, is guaranteed to find a path with minimum cost - if you\'re patient!">Perfect (slowest)</label>\n' +
+        '      <input type="radio" id="opt-perfect" name="optimisation-type" value="perfect" />\n' +
+        '      <label for="opt-perfect" title="Slow and thorough, is guaranteed to find a path with minimum cost - if you\'re patient!">Perfect (slowest)</label>\n' +
         '      <div id="long-hop-length-container">\n' +
         '        <label for="long-hop-length">Long Hop Length: </label>\n' +
         '        <input type="number" id="long-hop-length" min="450" max="750" value="550" step="10">\n' +
