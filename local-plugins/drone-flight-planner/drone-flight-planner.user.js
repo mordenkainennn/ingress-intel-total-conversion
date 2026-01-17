@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-drone-planner@mordenkainennn
 // @name           IITC Plugin: mordenkainennn's Drone Flight Planner
-// @version        0.0.2
+// @version        0.1.0
 // @description    Plugin for planning drone flights in IITC
 // @author         mordenkainennn
 // @category       Layer
@@ -24,8 +24,18 @@
 // ==/UserScript==
 
 pluginName = "mordenkainennn's Drone Planner";
-version = "0.0.2";
+version = "0.1.0";
 changeLog = [
+    {
+        version: '0.1.0.20260116',
+        changes: [
+            'NEW: Implemented automatic saving and loading of flight plans to/from localStorage.',
+            'NEW: Loaded plans are now fully actionable, including "Switch End to Start" functionality.',
+            'UPD: Saved plan data is automatically pruned to include only the main path and its immediate neighbors, significantly reducing localStorage footprint.',
+            'FIX: Corrected UI update timing to ensure the text area is populated correctly when dialog is opened after a plan is loaded.',
+            'FIX: Ensured map layers are programmatically enabled when a plan is loaded to guarantee visibility.',
+        ],
+    },
     {
         version: '0.0.2.20260116',
         changes: [
@@ -158,6 +168,12 @@ function wrapper(plugin_info) {
         console.time("update Layer Time");
         self.updateLayer();
         console.timeEnd("update Layer Time");
+
+        // Save plan to localStorage
+        const planJson = self.getPlanAsJson();
+        if (planJson) {
+            localStorage.setItem('drone-flight-plan-autosave', JSON.stringify(planJson));
+        }
     }
 
     self.findMinimumCostPath = function (graph) {
@@ -401,32 +417,65 @@ function wrapper(plugin_info) {
         return message;
     }
 
-    self.exportPlanAsJson = function () {
-        if (!self.plan || !self.plan.furthestPath) {
-            alert("No plan to export.");
-            return;
+    self.getPlanAsJson = function () {
+        if (!self.plan || !self.plan.furthestPath || !self.graph) {
+            return null;
         }
 
-        let portalsData = {};
-        self.plan.furthestPath.forEach(guid => {
-            let portal = self.allPortals[guid];
+        // --- START OF NEW PRUNING LOGIC ---
+        const portalsToKeepDetails = {};
+        const prunedGraph = {};
+
+        // 1. Get the set of portals on the main path
+        const furthestPathSet = new Set(self.plan.furthestPath);
+
+        // 2. Find all portal GUIDs to keep: main path + their direct neighbors
+        const guidsToKeep = new Set(self.plan.furthestPath);
+        for (const pathPortalGuid of furthestPathSet) {
+            if (self.graph[pathPortalGuid]) {
+                self.graph[pathPortalGuid].forEach(neighborGuid => {
+                    guidsToKeep.add(neighborGuid);
+                });
+            }
+        }
+
+        // 3. Build the pruned graph and the portal details dictionary for ONLY the kept portals
+        for (const guid of guidsToKeep) {
+            // Copy the connections for the kept portal, but only keep links to other kept portals
+            if (self.graph[guid]) {
+                prunedGraph[guid] = self.graph[guid].filter(neighbor => guidsToKeep.has(neighbor));
+            }
+
+            // Copy the portal details for the kept portal
+            let portal = window.portals[guid] || self.allPortals[guid];
             if (portal) {
                 let latLng = self.getLatLng(guid);
-                portalsData[guid] = {
+                portalsToKeepDetails[guid] = {
                     name: portal.options.data.title,
                     lat: latLng.lat,
                     lng: latLng.lng
                 };
             }
-        });
+        }
+        // --- END OF NEW PRUNING LOGIC ---
 
         const planJson = {
             name: "Drone Flight Plan",
             version: "1.0",
             startPortalGuid: self.startPortal.guid,
-            path: self.plan.furthestPath,
-            portals: portalsData
+            path: self.plan.furthestPath, // The path itself remains the same
+            graph: prunedGraph, // Use the PRUNED graph
+            portals: portalsToKeepDetails // Use the PRUNED portal list
         };
+        return planJson;
+    };
+
+    self.exportPlanAsJson = function () {
+        const planJson = self.getPlanAsJson();
+        if (!planJson) {
+            alert("No plan to export.");
+            return;
+        }
 
         const jsonString = JSON.stringify(planJson, null, 2);
         const blob = new Blob([jsonString], { type: 'application/json' });
@@ -439,6 +488,59 @@ function wrapper(plugin_info) {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+    };
+
+    self.loadPlan = function (planJson) {
+        try {
+            // Basic validation
+            if (!planJson.version || !planJson.startPortalGuid || !planJson.path || !planJson.portals) {
+                console.warn('Drone Planner: Invalid plan format in storage.');
+                return;
+            }
+
+            // Clear current plan
+            self.clearLayers();
+            self.plan = null;
+            self.graph = {}; // Clear graph initially
+
+            // Load portal data from JSON into self.allPortals
+            for (const guid in planJson.portals) {
+                if (!window.portals[guid] && !self.allPortals[guid]) { // Only add if not already present
+                    const portalData = planJson.portals[guid];
+                    self.allPortals[guid] = {
+                        options: {
+                            data: {
+                                title: portalData.name,
+                                latE6: portalData.lat * 1e6,
+                                lngE6: portalData.lng * 1e6
+                            }
+                        }
+                    };
+                }
+            }
+
+            self.startPortal = { guid: planJson.startPortalGuid };
+            self.plan = { furthestPath: planJson.path };
+
+            // Load the graph if it exists in the saved data
+            if (planJson.graph) {
+                self.graph = planJson.graph;
+            }
+
+            // Programmatically enable layers before drawing
+            if (self.linksLayerGroup && !window.map.hasLayer(self.linksLayerGroup)) {
+                window.map.addLayer(self.linksLayerGroup);
+            }
+            if (self.fieldsLayerGroup && !window.map.hasLayer(self.fieldsLayerGroup)) {
+                window.map.addLayer(self.fieldsLayerGroup);
+            }
+
+            self.drawLayer(); // Directly draw on map without updating dialog UI
+            console.log('Drone Planner: Loaded plan from storage.');
+
+        } catch (err) {
+            console.error('Drone Planner: Failed to load plan.', err);
+        }
     };
 
     self.importPlanFromJson = function () {
@@ -595,6 +697,20 @@ function wrapper(plugin_info) {
                 self.updateLayer();
             }, 1);
         });
+
+        // Load plan from localStorage on startup
+        setTimeout(function() {
+            const savedPlan = localStorage.getItem('drone-flight-plan-autosave');
+            if (savedPlan) {
+                try {
+                    const planJson = JSON.parse(savedPlan);
+                    self.loadPlan(planJson);
+                } catch (e) {
+                    console.error('Drone Planner: Failed to parse saved plan from localStorage', e);
+                    localStorage.removeItem('drone-flight-plan-autosave'); // Clear corrupted data
+                }
+            }
+        }, 1000); // 1-second delay to ensure IITC is fully loaded
     };
 
     self.clearLayers = function () {
@@ -816,6 +932,12 @@ function wrapper(plugin_info) {
                 width: '40%',
                 minHeight: 460,
             });
+
+            // If a plan was loaded from localStorage, update the UI now that it exists.
+            if (self.plan) {
+                self.updateLayer();
+            }
+
             self.attachEventHandler();
             $('#dialog-hcf-plan-view').css("height", "370px");
         }
