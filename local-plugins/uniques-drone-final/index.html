@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC Plugin: Uniques Tools</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Coda', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+             font-size: 1.2em;
+             color: #ffce00;
+        }
+        p, li {
+            color: #ccc;
+        }
+        strong {
+            color: #ffce00;
+        }
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .note strong {
+            color: #ffce00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index_zh-cn.html">中文</a>
+    </div>
+
+    <div class="container">
+        <h1>Uniques Tools</h1>
+	
+
+        <p><strong>Uniques Tools</strong> is an enhanced version of the standard "Uniques" plugin built into IITC-CE. It expands upon the original's functionality to provide agents with more powerful and detailed tracking of their portal history.</p>
+        <p>The original plugin's purpose is to help agents track which portals they have <strong>visited</strong> and <strong>captured</strong>. This plugin takes that concept to the next level.</p>
+
+        <h2>New Features</h2>
+        <ul>
+            <li>
+                <h3>Full Drone Support</h3>
+                <p>Track portals visited via Drone View. The plugin automatically remembers the last 3 drone locations, displays special markers on the map (last, previous, oldest), and allows you to quickly jump to the last location using the "Find Last Location" button. Additionally, <strong>a 550m drone range circle is drawn around the currently selected portal</strong>, providing a visual guide for maximum flight distance.</p>
+            </li>
+            <li>
+                <h3>Scout Controller Tracking</h3>
+                <p>A new "Scanned" status to manually track portals you have scout controlled. This helps in planning and tracking for the Scout Controller medal.</p>
+            </li>
+            <li>
+                <h3>Import Official History</h3>
+                <p>A powerful feature to import your visited, captured, and scanned history directly from Ingress's official data for all portals currently in view. Access it via the "Uniques Tools" dialog.</p>
+            </li>
+            <li>
+                <h3>Enhanced Highlighting</h3>
+                <p>A more detailed and clear color scheme for the map highlighter:</p>
+                <ul>
+                    <li><code>Red</code>: Unvisited</li>
+                    <li><code>Yellow</code>: Scout Controlled (but not visited/captured)</li>
+                    <li><code>Cyan</code>: Drone Visited (but not visited/captured)</li>
+                    <li><code>Purple</code>: Visited (but not captured)</li>
+                    <li><code>No Highlight</code>: Captured</li>
+                </ul>
+            </li>
+             <li>
+                <h3>Centralized Tools Dialog</h3>
+                <p>A convenient "Uniques Tools" button in the IITC toolbox provides access to all major functions like importing history and managing drone data.</p>
+            </li>
+        </ul>
+
+        <h2>How to Use</h2>
+        <h3>Portal Details Panel</h3>
+        <p>When you select a portal, you will see four checkboxes below the portal image: <code>Visited</code>, <code>Captured</code>, <code>Scanned</code>, and <code>Drone</code>. Simply check the appropriate box to manually update its status. The data is saved locally and can be synced if you use the "Sync" plugin.</p>
+
+        <h3>"Uniques Tools" Dialog</h3>
+        <p>Find the "Uniques Tools" button in the IITC toolbox on the right. Clicking it opens a dialog where you can:</p>
+        <ul>
+            <li><strong>Import History:</strong> Click this to update your local data with official game history for portals in the current view.</li>
+            <li><strong>Clear Drone History:</strong> Removes all drone location markers and history data.</li>
+            <li><strong>Find Last Location:</strong> Pans and zooms the map to the most recent portal visited by your drone.</li>
+        </ul>
+
+        <div class="note">
+            <p><strong>Important Note:</strong> This plugin is a replacement for the stock "Uniques" plugin. To avoid conflicts and duplicate UI elements, it is <strong>highly recommended</strong> to disable the built-in "Uniques" plugin from the IITC Settings panel (Layers -> Highlighter -> Uniques). Our plugin will display a warning and turn its toolbox button red if it detects the stock plugin is also active.</p>
+        </div>
+
+        <h2>Changelog</h2>
+        <div class="changelog-entry">
+            <h3>Version 1.6.0</h3>
+            <ul>
+                <li>NEW: Added a 550m drone range circle around the selected portal to visualize max flight distance.</li>
+                <li>UPD: Added a descriptive note for the new feature in the "Uniques Tools" dialog.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 1.5.1</h3>
+            <ul>
+                <li>NEW: Added a "Find Last Location" button to the Uniques Tools dialog to zoom to the last drone-visited portal.</li>
+                <li>FIX: Corrected the zoom-to-portal logic to be more reliable by using portal details API for off-screen portals.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 1.5.0</h3>
+            <ul>
+                <li>NEW: Drone location history now tracks the last 3 visited portals.</li>
+                <li>NEW: Added separate markers for the 2nd and 3rd most recent drone locations.</li>
+                <li>NEW: Drone location history is now synchronized across devices.</li>
+                <li>FIX: Refactored drone location sync logic to prevent plugin crashes.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 1.4.1</h3>
+            <ul>
+                <li>FIX: Shortened the warning message for stock "Uniques" plugin conflict to improve dialog aesthetics.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 1.4.0</h3>
+            <ul>
+                <li>NEW: Added Drone Location Marker feature.</li>
+                <li>NEW: Marker is automatically set when "Drone" checkbox is checked.</li>
+                <li>NEW: Marker is persistent across sessions (local storage).</li>
+                <li>NEW: Marker can be manually removed via "Uniques Tools" dialog.</li>
+                <li>FIX: Resolved issue where stock "Uniques" plugin caused duplicate UI elements on mobile.</li>
+                <li>FIX: Added a warning and visual indicator (red toolbox button) if the stock "Uniques" plugin is active.</li>
+                <li>FIX: Addressed critical bug that caused the plugin to fail loading and the toolbox button to be missing.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 1.3.0</h3>
+            <ul>
+                <li>UPD: Renamed plugin to "Uniques Tools" and updated description.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 1.2.0</h3>
+            <ul>
+                <li>UPD: Refactored "Import History" button into a "Uniques Tools" dialog.</li>
+                <li>FIX: Moved the toolbox button to a more appropriate location using the correct API.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 1.1.0</h3>
+            <ul>
+                <li>NEW: Added full support for "Scanned" (Scout Controlled) status and an "Import from Official History" feature.</li>
+                <li>UPD: Reworked map highlighter color scheme and priority for all states to align with Niantic standards where possible.</li>
+                <li>FIX: Corrected a subtle syntax error in a helper function that caused the entire script to fail parsing in Tampermonkey.</li>
+                <li>FIX: Ensured all internal feature names (highlighter, storage keys, sync tasks, hooks) are unique to prevent conflicts.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 1.0.0</h3>
+            <ul>
+                <li>NEW: Complete rewrite to add Drone support and initial standalone plugin functionality.</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>

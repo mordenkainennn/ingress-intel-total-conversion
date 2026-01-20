@@ -31,7 +31,6 @@ node_modules
 .idea/uiDesigner.xml
 
 # Ignored files as per user request
-local-plugins/uniques-drone-final/index.html
-local-plugins/uniques-drone-final/index_zh-cn.html
+
 local-plugins/homogeneous-fields/button-issue.md
 local-plugins/homogeneous-fields/issue.md

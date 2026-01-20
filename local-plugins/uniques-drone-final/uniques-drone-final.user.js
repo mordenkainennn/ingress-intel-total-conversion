@@ -38,13 +38,6 @@ function wrapper(plugin_info) {
             ],
         },
         {
-            version: '1.6.0',
-            changes: [
-                'NEW: Added a 550m drone range circle around the selected portal to visualize max flight distance.',
-                'UPD: Added a descriptive note for the new feature in the "Uniques Tools" dialog.',
-            ],
-        },
-        {
             version: '1.5.1',
             changes: [
                 'NEW: Added a "Find Last Location" button to the Uniques Tools dialog to zoom to the last drone-visited portal.',
