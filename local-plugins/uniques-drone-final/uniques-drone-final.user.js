@@ -3,7 +3,7 @@
 // @author         3ch01c, mordenkainennn
 // @name           Uniques Tools
 // @category       Misc
-// @version        1.5.1
+// @version        1.6.0
 // @description    Modified version of the stock Uniques plugin to add support for Drone view, manual entry, and import of portal history.
 // @id             uniques-drone-final
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -30,6 +30,20 @@ function wrapper(plugin_info) {
     /* exported setup, changelog --eslint */
 
     var changelog = [
+        {
+            version: '1.6.0',
+            changes: [
+                'NEW: Added a 550m drone range circle around the selected portal to visualize max flight distance.',
+                'UPD: Added a descriptive note for the new feature in the "Uniques Tools" dialog.',
+            ],
+        },
+        {
+            version: '1.6.0',
+            changes: [
+                'NEW: Added a 550m drone range circle around the selected portal to visualize max flight distance.',
+                'UPD: Added a descriptive note for the new feature in the "Uniques Tools" dialog.',
+            ],
+        },
         {
             version: '1.5.1',
             changes: [
@@ -149,13 +163,13 @@ function wrapper(plugin_info) {
             if (portal) {
                 // portal is visible on screen
                 window.map.setView(portal.getLatLng(), 17);
-                if(window.selectedPortal !== guid) window.selectPortal(guid);
+                if (window.selectedPortal !== guid) window.selectPortal(guid);
             } else {
                 // portal not on screen, request details
-                window.portalDetail.request(guid).then(function(details) {
+                window.portalDetail.request(guid).then(function (details) {
                     if (details) {
-                         window.map.setView([details.latE6/1E6, details.lngE6/1E6], 17);
-                         if(window.selectedPortal !== guid) window.selectPortal(guid);
+                        window.map.setView([details.latE6 / 1E6, details.lngE6 / 1E6], 17);
+                        if (window.selectedPortal !== guid) window.selectPortal(guid);
                     }
                 });
             }
@@ -174,7 +188,7 @@ function wrapper(plugin_info) {
                 self.drawDroneMarker(portal, index);
             } else {
                 // if portal details are not available, request them
-                window.portalDetail.request(guid).then(function() {
+                window.portalDetail.request(guid).then(function () {
                     var p = window.portals[guid];
                     if (p) self.drawDroneMarker(p, index);
                 });
@@ -210,6 +224,29 @@ function wrapper(plugin_info) {
         }
         $('#portaldetails > .imgpreview').after(self.contentHTML);
         self.updateCheckedAndHighlight(window.selectedPortal);
+
+        // --- NEW DRONE RANGE CIRCLE LOGIC ---
+        if (self.droneRangeLayer) {
+            self.droneRangeLayer.clearLayers(); // Always clear previous circles
+        }
+
+        if (window.selectedPortal) {
+            var portal = window.portals[window.selectedPortal];
+            if (portal) {
+                var latlng = portal.getLatLng();
+                var circle = L.circle(latlng, {
+                    radius: 550, // 550 meters
+                    color: 'cyan', // Visible drone color
+                    fillColor: 'cyan',
+                    fillOpacity: 0.1,
+                    weight: 2,
+                    interactive: false,
+                    title: 'Drone Max Range (550m)'
+                });
+                circle.addTo(self.droneRangeLayer);
+            }
+        }
+        // --- END NEW DRONE RANGE CIRCLE LOGIC ---
     };
 
     self.updateCheckedAndHighlight = function (guid) {
@@ -424,6 +461,7 @@ function wrapper(plugin_info) {
 
         var html = '<div class="uniques-tools-dialog" style="text-align: center;">' +
             warningHTML +
+            '<p style="margin: 5px 0 10px;">Select a portal on the map to display a 550m drone range circle.</p>' +
             '<button type="button" class="import-history" style="margin: 5px;">Import History</button>' +
             '<button type="button" class="clear-drone-history" style="margin: 5px;">Clear Drone History</button>' +
             '<br>' +
@@ -541,6 +579,10 @@ function wrapper(plugin_info) {
 
         self.droneLayer = new L.LayerGroup();
         window.addLayerGroup('Drone Location', self.droneLayer, true);
+
+        // Add a new layer group for the drone range circle
+        self.droneRangeLayer = new L.LayerGroup();
+        window.addLayerGroup('Drone Range (550m)', self.droneRangeLayer, true);
 
         // Add a hook to draw markers when portal details are loaded
         window.addHook('portalAdded', function (data) {
