@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC 插件: Player Activity Log</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', 'Noto Sans SC', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Coda', 'Noto Sans SC', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+             font-size: 1.2em;
+             color: #ffce00;
+        }
+        p, li {
+            color: #ccc;
+        }
+        strong {
+            color: #ffce00;
+        }
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 8px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .note strong {
+            color: #ffce00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index.html">English</a>
+    </div>
+
+    <div class="container">
+        <h1>玩家活动日志 (Player Activity Log)</h1>
+
+        <p>该插件监控公共COMM信息，以记录您当前地图视野内的玩家活动。它能捕获如占领、部署、连接和建立控制场等行为，然后将这些信息存储在本地供您审阅。</p>
+        <p>这是一个用于追踪特工行为、监控区域动态以及随时间收集情报的强大工具。</p>
+
+        <h2>功能特性</h2>
+        <ul>
+            <li>
+                <h3>自动活动记录</h3>
+                <p>被动监听公共COMM频道并解析事件。它会自动忽略MACHINA的活动，只记录反抗军和启蒙军特工的行为。</p>
+            </li>
+            <li>
+                <h3>交互式日志查看器</h3>
+                <p>一个从工具箱启动的综合对话框，作为您的活动仪表板。它包含一个可排序的所有已记录玩家列表，以及所选玩家的详细活动流。</p>
+            </li>
+            <li>
+                <h3>详细信息展示</h3>
+                <p>每个日志条目都包括玩家名称、阵营、活动类型（例如，占领、部署）、Portal名称和精确的时间戳。点击日志中的Portal名称，地图将以其为中心显示。</p>
+            </li>
+            <li>
+                <h3>日志管理控制</h3>
+                <p>查看器包含强大的数据管理工具：</p>
+                <ul>
+                    <li><strong>暂停/继续记录:</strong> 临时停止或重新开始记录过程。</li>
+                    <li><strong>导出为CSV:</strong> 将所有记录的活动下载为CSV文件，用于备份或外部数据分析。</li>
+                    <li><strong>清除数据:</strong> 您可以删除单个玩家的日志，或清空整个数据库。</li>
+                </ul>
+            </li>
+            <li>
+                <h3>本地存储</h3>
+                <p>所有数据都直接存储在您浏览器的localStorage中，确保在不同会话之间数据能够持久化，无需外部服务器。</p>
+            </li>
+        </ul>
+
+        <h2>如何使用</h2>
+        <ol style="padding-left: 30px;">
+            <li>点击IITC工具箱中的 <strong>"Activity Log"</strong> 链接，打开主查看器。</li>
+            <li>对话框将会出现，左侧显示玩家列表。每个名字旁边的数字表示其被记录的活动数量。</li>
+            <li>点击一个玩家的名字，即可在右侧查看其详细的活动流，按时间从新到旧排序。</li>
+            <li>要删除单个玩家的数据，请将鼠标悬停在列表中的玩家名称上，然后点击出现的 <strong>&times;</strong> 图标。</li>
+            <li>使用对话框顶部的按钮来<strong>暂停/继续</strong>记录、<strong>导出CSV</strong>或<strong>全部清除</strong>数据。</li>
+        </ol>
+
+        <div class="note">
+            <p><strong>重要提示:</strong> 所有活动数据都存储在您的浏览器本地。它<strong>不会</strong>在设备或账户间同步。如果您清除了浏览器的网站数据，此日志将被永久删除。请定期使用“导出CSV”功能来备份重要数据。</p>
+        </div>
+
+        <h2>更新日志</h2>
+        <div class="changelog-entry">
+            <h3>版本 0.7.3</h3>
+            <ul>
+                <li>修复: 恢复了标准的IITC包装器注入，以解决工具箱链接丢失的问题。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>版本 0.7.0</h3>
+            <ul>
+                <li>修复: 恢复到旧版插件结构，以永久修复工具箱链接有时无法加载的问题。</li>
+                <li>新增: 确保所有功能（暂停、删除、导出）在结构更改后得以保留。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>版本 0.6.0</h3>
+            <ul>
+                <li>新增: 支持从玩家列表中删除特定玩家的数据。</li>
+                <li>更新: 完全重新设计了日志查看器界面，以获得更好的可用性和现代化的外观。</li>
+                <li>更新: 玩家列表现在按字母顺序排序。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>版本 0.5.0</h3>
+            <ul>
+                <li>新增: 添加了“暂停/继续记录”、“导出为CSV”和“全部清除”功能。</li>
+                <li>更新: 改进了解析逻辑，以正确识别更多活动类型。</li>
+            </ul>
+        </div>
+         <div class="changelog-entry">
+            <h3>版本 0.4.0</h3>
+            <ul>
+                <li>新增: 初版发布。提供对占领、部署和连接的基础日志记录。</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>

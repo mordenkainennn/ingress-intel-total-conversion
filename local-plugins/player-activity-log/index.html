@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC Plugin: Player Activity Log</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Coda', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+             font-size: 1.2em;
+             color: #ffce00;
+        }
+        p, li {
+            color: #ccc;
+        }
+        strong {
+            color: #ffce00;
+        }
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .note strong {
+            color: #ffce00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index_zh-cn.html">中文</a>
+    </div>
+
+    <div class="container">
+        <h1>Player Activity Log</h1>
+
+        <p>This plugin monitors public COMM messages to log player activities within your current map view. It captures actions like captures, deployments, links, and fields, then stores them locally for review.</p>
+        <p>It's a powerful tool for tracking agent actions, monitoring regional activity, and gathering intelligence over time.</p>
+
+        <h2>Features</h2>
+        <ul>
+            <li>
+                <h3>Automatic Activity Logging</h3>
+                <p>Passively listens to the public COMM channel and parses events. It automatically ignores MACHINA activity and only records actions from Resistance and Enlightened agents.</p>
+            </li>
+            <li>
+                <h3>Interactive Log Viewer</h3>
+                <p>A comprehensive dialog, launched from the toolbox, serves as your activity dashboard. It features a sortable list of all logged players and a detailed activity feed for the selected player.</p>
+            </li>
+            <li>
+                <h3>Detailed Information</h3>
+                <p>Each log entry includes the player's name, faction, the type of activity (e.g., captured, deployed), the portal name, and a precise timestamp. Clicking a portal name in the log will center it on your map.</p>
+            </li>
+            <li>
+                <h3>Log Management Controls</h3>
+                <p>The viewer includes powerful tools to manage your data:</p>
+                <ul>
+                    <li><strong>Pause/Resume Logging:</strong> Temporarily stop or restart the logging process.</li>
+                    <li><strong>Export to CSV:</strong> Download all logged activities as a CSV file for backup or external analysis.</li>
+                    <li><strong>Clear Data:</strong> You can delete logs for a single player or wipe the entire database clean.</li>
+                </ul>
+            </li>
+            <li>
+                <h3>Local Storage</h3>
+                <p>All data is stored directly in your browser's localStorage, ensuring it persists between sessions without needing an external server.</p>
+            </li>
+        </ul>
+
+        <h2>How to Use</h2>
+        <ol style="padding-left: 30px;">
+            <li>Click the <strong>"Activity Log"</strong> link in the IITC toolbox to open the main viewer.</li>
+            <li>The dialog will appear, showing a list of players on the left. The number next to each name indicates the count of their logged activities.</li>
+            <li>Click on a player's name to see their detailed activity feed on the right, sorted from newest to oldest.</li>
+            <li>To delete a single player's data, hover over their name in the list and click the <strong>&times;</strong> icon.</li>
+            <li>Use the buttons at the top of the dialog to <strong>Pause/Resume</strong>, <strong>Export CSV</strong>, or <strong>Clear All</strong> data.</li>
+        </ol>
+
+        <div class="note">
+            <p><strong>Important:</strong> All activity data is stored locally in your browser. It is <strong>not</strong> synced across devices or accounts. If you clear your browser's site data, this log will be permanently erased. Please use the "Export CSV" feature regularly to back up important data.</p>
+        </div>
+
+        <h2>Changelog</h2>
+        <div class="changelog-entry">
+            <h3>Version 0.7.3</h3>
+            <ul>
+                <li>FIX: Restored standard IITC wrapper injection to resolve a missing toolbox link.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 0.7.0</h3>
+            <ul>
+                <li>FIX: Reverted to a legacy plugin structure to permanently fix an issue where the toolbox link would not load correctly.</li>
+                <li>NEW: Ensured all features (pause, delete, export) were retained after the structural change.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 0.6.0</h3>
+            <ul>
+                <li>NEW: Added player-specific data deletion from the player list.</li>
+                <li>UPD: The log viewer UI has been completely redesigned for better usability and a modern look.</li>
+                <li>UPD: Player list is now sorted alphabetically.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 0.5.0</h3>
+            <ul>
+                <li>NEW: Added "Pause/Resume Logging", "Export to CSV", and "Clear All" functionalities.</li>
+                <li>UPD: Improved parsing logic to correctly identify more activity types.</li>
+            </ul>
+        </div>
+         <div class="changelog-entry">
+            <h3>Version 0.4.0</h3>
+            <ul>
+                <li>NEW: Initial release. Basic logging of captures, deploys, and links.</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>

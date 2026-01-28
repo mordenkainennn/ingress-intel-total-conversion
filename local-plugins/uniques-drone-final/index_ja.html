@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC プラグイン: Uniques Tools</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', 'Noto Sans JP', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+            margin: 0 5px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Coda', 'Noto Sans JP', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+             font-size: 1.2em;
+             color: #ffce00;
+        }
+        p, li {
+            color: #ccc;
+        }
+        strong {
+            color: #ffce00;
+        }
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 8px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .note strong {
+            color: #ffce00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index.html">English</a> | <a href="index_zh-cn.html">中文</a>
+    </div>
+
+    <div class="container">
+        <h1>Uniques Tools</h1>
+
+        <p><strong>Uniques Tools</strong> は、IITC-CEに組み込まれている標準プラグイン「Uniques」の強化版です。オリジナルの機能を拡張し、エージェントにポータル履歴のより強力で詳細な追跡機能を提供します。</p>
+        <p>オリジナルプラグインの目的は、エージェントがどのポータルを<strong>訪問したか (visited)</strong>、<strong>キャプチャしたか (captured)</strong> を追跡するのを助けることです。このプラグインはその概念を次のレベルに引き上げます。</p>
+
+        <h2>新機能</h2>
+        <ul>
+            <li>
+                <h3>完全なドローン (Drone) サポート</h3>
+                <p>ドローンビューを介して訪問したポータルを追跡します。プラグインは最後の3つのドローン位置を自動的に記憶し、マップ上に特別なマーカー（最後、前回、最古）を表示し、「最後の位置を検索」ボタンを使用して最後の位置にすばやくジャンプできます。<strong>さらに、現在選択されているポータルの周りに550mのドローン航続範囲円が描画され</strong>、最大飛行距離の視覚的なガイドを提供します。</p>
+            </li>
+            <li>
+                <h3>スカウトコントローラー (Scout Controller) 追跡</h3>
+                <p>スカウトコントロールしたポータルを手動で追跡するための新しい「スキャン済み」 (Scanned) ステータス。これは、スカウトコントローラーメダルの計画と追跡に役立ちます。</p>
+            </li>
+            <li>
+                <h3>公式履歴のインポート</h3>
+                <p>現在表示されているすべてのポータルについて、Ingressの公式データから訪問、キャプチャ、スキャンの履歴を直接インポートする強力な機能。「Uniques Tools」ダイアログからアクセスできます。</p>
+            </li>
+            <li>
+                <h3>強化されたハイライト表示</h3>
+                <p>マップハイライターのための、より詳細で明確なカラースキーム：</p>
+                <ul>
+                    <li><code>赤</code>: 未訪問</li>
+                    <li><code>黄</code>: スキャン済み (訪問/キャプチャはしていない)</li>
+                    <li><code>シアン</code>: ドローンで訪問 (訪問/キャプチャはしていない)</li>
+                    <li><code>紫</code>: 訪問済み (キャプチャはしていない)</li>
+                    <li><code>ハイライトなし</code>: キャプチャ済み</li>
+                </ul>
+            </li>
+             <li>
+                <h3>統合されたツールダイアログ</h3>
+                <p>IITCツールボックス内の便利な「Uniques Tools」ボタンから、履歴のインポートやドローンデータの管理など、すべての主要機能にアクセスできます。</p>
+            </li>
+        </ul>
+
+        <h2>使用方法</h2>
+        <h3>ポータル詳細パネル</h3>
+        <p>ポータルを選択すると、ポータル画像の下に4つのチェックボックスが表示されます：<code>Visited</code> (訪問)、<code>Captured</code> (キャプチャ)、<code>Scanned</code> (スキャン)、<code>Drone</code> (ドローン)。適切なボックスにチェックを入れるだけで、そのステータスを手動で更新できます。データはローカルに保存され、「Sync」プラグインを使用している場合は同期することもできます。</p>
+
+        <h3>「Uniques Tools」ダイアログ</h3>
+        <p>右側のIITCツールボックスで「Uniques Tools」ボタンを見つけます。それをクリックするとダイアログが開き、以下の操作ができます：</p>
+        <ul>
+            <li><strong>Import History (履歴のインポート):</strong> これをクリックして、現在のビュー内のポータルのローカルデータを公式ゲーム履歴で更新します。</li>
+            <li><strong>Clear Drone History (ドローン履歴のクリア):</strong> すべてのドローン位置マーカーと履歴データを削除します。</li>
+            <li><strong>Find Last Location (最後の位置を検索):</strong> マップをパンおよびズームして、ドローンが最後に訪れたポータルに移動します。</li>
+        </ul>
+
+        <div class="note">
+            <p><strong>重要:</strong> このプラグインは、標準の「Uniques」プラグインの代替品です。競合やUI要素の重複を避けるため、IITCの設定パネル (Layers -> Highlighter -> Uniques) で標準の「Uniques」プラグインを無効にすることを<strong>強く推奨します</strong>。このプラグインは、標準プラグインがアクティブであることを検出すると、警告を表示し、ツールボックスのボタンを赤くします。</p>
+        </div>
+
+        <h2>変更履歴</h2>
+        <div class="changelog-entry">
+            <h3>バージョン 1.6.0</h3>
+            <ul>
+                <li>新規: 選択したポータルの周りに550mのドローン航続範囲円を追加し、最大飛行距離を視覚化しました。</li>
+                <li>更新: 「Uniques Tools」ダイアログに新機能の説明を追加しました。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>バージョン 1.5.1</h3>
+            <ul>
+                <li>新規: Uniques Toolsダイアログに「最後の位置を検索」ボタンを追加し、最後にドローンで訪れたポータルにズームできるようにしました。</li>
+                <li>修正: 画面外のポータルに対してポータル詳細APIを使用することで、ポータルへのズームロジックをより信頼性の高いものに修正しました。</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>

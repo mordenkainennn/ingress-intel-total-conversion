@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC プラグイン: Player Activity Log</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', 'Noto Sans JP', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+            margin: 0 5px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Coda', 'Noto Sans JP', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+             font-size: 1.2em;
+             color: #ffce00;
+        }
+        p, li {
+            color: #ccc;
+        }
+        strong {
+            color: #ffce00;
+        }
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 8px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .note strong {
+            color: #ffce00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index.html">English</a> | <a href="index_zh-cn.html">中文</a>
+    </div>
+
+    <div class="container">
+        <h1>プレイヤー活動ログ (Player Activity Log)</h1>
+
+        <p>このプラグインは、公開COMMメッセージを監視し、現在のマップビュー内に表示されるプレイヤーの活動を記録します。キャプチャ、デプロイ、リンク、CF作成などのアクションを捕捉し、レビューのためにローカルに保存します。</p>
+        <p>エージェントの行動追跡、地域活動の監視、および時間経過による情報収集のための強力なツールです。</p>
+
+        <h2>機能</h2>
+        <ul>
+            <li>
+                <h3>活動の自動記録</h3>
+                <p>公開COMMチャンネルをパッシブにリッスンし、イベントを解析します。MACHINAのアクティビティは自動的に無視され、レジスタンスとエンライテンドのエージェントによるアクションのみが記録されます。</p>
+            </li>
+            <li>
+                <h3>インタラクティブなログビューア</h3>
+                <p>ツールボックスから起動する包括的なダイアログが、あなたのアクティビティダッシュボードとして機能します。記録された全プレイヤーのソート可能なリストと、選択したプレイヤーの詳細な活動フィードが特徴です。</p>
+            </li>
+            <li>
+                <h3>詳細情報</h3>
+                <p>各ログエントリには、プレイヤー名、所属陣営、活動タイプ（例：キャプチャ、デプロイ）、ポータル名、正確なタイムスタンプが含まれます。ログ内のポータル名をクリックすると、マップがそのポータルを中心に表示されます。</p>
+            </li>
+            <li>
+                <h3>ログ管理機能</h3>
+                <p>ビューアには、データを管理するための強力なツールが含まれています：</p>
+                <ul>
+                    <li><strong>記録の一時停止/再開:</strong> 記録プロセスを一時的に停止または再開します。</li>
+                    <li><strong>CSVにエクスポート:</strong> 記録されたすべての活動をバックアップや外部での分析のためにCSVファイルとしてダウンロードします。</li>
+                    <li><strong>データ消去:</strong> 特定のプレイヤーのログを削除したり、データベース全体を消去したりすることができます。</li>
+                </ul>
+            </li>
+            <li>
+                <h3>ローカルストレージ</h3>
+                <p>すべてのデータはブラウザのlocalStorageに直接保存され、外部サーバーを必要とせずにセッション間でデータが持続することを保証します。</p>
+            </li>
+        </ul>
+
+        <h2>使用方法</h2>
+        <ol style="padding-left: 30px;">
+            <li>IITCツールボックスの <strong>"Activity Log"</strong> リンクをクリックして、メインビューアを開きます。</li>
+            <li>ダイアログが表示され、左側にプレイヤーのリストが表示されます。各名前の横の数字は、記録された活動の数を示します。</li>
+            <li>プレイヤー名をクリックすると、右側にそのプレイヤーの詳細な活動フィードが新しいものから順に表示されます。</li>
+            <li>特定のプレイヤーのデータを削除するには、リストの名前の上にマウスカーソルを合わせ、表示される <strong>&times;</strong> アイコンをクリックします。</li>
+            <li>ダイアログ上部のボタンを使用して、記録の<strong>一時停止/再開</strong>、<strong>CSVエクスポート</strong>、または<strong>全データ消去</strong>を行います。</li>
+        </ol>
+
+        <div class="note">
+            <p><strong>重要:</strong> すべての活動データはブラウザのローカルに保存されます。デバイスやアカウント間での同期は行われません。ブラウザのサイトデータを消去すると、このログは永久に失われます。重要なデータをバックアップするために、定期的に「CSVエクスポート」機能を使用してください。</p>
+        </div>
+
+        <h2>変更履歴</h2>
+        <div class="changelog-entry">
+            <h3>バージョン 0.7.3</h3>
+            <ul>
+                <li>修正: 標準のIITCラッパーインジェクションを復元し、ツールボックスのリンクが表示されない問題を解決しました。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>バージョン 0.7.0</h3>
+            <ul>
+                <li>修正: ツールボックスのリンクが正しくロードされない問題を恒久的に修正するため、レガシーなプラグイン構造に戻しました。</li>
+                <li>新規: 構造変更後もすべての機能（一時停止、削除、エクスポート）が維持されることを確認しました。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>バージョン 0.6.0</h3>
+            <ul>
+                <li>新規: プレイヤーリストから特定のプレイヤーのデータを削除する機能を追加しました。</li>
+                <li>更新: ログビューアのUIを全面的に再設計し、使いやすさとモダンな外観を向上させました。</li>
+                <li>更新: プレイヤーリストがアルファベット順にソートされるようになりました。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>バージョン 0.5.0</h3>
+            <ul>
+                <li>新規: 「記録の一時停止/再開」、「CSVにエクスポート」、「全データ消去」機能を追加しました。</li>
+                <li>更新: より多くの活動タイプを正しく識別できるように、解析ロジックを改善しました。</li>
+            </ul>
+        </div>
+         <div class="changelog-entry">
+            <h3>バージョン 0.4.0</h3>
+            <ul>
+                <li>新規: 初期リリース。キャプチャ、デプロイ、リンクの基本的な記録機能を提供。</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>
