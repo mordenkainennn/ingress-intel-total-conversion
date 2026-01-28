@@ -2,7 +2,7 @@
 // @id             iitc-plugin-player-activity-log
 // @name           IITC plugin: Player Activity Log
 // @category       Info
-// @version        0.7.1
+// @version        0.7.4
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/player-activity-log/player-activity-log.meta.js
 // @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/player-activity-log/player-activity-log.user.js
@@ -22,6 +22,16 @@ function wrapper(plugin_info) {
     window.plugin.playerActivityLog = function () { };
 
     var changelog = [
+        {
+            version: '0.7.4',
+            changes: [
+                'NEW: Integrated player activity trails feature from player-activity-tracker.',
+                'NEW: Added UI to select and display player movement trails on the map (max 3 players).',
+                'NEW: Added "Draw Trails" and "Clear Trails" buttons to activity log modal.',
+                'FIX: Corrected portal logging for "linked from" activities (records origin portal).',
+                'UPD: Resolved marker display issue by adjusting icon URL handling (removed retina URL for compatibility).',
+            ],
+        },
         {
             version: '0.7.3',
             changes: [
@@ -43,7 +53,14 @@ function wrapper(plugin_info) {
 
     window.plugin.playerActivityLog.STORAGE_KEY = 'player-activity-log';
     window.plugin.playerActivityLog.INITIAL_DISPLAY_COUNT = 20;
+
+    // Constants for trail drawing
+    window.plugin.playerActivityLog.PLAYER_TRAIL_MAX_TIME = 3 * 60 * 60 * 1000;
+    window.plugin.playerActivityLog.PLAYER_TRAIL_MIN_OPACITY = 0.3;
+    window.plugin.playerActivityLog.PLAYER_TRAIL_LINE_COLOUR = '#FF00FD';
+    window.plugin.playerActivityLog.PLAYER_TRAIL_MAX_DISPLAY_EVENTS = 10;
     window.plugin.playerActivityLog.isLoggingEnabled = true;
+    window.plugin.playerActivityLog.playersToTrack = [];
 
     // Helper function for zero-padding
     function pad(number) {
@@ -65,6 +82,36 @@ function wrapper(plugin_info) {
     window.plugin.playerActivityLog.setup = function () {
         window.plugin.playerActivityLog.addCss();
         window.plugin.playerActivityLog.addControl();
+
+        // Setup for trails
+        var iconEnlImage = 'https://gongjupal.com/ingress/images/marker-green.png';
+        // var iconEnlRetImage = 'https://gongjupal.com/ingress/images/marker-green-2x.png';
+        var iconResImage = 'https://gongjupal.com/ingress/images/marker-blue.png';
+        // var iconResRetImage = 'https://gongjupal.com/ingress/images/marker-blue-2x.png';
+
+        window.plugin.playerActivityLog.iconEnl = L.Icon.Default.extend({
+            options: {
+                iconUrl: iconEnlImage,
+                // iconRetinaUrl: iconEnlRetImage,
+            },
+        });
+        window.plugin.playerActivityLog.iconRes = L.Icon.Default.extend({
+            options: {
+                iconUrl: iconResImage,
+                // iconRetinaUrl: iconResRetImage,
+            },
+        });
+
+        window.plugin.playerActivityLog.drawnTracesEnl = new L.LayerGroup();
+        window.plugin.playerActivityLog.drawnTracesRes = new L.LayerGroup();
+        if (window.PLAYER.team === 'RESISTANCE') {
+            window.layerChooser.addOverlay(window.plugin.playerActivityLog.drawnTracesRes, 'Player Trails (RES)');
+            window.layerChooser.addOverlay(window.plugin.playerActivityLog.drawnTracesEnl, 'Player Trails (ENL)');
+        } else {
+            window.layerChooser.addOverlay(window.plugin.playerActivityLog.drawnTracesEnl, 'Player Trails (ENL)');
+            window.layerChooser.addOverlay(window.plugin.playerActivityLog.drawnTracesRes, 'Player Trails (RES)');
+        }
+
         // Setup the hook for chat data
         window.addHook('publicChatDataAvailable', window.plugin.playerActivityLog.handleCommData);
     };
@@ -101,6 +148,7 @@ function wrapper(plugin_info) {
             .activity-log-player-item:hover { background-color: #313235; }
             .activity-log-player-item.selected { background-color: #4CAF50; color: white; }
             .activity-log-player-item .player-name-container { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .activity-log-player-item .trail-checkbox { margin-right: 8px; vertical-align: middle; }
             .remove-player-icon { display: none; padding: 0 5px; color: #ff8888; font-weight: bold; }
             .activity-log-player-item:hover .remove-player-icon { display: inline; }
             .remove-player-icon:hover { color: #ff0000; }
@@ -125,6 +173,8 @@ function wrapper(plugin_info) {
                     <div class="activity-log-modal-header">
                         <h2>Player Activity Log</h2>
                         <div class="activity-log-header-buttons">
+                            <button class="activity-log-header-button" id="activity-log-draw-trails">Draw Trails</button>
+                            <button class="activity-log-header-button" id="activity-log-clear-trails">Clear Trails</button>
                             <button class="activity-log-header-button" id="activity-log-toggle-logging"></button>
                             <button class="activity-log-header-button" id="activity-log-export">Export CSV</button>
                             <button class="activity-log-header-button clear-all" id="activity-log-clear">Clear All</button>
@@ -133,7 +183,16 @@ function wrapper(plugin_info) {
                     </div>
                     <div class="activity-log-modal-body">
                         <div class="activity-log-player-list"></div>
-                        <div class="activity-log-details"><p>Select a player to view their activity.</p><br><p style="color:#ffce00;">Note: Data is volatile. Please export it regularly!</p></div>
+                        <div class="activity-log-details">
+                        <p>Select a player to view their activity.</p>
+                        <br>
+                        <p style="color:#ffce00;">Note: Data is volatile. Please export it regularly!</p>
+                        <br>
+                        <p style="color:#F88; font-style:italic;">
+                            Reminder: The 'Draw Trails' feature may conflict with the official 'Player activity tracker' plugin.
+                            For best results, please disable the official plugin from the layer chooser while using trails here.
+                        </p>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -153,6 +212,28 @@ function wrapper(plugin_info) {
             var teamClass = (player.team && player.team.toUpperCase() === 'RESISTANCE') ? 'res' : 'enl';
             var itemCount = player.activities ? player.activities.length : 0;
             var playerDiv = $(`<div class="activity-log-player-item" data-player="${name}"></div>`);
+
+            var checkbox = $(`<input type="checkbox" class="trail-checkbox" title="Track this player on map">`);
+            checkbox.prop('checked', window.plugin.playerActivityLog.playersToTrack.includes(name));
+            checkbox.on('click', function(e) {
+                e.stopPropagation(); // prevent player log from opening
+                var checked = $(this).prop('checked');
+                var currentTracked = window.plugin.playerActivityLog.playersToTrack;
+                if (checked) {
+                    if (currentTracked.length >= 3) {
+                        alert('You can only track up to 3 players at a time.');
+                        $(this).prop('checked', false);
+                    } else {
+                        currentTracked.push(name);
+                    }
+                } else {
+                    var index = currentTracked.indexOf(name);
+                    if (index > -1) {
+                        currentTracked.splice(index, 1);
+                    }
+                }
+            });
+
             var nameSpan = $(`<span class="player-name-container"><span class="${teamClass}">${name}</span> (${itemCount})</span>`);
             var removeIcon = $('<span class="remove-player-icon" title="Delete this player\'s logs">&times;</span>');
 
@@ -161,13 +242,28 @@ function wrapper(plugin_info) {
                 window.plugin.playerActivityLog.removePlayerData(name);
             });
 
-            playerDiv.append(nameSpan).append(removeIcon);
+            playerDiv.append(checkbox).append(nameSpan).append(removeIcon);
             playerDiv.on('click', function () {
                 $('.activity-log-player-item.selected').removeClass('selected');
                 $(this).addClass('selected');
                 window.plugin.playerActivityLog.renderPlayerLog(name, logData);
             });
             playerListContainer.append(playerDiv);
+        });
+
+        $('#activity-log-draw-trails').on('click', function() {
+            if (window.plugin.playerActivityLog.drawPlayerTrails) {
+                window.plugin.playerActivityLog.drawPlayerTrails();
+            } else {
+                console.warn('drawPlayerTrails function not yet implemented');
+            }
+        });
+        $('#activity-log-clear-trails').on('click', function() {
+            if (window.plugin.playerActivityLog.clearAllTrails) {
+                window.plugin.playerActivityLog.clearAllTrails();
+            } else {
+                console.warn('clearAllTrails function not yet implemented');
+            }
         });
 
         $('#activity-log-toggle-logging').on('click', window.plugin.playerActivityLog.toggleLogging);
@@ -321,10 +417,10 @@ function wrapper(plugin_info) {
                         playerTeam = markup[1].team;
                         break;
                     case 'PORTAL':
-                        portalName = markup[1].name;
-                        portalAddress = markup[1].address;
-                        portalLat = markup[1].latE6 / 1E6;
-                        portalLng = markup[1].lngE6 / 1E6;
+                        portalName = portalName ? portalName : markup[1].name;
+                        portalAddress = portalAddress ? portalAddress : markup[1].address;
+                        portalLat = portalLat ? portalLat : markup[1].latE6 / 1E6;
+                        portalLng = portalLng ? portalLng : markup[1].lngE6 / 1E6;
                         break;
                 }
             });
@@ -354,6 +450,151 @@ function wrapper(plugin_info) {
         activities.sort((a, b) => b.time - a.time);
         localStorage.setItem(window.plugin.playerActivityLog.STORAGE_KEY, JSON.stringify(log));
     };
+
+    window.plugin.playerActivityLog.clearAllTrails = function () {
+        window.plugin.playerActivityLog.drawnTracesEnl.clearLayers();
+        window.plugin.playerActivityLog.drawnTracesRes.clearLayers();
+    };
+
+    window.plugin.playerActivityLog.getDrawnTracesByTeam = function (team) {
+        return team.toUpperCase() === 'RESISTANCE' ? window.plugin.playerActivityLog.drawnTracesRes : window.plugin.playerActivityLog.drawnTracesEnl;
+    };
+
+    window.plugin.playerActivityLog.getPortalLinkFromActivity = function (act) {
+        var position = [act.portal.lat, act.portal.lng];
+        return $('<a>')
+            .addClass('text-overflow-ellipsis')
+            .css('max-width', '15em')
+            .text(act.portal.name)
+            .prop({
+                title: act.portal.name,
+                href: window.makePermalink(position),
+            })
+            .click(function (event) {
+                window.selectPortalByLatLng(position);
+                event.preventDefault();
+                return false;
+            });
+    };
+
+    window.plugin.playerActivityLog.drawPlayerTrails = function () {
+        var plugin = window.plugin.playerActivityLog;
+        plugin.clearAllTrails();
+
+        var playersToDraw = plugin.playersToTrack;
+        if (playersToDraw.length === 0) {
+            return;
+        }
+
+        var logData = JSON.parse(localStorage.getItem(plugin.STORAGE_KEY) || '{}');
+        var now = Date.now();
+        var isTouchDev = window.isTouchDevice();
+
+        playersToDraw.forEach(function(playerName) {
+            var playerData = logData[playerName];
+            if (!playerData || !playerData.activities || playerData.activities.length === 0) {
+                return; // No data for this player
+            }
+
+            // IMPORTANT: `player-activity-tracker` expects events sorted oldest to newest to draw lines.
+            // Our stored activities are sorted newest to oldest. So we reverse a copy.
+            var playerEvents = [...playerData.activities].reverse();
+
+            // --- Adapted Polyline Logic ---
+            var polyLineByAge = [[], [], [], []];
+            var split = plugin.PLAYER_TRAIL_MAX_TIME / 4;
+
+            for (let i = 1; i < playerEvents.length; i++) {
+                var p = playerEvents[i];
+                // We could also filter by time here if we want to respect MAX_TIME strictly
+                var ageBucket = Math.min(Math.trunc((now - p.time) / split), 4 - 1);
+                var line = [
+                    [p.portal.lat, p.portal.lng],
+                    [playerEvents[i - 1].portal.lat, playerEvents[i - 1].portal.lng]
+                ];
+                polyLineByAge[ageBucket].push(line);
+            }
+
+            // --- Draw Polylines ---
+            polyLineByAge.forEach((polyLine, i) => {
+                if (polyLine.length === 0) return;
+                var opts = {
+                    weight: 2 - 0.25 * i,
+                    color: plugin.PLAYER_TRAIL_LINE_COLOUR,
+                    interactive: false,
+                    opacity: 1 - 0.2 * i,
+                    dashArray: '5,8',
+                };
+                L.polyline(polyLine, opts).addTo(plugin.getDrawnTracesByTeam(playerData.team));
+            });
+
+            // --- Adapted Marker Logic ---
+            var lastEvent = playerEvents[playerEvents.length - 1];
+            if (!lastEvent) return;
+
+            const ago = IITC.utils.formatAgo;
+            var tooltip = isTouchDev ? '' : playerName + ', ' + ago(lastEvent.time, now) + ' ago';
+
+            // Popup
+            var popup = $('<div>').addClass('plugin-player-tracker-popup'); // Consider reusing CSS from player-tracker
+            $('<span>')
+                .addClass('nickname ' + (playerData.team.toUpperCase() === 'RESISTANCE' ? 'res' : 'enl'))
+                .css('font-weight', 'bold')
+                .text(playerName)
+                .appendTo(popup);
+
+            popup.append('<br>')
+                .append(document.createTextNode(ago(lastEvent.time, now)))
+                .append('<br>')
+                .append(plugin.getPortalLinkFromActivity(lastEvent));
+
+            if (playerEvents.length >= 2) {
+                popup.append('<br><br>').append(document.createTextNode('previous locations:')).append('<br>');
+                var table = $('<table>').appendTo(popup).css('border-spacing', '0');
+                for (let i = playerEvents.length - 2; i >= 0 && i >= playerEvents.length - plugin.PLAYER_TRAIL_MAX_DISPLAY_EVENTS; i--) {
+                    var ev = playerEvents[i];
+                    $('<tr>')
+                        .append($('<td>').text(ago(ev.time, now) + ' ago'))
+                        .append($('<td>').append(plugin.getPortalLinkFromActivity(ev)))
+                        .appendTo(table);
+                }
+            }
+
+            // Marker Opacity
+            var relOpacity = 1 - (now - lastEvent.time) / plugin.PLAYER_TRAIL_MAX_TIME;
+            var absOpacity = plugin.PLAYER_TRAIL_MIN_OPACITY + (1 - plugin.PLAYER_TRAIL_MIN_OPACITY) * relOpacity;
+            if (absOpacity < plugin.PLAYER_TRAIL_MIN_OPACITY) absOpacity = plugin.PLAYER_TRAIL_MIN_OPACITY;
+
+
+            // Marker
+            var icon = playerData.team.toUpperCase() === 'RESISTANCE' ? new plugin.iconRes() : new plugin.iconEnl();
+            var markerPos = [lastEvent.portal.lat, lastEvent.portal.lng];
+            var m = new L.Marker(markerPos, { icon: icon, opacity: absOpacity, title: tooltip });
+
+            // OMS-friendly popup handling
+            m.options.desc = popup[0];
+            m.on('spiderfiedclick', function(e) {
+                if (!plugin.playerPopup) {
+                    plugin.playerPopup = new L.Popup({ offset: new L.Point([1, -34]) });
+                }
+                plugin.playerPopup.setContent(e.target.options.desc);
+                plugin.playerPopup.setLatLng(e.target.getLatLng());
+                window.map.openPopup(plugin.playerPopup);
+            });
+
+
+            if (tooltip) {
+                m.on('mouseout', function () { $(this._icon).tooltip('close'); });
+            }
+
+            m.addTo(plugin.getDrawnTracesByTeam(playerData.team));
+            window.registerMarkerForOMS(m);
+             if (!isTouchDev) {
+                window.setupTooltips($(m._icon));
+            }
+        });
+    };
+
 
     var setup = window.plugin.playerActivityLog.setup;
     setup.info = plugin_info; // Pass info to setup
