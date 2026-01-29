@@ -2,7 +2,7 @@
 // @id             iitc-plugin-player-activity-log
 // @name           IITC plugin: Player Activity Log
 // @category       Info
-// @version        0.7.1
+// @version        0.7.5
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/player-activity-log/player-activity-log.meta.js
 // @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/player-activity-log/player-activity-log.user.js

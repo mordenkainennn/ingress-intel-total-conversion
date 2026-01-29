@@ -2,7 +2,7 @@
 // @id             iitc-plugin-player-activity-log
 // @name           IITC plugin: Player Activity Log
 // @category       Info
-// @version        0.7.4
+// @version        0.7.5
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/player-activity-log/player-activity-log.meta.js
 // @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/player-activity-log/player-activity-log.user.js
@@ -22,6 +22,13 @@ function wrapper(plugin_info) {
     window.plugin.playerActivityLog = function () { };
 
     var changelog = [
+        {
+            version: '0.7.5',
+            changes: [
+                'NEW: Added a search box to filter the player list by name.',
+                'NEW: Added a warning message regarding potential conflicts with the official "Player activity tracker" plugin.'
+            ],
+        },
         {
             version: '0.7.4',
             changes: [
@@ -143,7 +150,9 @@ function wrapper(plugin_info) {
             .activity-log-header-button.paused { background-color: #FBC02D; }
             .activity-log-modal-close { cursor: pointer; font-size: 1.5em; line-height: 1; font-weight: bold; margin-left: 15px; }
             .activity-log-modal-body { display: flex; flex-grow: 1; min-height: 0; }
-            .activity-log-player-list { width: 35%; border-right: 1px solid #444; padding-right: 10px; overflow-y: auto; }
+            .activity-log-player-list-container { width: 35%; border-right: 1px solid #444; padding-right: 10px; display: flex; flex-direction: column; }
+            #player-list-search { width: 100%; box-sizing: border-box; padding: 5px; margin-bottom: 10px; background: #000; color: #eee; border: 1px solid #555; border-radius: 4px; }
+            .activity-log-player-list { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
             .activity-log-player-item { display: flex; justify-content: space-between; align-items: center; padding: 5px; cursor: pointer; border-radius: 4px; }
             .activity-log-player-item:hover { background-color: #313235; }
             .activity-log-player-item.selected { background-color: #4CAF50; color: white; }
@@ -164,118 +173,133 @@ function wrapper(plugin_info) {
         `).appendTo('head');
     };
 
-    window.plugin.playerActivityLog.displayLog = function () {
-        $('.activity-log-modal-backdrop').remove();
-
-        var modal = `
-            <div class="activity-log-modal-backdrop">
-                <div class="activity-log-modal-content">
-                    <div class="activity-log-modal-header">
-                        <h2>Player Activity Log</h2>
-                        <div class="activity-log-header-buttons">
-                            <button class="activity-log-header-button" id="activity-log-draw-trails">Draw Trails</button>
-                            <button class="activity-log-header-button" id="activity-log-clear-trails">Clear Trails</button>
-                            <button class="activity-log-header-button" id="activity-log-toggle-logging"></button>
-                            <button class="activity-log-header-button" id="activity-log-export">Export CSV</button>
-                            <button class="activity-log-header-button clear-all" id="activity-log-clear">Clear All</button>
-                            <span class="activity-log-modal-close">&times;</span>
+        window.plugin.playerActivityLog.displayLog = function () {
+            $('.activity-log-modal-backdrop').remove();
+    
+            var modal = `
+                <div class="activity-log-modal-backdrop">
+                    <div class="activity-log-modal-content">
+                        <div class="activity-log-modal-header">
+                            <h2>Player Activity Log</h2>
+                            <div class="activity-log-header-buttons">
+                                <button class="activity-log-header-button" id="activity-log-draw-trails">Draw Trails</button>
+                                <button class="activity-log-header-button" id="activity-log-clear-trails">Clear Trails</button>
+                                <button class="activity-log-header-button" id="activity-log-toggle-logging"></button>
+                                <button class="activity-log-header-button" id="activity-log-export">Export CSV</button>
+                                <button class="activity-log-header-button clear-all" id="activity-log-clear">Clear All</button>
+                                <span class="activity-log-modal-close">&times;</span>
+                            </div>
+                        </div>
+                        <div class="activity-log-modal-body">
+                            <div class="activity-log-player-list-container">
+                                <input type="text" id="player-list-search" placeholder="Search players..." autocomplete="off">
+                                <div class="activity-log-player-list"></div>
+                            </div>
+                            <div class="activity-log-details">
+                                <p>Select a player to view their activity.</p>
+                                <br>
+                                <p style="color:#ffce00;">Note: Data is volatile. Please export it regularly!</p>
+                                <br>
+                                <p style="color:#F88; font-style:italic;">
+                                    Reminder: The 'Draw Trails' feature may conflict with the official 'Player activity tracker' plugin.
+                                    For best results, please disable the official plugin from the layer chooser while using trails here.
+                                </p>
+                            </div>
                         </div>
                     </div>
-                    <div class="activity-log-modal-body">
-                        <div class="activity-log-player-list"></div>
-                        <div class="activity-log-details">
-                        <p>Select a player to view their activity.</p>
-                        <br>
-                        <p style="color:#ffce00;">Note: Data is volatile. Please export it regularly!</p>
-                        <br>
-                        <p style="color:#F88; font-style:italic;">
-                            Reminder: The 'Draw Trails' feature may conflict with the official 'Player activity tracker' plugin.
-                            For best results, please disable the official plugin from the layer chooser while using trails here.
-                        </p>
-                    </div>
-                    </div>
                 </div>
-            </div>
-        `;
-        $(document.body).append(modal);
-
-        window.plugin.playerActivityLog.updateToggleLoggingButton();
-
-        var logData = JSON.parse(localStorage.getItem(window.plugin.playerActivityLog.STORAGE_KEY) || '{}');
-        var playerListContainer = $('.activity-log-player-list');
-        var playerNames = Object.keys(logData).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-
-        playerNames.forEach(function (name) {
-            var player = logData[name];
-            if (!player || !player.team) return;
-
-            var teamClass = (player.team && player.team.toUpperCase() === 'RESISTANCE') ? 'res' : 'enl';
-            var itemCount = player.activities ? player.activities.length : 0;
-            var playerDiv = $(`<div class="activity-log-player-item" data-player="${name}"></div>`);
-
-            var checkbox = $(`<input type="checkbox" class="trail-checkbox" title="Track this player on map">`);
-            checkbox.prop('checked', window.plugin.playerActivityLog.playersToTrack.includes(name));
-            checkbox.on('click', function(e) {
-                e.stopPropagation(); // prevent player log from opening
-                var checked = $(this).prop('checked');
-                var currentTracked = window.plugin.playerActivityLog.playersToTrack;
-                if (checked) {
-                    if (currentTracked.length >= 3) {
-                        alert('You can only track up to 3 players at a time.');
-                        $(this).prop('checked', false);
+            `;
+            $(document.body).append(modal);
+    
+            window.plugin.playerActivityLog.updateToggleLoggingButton();
+    
+            var logData = JSON.parse(localStorage.getItem(window.plugin.playerActivityLog.STORAGE_KEY) || '{}');
+            var playerListContainer = $('.activity-log-player-list');
+            var playerNames = Object.keys(logData).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    
+            playerNames.forEach(function (name) {
+                var player = logData[name];
+                if (!player || !player.team) return;
+    
+                var teamClass = (player.team && player.team.toUpperCase() === 'RESISTANCE') ? 'res' : 'enl';
+                var itemCount = player.activities ? player.activities.length : 0;
+                var playerDiv = $(`<div class="activity-log-player-item" data-player="${name}"></div>`);
+    
+                var checkbox = $(`<input type="checkbox" class="trail-checkbox" title="Track this player on map">`);
+                checkbox.prop('checked', window.plugin.playerActivityLog.playersToTrack.includes(name));
+                checkbox.on('click', function(e) {
+                    e.stopPropagation(); // prevent player log from opening
+                    var checked = $(this).prop('checked');
+                    var currentTracked = window.plugin.playerActivityLog.playersToTrack;
+                    if (checked) {
+                        if (currentTracked.length >= 3) {
+                            alert('You can only track up to 3 players at a time.');
+                            $(this).prop('checked', false);
+                        } else {
+                            currentTracked.push(name);
+                        }
                     } else {
-                        currentTracked.push(name);
+                        var index = currentTracked.indexOf(name);
+                        if (index > -1) {
+                            currentTracked.splice(index, 1);
+                        }
                     }
+                });
+    
+                var nameSpan = $(`<span class="player-name-container"><span class="${teamClass}">${name}</span> (${itemCount})</span>`);
+                var removeIcon = $('<span class="remove-player-icon" title="Delete this player\'s logs">&times;</span>');
+    
+                removeIcon.on('click', function (e) {
+                    e.stopPropagation();
+                    window.plugin.playerActivityLog.removePlayerData(name);
+                });
+    
+                playerDiv.append(checkbox).append(nameSpan).append(removeIcon);
+                playerDiv.on('click', function () {
+                    $('.activity-log-player-item.selected').removeClass('selected');
+                    $(this).addClass('selected');
+                    window.plugin.playerActivityLog.renderPlayerLog(name, logData);
+                });
+                playerListContainer.append(playerDiv);
+            });
+    
+            $('#activity-log-draw-trails').on('click', function() {
+                if (window.plugin.playerActivityLog.drawPlayerTrails) {
+                    window.plugin.playerActivityLog.drawPlayerTrails();
                 } else {
-                    var index = currentTracked.indexOf(name);
-                    if (index > -1) {
-                        currentTracked.splice(index, 1);
-                    }
+                    console.warn('drawPlayerTrails function not yet implemented');
                 }
             });
-
-            var nameSpan = $(`<span class="player-name-container"><span class="${teamClass}">${name}</span> (${itemCount})</span>`);
-            var removeIcon = $('<span class="remove-player-icon" title="Delete this player\'s logs">&times;</span>');
-
-            removeIcon.on('click', function (e) {
-                e.stopPropagation();
-                window.plugin.playerActivityLog.removePlayerData(name);
+            $('#activity-log-clear-trails').on('click', function() {
+                if (window.plugin.playerActivityLog.clearAllTrails) {
+                    window.plugin.playerActivityLog.clearAllTrails();
+                } else {
+                    console.warn('clearAllTrails function not yet implemented');
+                }
             });
-
-            playerDiv.append(checkbox).append(nameSpan).append(removeIcon);
-            playerDiv.on('click', function () {
-                $('.activity-log-player-item.selected').removeClass('selected');
-                $(this).addClass('selected');
-                window.plugin.playerActivityLog.renderPlayerLog(name, logData);
+    
+            $('#activity-log-toggle-logging').on('click', window.plugin.playerActivityLog.toggleLogging);
+            $('#activity-log-export').on('click', window.plugin.playerActivityLog.exportToCsv);
+            $('#activity-log-clear').on('click', window.plugin.playerActivityLog.clearAllData);
+            $('.activity-log-modal-backdrop, .activity-log-modal-close').on('click', function (e) {
+                if ($(e.target).is('.activity-log-modal-backdrop, .activity-log-modal-close')) {
+                    $('.activity-log-modal-backdrop').remove();
+                }
             });
-            playerListContainer.append(playerDiv);
-        });
-
-        $('#activity-log-draw-trails').on('click', function() {
-            if (window.plugin.playerActivityLog.drawPlayerTrails) {
-                window.plugin.playerActivityLog.drawPlayerTrails();
-            } else {
-                console.warn('drawPlayerTrails function not yet implemented');
-            }
-        });
-        $('#activity-log-clear-trails').on('click', function() {
-            if (window.plugin.playerActivityLog.clearAllTrails) {
-                window.plugin.playerActivityLog.clearAllTrails();
-            } else {
-                console.warn('clearAllTrails function not yet implemented');
-            }
-        });
-
-        $('#activity-log-toggle-logging').on('click', window.plugin.playerActivityLog.toggleLogging);
-        $('#activity-log-export').on('click', window.plugin.playerActivityLog.exportToCsv);
-        $('#activity-log-clear').on('click', window.plugin.playerActivityLog.clearAllData);
-        $('.activity-log-modal-backdrop, .activity-log-modal-close').on('click', function (e) {
-            if ($(e.target).is('.activity-log-modal-backdrop, .activity-log-modal-close')) {
-                $('.activity-log-modal-backdrop').remove();
-            }
-        });
-    };
-
+    
+            // search filter
+            $('#player-list-search').on('keyup', function() {
+                var searchTerm = $(this).val().toLowerCase();
+                $('.activity-log-player-list .activity-log-player-item').each(function() {
+                    var playerName = $(this).data('player').toLowerCase();
+                    if (playerName.includes(searchTerm)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+        };
     window.plugin.playerActivityLog.toggleLogging = function () {
         var plugin = window.plugin.playerActivityLog;
         plugin.isLoggingEnabled = !plugin.isLoggingEnabled;
