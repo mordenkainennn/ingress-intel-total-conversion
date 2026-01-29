@@ -3,12 +3,12 @@
 // @author         3ch01c, mordenkainennn
 // @name           Uniques Tools
 // @category       Misc
-// @version        1.6.0
+// @version        1.6.1
 // @description    Modified version of the stock Uniques plugin to add support for Drone view, manual entry, and import of portal history.
-// @id             uniques-drone-final
+// @id             uniques-tools
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
-// @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/main/local-plugins/uniques-drone-final/uniques-drone-final.meta.js
-// @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/main/local-plugins/uniques-drone-final/uniques-drone-final.user.js
+// @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/main/local-plugins/uniques-tools/uniques-tools.meta.js
+// @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/main/local-plugins/uniques-tools/uniques-tools.user.js
 // @match          https://intel.ingress.com/*
 // @match          https://intel-x.ingress.com/*
 // @grant          none
@@ -24,12 +24,20 @@ function wrapper(plugin_info) {
     //(leaving them in place might break the 'About IITC' page or break update checks)
     plugin_info.buildName = 'local';
     plugin_info.dateTimeVersion = '20260113.180002';
-    plugin_info.pluginId = 'uniques-drone-final';
+    plugin_info.pluginId = 'uniques-tools';
     //END PLUGIN AUTHORS NOTE
 
     /* exported setup, changelog --eslint */
 
     var changelog = [
+        {
+            version: '1.6.1',
+            changes: [
+                'UPD: Plugin renamed to "Uniques Tools" (from "uniques-drone-final").',
+                'UPD: Internal IDs, namespaces, and localStorage keys updated to reflect new name.',
+                'FIX: Existing user data will not be migrated and new data will be stored under new keys.',
+            ],
+        },
         {
             version: '1.6.0',
             changes: [
@@ -96,17 +104,17 @@ function wrapper(plugin_info) {
     ];
 
     // use own namespace for plugin
-    window.plugin.uniquesDroneFinal = function () { };
-    var self = window.plugin.uniquesDroneFinal;
+    window.plugin.uniquesTools = function () { };
+    var self = window.plugin.uniquesTools;
 
-    self.SYNC_PLUGIN_NAME = 'uniquesDroneFinal';
+    self.SYNC_PLUGIN_NAME = 'uniquesTools';
     self.SYNC_FIELD_NAME = 'uniques';
     self.SYNC_DELAY = 5000;
 
     self.FIELDS = {
-        uniques: 'plugin-uniques-drone-final-data',
-        updateQueue: 'plugin-uniques-drone-final-data-queue',
-        updatingQueue: 'plugin-uniques-drone-final-data-updating-queue',
+        uniques: 'plugin-uniques-tools-data',
+        updateQueue: 'plugin-uniques-tools-data-queue',
+        updatingQueue: 'plugin-uniques-tools-data-updating-queue',
     };
 
     self.uniques = {};
@@ -243,7 +251,7 @@ function wrapper(plugin_info) {
     };
 
     self.updateCheckedAndHighlight = function (guid) {
-        window.runHooks('pluginUniquesDroneFinalUpdate', { guid: guid });
+        window.runHooks('pluginUniquesToolsUpdate', { guid: guid });
 
         if (guid === window.selectedPortal) {
             var uniqueInfo = self.uniques[guid] || {};
@@ -333,7 +341,7 @@ function wrapper(plugin_info) {
             self.updateDroneMarkers();
             if (window.selectedPortal) self.updateCheckedAndHighlight(window.selectedPortal);
             if (self.isHighlightActive) window.resetHighlightedPortals();
-            window.runHooks('pluginUniquesDroneFinalRefreshAll');
+            window.runHooks('pluginUniquesToolsRefreshAll');
             return;
         }
 
@@ -353,7 +361,7 @@ function wrapper(plugin_info) {
             delete self.updateQueue[e.property];
             self.storeLocal('updateQueue');
             self.updateCheckedAndHighlight(e.property);
-            window.runHooks('pluginUniquesDroneFinalUpdate', { guid: e.property });
+            window.runHooks('pluginUniquesToolsUpdate', { guid: e.property });
         }
     };
 
@@ -445,21 +453,21 @@ function wrapper(plugin_info) {
     self.openUniquesToolsDialog = function () {
         var warningHTML = '';
         if (window.plugin.uniques) {
-            warningHTML = '<div style="color: red; margin-bottom: 10px;">' +
-                '<b>Warning:</b> Conflicting "Uniques" plugin active.<br>Disable it to prevent issues.' +
-                '</div>';
+            warningHTML = '<div style="color: red; margin-bottom: 10px;">'
+                + '<b>Warning:</b> Conflicting "Uniques" plugin active.<br>Disable it to prevent issues.'
+                + '</div>';
         }
 
         var isHistoryEmpty = self.droneLocationHistory.length === 0;
 
         var html = '<div class="uniques-tools-dialog" style="text-align: center;">' +
             warningHTML +
-            '<p style="margin: 5px 0 10px;">Select a portal on the map to display a 550m drone range circle.</p>' +
-            '<button type="button" class="import-history" style="margin: 5px;">Import History</button>' +
-            '<button type="button" class="clear-drone-history" style="margin: 5px;">Clear Drone History</button>' +
-            '<br>' +
-            '<button type="button" class="zoom-last-drone" style="margin: 5px;"' + (isHistoryEmpty ? ' disabled' : '') + '>Find Last Location</button>' +
-            '</div>';
+            '<p style="margin: 5px 0 10px;">Select a portal on the map to display a 550m drone range circle.</p>'
+            + '<button type="button" class="import-history" style="margin: 5px;">Import History</button>'
+            + '<button type="button" class="clear-drone-history" style="margin: 5px;">Clear Drone History</button>'
+            + '<br>'
+            + '<button type="button" class="zoom-last-drone" style="margin: 5px;"' + (isHistoryEmpty ? ' disabled' : '') + '>Find Last Location</button>'
+            + '</div>';
 
         var dialog = window.dialog({
             title: 'Uniques Tools',
@@ -491,13 +499,13 @@ function wrapper(plugin_info) {
 
     self.setupContent = function () {
         self.contentHTML =
-            '<div id="uniques-container">' +
-            '<label><input type="checkbox" id="visited" onclick="window.plugin.uniquesDroneFinal.updateVisited($(this).prop(\'checked\'))"> Visited</label>' +
-            '<label><input type="checkbox" id="captured" onclick="window.plugin.uniquesDroneFinal.updateCaptured($(this).prop(\'checked\'))"> Captured</label>' +
-            '<br>' +
-            '<label><input type="checkbox" id="scoutControlled" onclick="window.plugin.uniquesDroneFinal.updateScoutControlled($(this).prop(\'checked\'))"> Scanned</label>' +
-            '<label><input type="checkbox" id="drone" onclick="window.plugin.uniquesDroneFinal.updateDroneVisited($(this).prop(\'checked\'))"> Drone</label>' +
-            '</div>'; // Removed the import link from here
+            '<div id="uniques-container">'
+            + '<label><input type="checkbox" id="visited" onclick="window.plugin.uniquesTools.updateVisited($(this).prop(\'checked\'))"> Visited</label>'
+            + '<label><input type="checkbox" id="captured" onclick="window.plugin.uniquesTools.updateCaptured($(this).prop(\'checked\'))"> Captured</label>'
+            + '<br>'
+            + '<label><input type="checkbox" id="scoutControlled" onclick="window.plugin.uniquesTools.updateScoutControlled($(this).prop(\'checked\'))"> Scanned</label>'
+            + '<label><input type="checkbox" id="drone" onclick="window.plugin.uniquesTools.updateDroneVisited($(this).prop(\'checked\'))"> Drone</label>'
+            + '</div>'; // Removed the import link from here
         self.disabledMessage = '<div id="uniques-container" class="help" title="Your browser does not support localStorage">Plugin Uniques disabled</div>';
     };
 
@@ -510,8 +518,8 @@ function wrapper(plugin_info) {
             $(`[data-list-uniques="${guid}"].drone`).prop('checked', !!info.droneVisited);
         }
 
-        window.addHook('pluginUniquesDroneFinalUpdate', (data) => addHook('Update', data.guid));
-        window.addHook('pluginUniquesDroneFinalRefreshAll', () => {
+        window.addHook('pluginUniquesToolsUpdate', (data) => addHook('Update', data.guid));
+        window.addHook('pluginUniquesToolsRefreshAll', () => {
             $('[data-list-uniques]').each((i, el) => addHook('Refresh', el.getAttribute('data-list-uniques')));
         });
 
