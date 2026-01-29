@@ -131,26 +131,45 @@
                     <li><strong>清除数据:</strong> 您可以删除单个玩家的日志，或清空整个数据库。</li>
                 </ul>
             </li>
-            <li>
-                <h3>本地存储</h3>
-                <p>所有数据都直接存储在您浏览器的localStorage中，确保在不同会话之间数据能够持久化，无需外部服务器。</p>
-            </li>
-        </ul>
-
+                            <li>
+                                <h3>本地存储</h3>
+                                <p>所有数据都直接存储在您浏览器的localStorage中，确保在不同会话之间数据能够持久化，无需外部服务器。</p>
+                            </li>
+                            <li>
+                                <h3>玩家轨迹地图</h3>
+                                <p>直接在地图上将玩家的移动可视化。从日志中选择最多三名玩家，插件将绘制出他们的活动轨迹，并按时间进行颜色编码。此功能为分析特工的移动提供了强大的时空洞察力。</p>
+                            </li>
+                        </ul>
         <h2>如何使用</h2>
         <ol style="padding-left: 30px;">
             <li>点击IITC工具箱中的 <strong>"Activity Log"</strong> 链接，打开主查看器。</li>
             <li>对话框将会出现，左侧显示玩家列表。每个名字旁边的数字表示其被记录的活动数量。</li>
             <li>点击一个玩家的名字，即可在右侧查看其详细的活动流，按时间从新到旧排序。</li>
+            <li>在玩家列表中，勾选您希望在地图上追踪的任何玩家（最多三名）。</li>
+            <li>点击对话框顶部的 <strong>"Draw Trails"</strong> (绘制轨迹) 按钮，即可在地图上显示他们的移动路径。</li>
+            <li>使用 <strong>"Clear Trails"</strong> (清除轨迹) 按钮可以从地图上移除所有轨迹。</li>
             <li>要删除单个玩家的数据，请将鼠标悬停在列表中的玩家名称上，然后点击出现的 <strong>&times;</strong> 图标。</li>
-            <li>使用对话框顶部的按钮来<strong>暂停/继续</strong>记录、<strong>导出CSV</strong>或<strong>全部清除</strong>数据。</li>
+            <li>使用对话框顶部的其他按钮来<strong>暂停/继续</strong>记录、<strong>导出CSV</strong>或<strong>全部清除</strong>数据。</li>
         </ol>
 
         <div class="note">
             <p><strong>重要提示:</strong> 所有活动数据都存储在您的浏览器本地。它<strong>不会</strong>在设备或账户间同步。如果您清除了浏览器的网站数据，此日志将被永久删除。请定期使用“导出CSV”功能来备份重要数据。</p>
         </div>
 
+        <div class="note" style="border-color: #F88;">
+            <p><strong style="color: #F88;">兼容性提示:</strong> “绘制轨迹”功能与官方的 <strong>Player activity tracker</strong> 插件功能相似。为避免视觉混乱和潜在冲突，建议在使用此功能时通过图层选择器禁用官方插件。</p>
+        </div>
+
         <h2>更新日志</h2>
+        <div class="changelog-entry">
+            <h3>版本 0.7.4</h3>
+            <ul>
+                <li>新增: 集成了玩家轨迹地图功能，用于在地图上可视化特工的移动。</li>
+                <li>新增: 添加了用于选择玩家并绘制/清除其活动轨迹的UI控件。</li>
+                <li>修复: 修正了“linked from”活动被错误地记录到目标Portal而不是起点的bug。</li>
+                <li>更新: 通过优化图标URL设置，解决了轨迹标记有时不显示的问题。</li>
+            </ul>
+        </div>
         <div class="changelog-entry">
             <h3>版本 0.7.3</h3>
             <ul>

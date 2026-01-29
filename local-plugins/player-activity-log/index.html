@@ -130,26 +130,45 @@
                     <li><strong>Clear Data:</strong> You can delete logs for a single player or wipe the entire database clean.</li>
                 </ul>
             </li>
-            <li>
-                <h3>Local Storage</h3>
-                <p>All data is stored directly in your browser's localStorage, ensuring it persists between sessions without needing an external server.</p>
-            </li>
-        </ul>
-
+                            <li>
+                                <h3>Local Storage</h3>
+                                <p>All data is stored directly in your browser's localStorage, ensuring it persists between sessions without needing an external server.</p>
+                            </li>
+                            <li>
+                                <h3>Player Trail Mapping</h3>
+                                <p>Visualize player movements directly on the map. Select up to three players from the log, and the plugin will draw their activity trails, color-coded by time. This feature provides powerful spatial and temporal insights into agent movements.</p>
+                            </li>
+                        </ul>
         <h2>How to Use</h2>
         <ol style="padding-left: 30px;">
             <li>Click the <strong>"Activity Log"</strong> link in the IITC toolbox to open the main viewer.</li>
             <li>The dialog will appear, showing a list of players on the left. The number next to each name indicates the count of their logged activities.</li>
             <li>Click on a player's name to see their detailed activity feed on the right, sorted from newest to oldest.</li>
+            <li>In the player list, check the box next to any player you wish to track on the map (up to a maximum of three).</li>
+            <li>Click the <strong>"Draw Trails"</strong> button at the top of the dialog to display their movement paths on the map.</li>
+            <li>Use the <strong>"Clear Trails"</strong> button to remove all trails from the map.</li>
             <li>To delete a single player's data, hover over their name in the list and click the <strong>&times;</strong> icon.</li>
-            <li>Use the buttons at the top of the dialog to <strong>Pause/Resume</strong>, <strong>Export CSV</strong>, or <strong>Clear All</strong> data.</li>
+            <li>Use the other buttons at the top of the dialog to <strong>Pause/Resume</strong>, <strong>Export CSV</strong>, or <strong>Clear All</strong> data.</li>
         </ol>
 
         <div class="note">
             <p><strong>Important:</strong> All activity data is stored locally in your browser. It is <strong>not</strong> synced across devices or accounts. If you clear your browser's site data, this log will be permanently erased. Please use the "Export CSV" feature regularly to back up important data.</p>
         </div>
 
+        <div class="note" style="border-color: #F88;">
+            <p><strong style="color: #F88;">Compatibility Note:</strong> The "Draw Trails" feature provides functionality similar to the official <strong>Player activity tracker</strong> plugin. To avoid visual clutter and potential conflicts, it is recommended to disable the official plugin via the layer chooser when using this feature.</p>
+        </div>
+
         <h2>Changelog</h2>
+        <div class="changelog-entry">
+            <h3>Version 0.7.4</h3>
+            <ul>
+                <li>NEW: Integrated a player trail mapping feature to visualize agent movements on the map.</li>
+                <li>NEW: Added UI controls to select players and draw/clear their activity trails.</li>
+                <li>FIX: Corrected an issue where "linked from" activities were logged against the destination portal instead of the origin.</li>
+                <li>UPD: Addressed a bug where trail markers were not appearing by refining icon URL settings.</li>
+            </ul>
+        </div>
         <div class="changelog-entry">
             <h3>Version 0.7.3</h3>
             <ul>
