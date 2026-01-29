@@ -3,7 +3,7 @@
 // @author         3ch01c, mordenkainennn
 // @name           Uniques Tools
 // @category       Misc
-// @version        1.6.1
+// @version        1.6.2
 // @description    Modified version of the stock Uniques plugin to add support for Drone view, manual entry, and import of portal history.
 // @id             uniques-tools
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -30,6 +30,12 @@ function wrapper(plugin_info) {
     /* exported setup, changelog --eslint */
 
     var changelog = [
+        {
+            version: '1.6.2',
+            changes: [
+                'NEW: Added a data import feature in the "Uniques Tools" dialog to migrate data from the old version of the plugin (uniques-drone-final).',
+            ],
+        },
         {
             version: '1.6.1',
             changes: [
@@ -450,6 +456,64 @@ function wrapper(plugin_info) {
         if (self.isHighlightActive) window.resetHighlightedPortals();
     };
 
+    self.importFromOldVersion = function () {
+        var oldKey = 'plugin-uniques-drone-final-data';
+        var oldData = localStorage[oldKey];
+
+        if (!oldData) {
+            alert('No data from old version (uniques-drone-final) found.');
+            return;
+        }
+
+        var newKey = self.FIELDS.uniques;
+        var newData = localStorage[newKey];
+
+        if (newData) {
+            if (!confirm('New data already exists for "Uniques Tools". Importing will OVERWRITE any new marks you have made. Continue?')) {
+                return;
+            }
+        }
+
+        try {
+            // copy main data
+            localStorage[newKey] = oldData;
+
+            // copy queue data
+            var oldQueueKey = 'plugin-uniques-drone-final-data-queue';
+            if (localStorage[oldQueueKey]) {
+                localStorage[self.FIELDS.updateQueue] = localStorage[oldQueueKey];
+            }
+            var oldUpdatingKey = 'plugin-uniques-drone-final-data-updating-queue';
+            if (localStorage[oldUpdatingKey]) {
+                localStorage[self.FIELDS.updatingQueue] = localStorage[oldUpdatingKey];
+            }
+
+            // reload data into plugin
+            self.loadLocal('uniques');
+            self.loadLocal('updateQueue');
+            self.loadLocal('updatingQueue');
+
+            // refresh UI
+            self.updateDroneMarkers();
+            if (window.selectedPortal) self.updateCheckedAndHighlight(window.selectedPortal);
+            if (self.isHighlightActive) window.resetHighlightedPortals();
+            window.runHooks('pluginUniquesToolsRefreshAll');
+
+            alert('Successfully imported data from old version.');
+
+            if (confirm('Delete old data to free up space and prevent this prompt from appearing again?')) {
+                delete localStorage[oldKey];
+                delete localStorage[oldQueueKey];
+                delete localStorage[oldUpdatingKey];
+                alert('Old data deleted.');
+            }
+
+        } catch (e) {
+            console.error('Error importing old uniques data: ', e);
+            alert('An error occurred during import. See console for details.');
+        }
+    };
+
     self.openUniquesToolsDialog = function () {
         var warningHTML = '';
         if (window.plugin.uniques) {
@@ -459,6 +523,7 @@ function wrapper(plugin_info) {
         }
 
         var isHistoryEmpty = self.droneLocationHistory.length === 0;
+        var hasOldData = !!localStorage['plugin-uniques-drone-final-data'];
 
         var html = '<div class="uniques-tools-dialog" style="text-align: center;">' +
             warningHTML +
@@ -467,6 +532,7 @@ function wrapper(plugin_info) {
             + '<button type="button" class="clear-drone-history" style="margin: 5px;">Clear Drone History</button>'
             + '<br>'
             + '<button type="button" class="zoom-last-drone" style="margin: 5px;"' + (isHistoryEmpty ? ' disabled' : '') + '>Find Last Location</button>'
+            + (hasOldData ? '<br><button type="button" class="import-old-data" style="margin: 5px;">Import from Old Version</button>' : '')
             + '</div>';
 
         var dialog = window.dialog({
@@ -489,6 +555,12 @@ function wrapper(plugin_info) {
             self.zoomToLastDroneLocation();
             dialog.dialog('close');
         });
+        if (hasOldData) {
+            dialog.find('button.import-old-data').on('click', function () {
+                self.importFromOldVersion();
+                dialog.dialog('close');
+            });
+        }
     };
 
     self.setupCSS = function () {
