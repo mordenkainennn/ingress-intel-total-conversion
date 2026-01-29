@@ -3,7 +3,7 @@
 // @author         3ch01c, mordenkainennn
 // @name           Uniques Tools
 // @category       Misc
-// @version        1.6.2
+// @version        1.6.3
 // @description    Modified version of the stock Uniques plugin to add support for Drone view, manual entry, and import of portal history.
 // @id             uniques-tools
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -30,6 +30,15 @@ function wrapper(plugin_info) {
     /* exported setup, changelog --eslint */
 
     var changelog = [
+        {
+            version: '1.6.3',
+            changes: [
+                'UPD: Renamed main highlighter to "Uniques Tools".',
+                'NEW: Added "Uniques: Drone" highlighter to specifically show drone visited status.',
+                'NEW: Added "Uniques: Scout" highlighter to specifically show scout controlled status.',
+                'FIX: Updated URLs for drone marker images to their new location.',
+            ],
+        },
         {
             version: '1.6.2',
             changes: [
@@ -391,6 +400,42 @@ function wrapper(plugin_info) {
         }
     };
 
+    self.droneHighlighter = {
+        highlight: function (data) {
+            var guid = data.portal.options.guid;
+            var uniqueInfo = self.uniques[guid];
+            var style = {};
+
+            if (uniqueInfo && uniqueInfo.droneVisited) {
+                style.fillColor = 'cyan';
+                style.fillOpacity = 0.6;
+            } else {
+                style.fillColor = 'red';
+                style.fillOpacity = 0.7;
+            }
+            data.portal.setStyle(style);
+        },
+        setSelected: function (active) {},
+    };
+
+    self.scoutHighlighter = {
+        highlight: function (data) {
+            var guid = data.portal.options.guid;
+            var uniqueInfo = self.uniques[guid];
+            var style = {};
+
+            if (uniqueInfo && uniqueInfo.scoutControlled) {
+                style.fillColor = '#FFC107'; // Deep Yellow
+                style.fillOpacity = 0.6;
+            } else {
+                style.fillColor = 'red';
+                style.fillOpacity = 0.7;
+            }
+            data.portal.setStyle(style);
+        },
+        setSelected: function (active) {},
+    };
+
     self.highlighter = {
         highlight: function (data) {
             var guid = data.portal.options.guid;
@@ -637,7 +682,9 @@ function wrapper(plugin_info) {
         self.setupCSS();
         self.setupContent();
         self.loadLocal('uniques');
-        window.addPortalHighlighter('Uniques (Drone)', self.highlighter);
+        window.addPortalHighlighter('Uniques Tools', self.highlighter);
+        window.addPortalHighlighter('Uniques: Drone', self.droneHighlighter);
+        window.addPortalHighlighter('Uniques: Scout', self.scoutHighlighter);
         window.addHook('portalDetailsUpdated', self.onPortalDetailsUpdated);
         self.registerFieldForSyncing();
 
@@ -645,9 +692,9 @@ function wrapper(plugin_info) {
         var iconSize = [40, 40];
         var iconAnchor = [20, 40];
         self.droneIcons = [
-            L.icon({ iconUrl: 'https://gongjupal.com/ingress/drone-marker.png', iconSize: iconSize, iconAnchor: iconAnchor }),
-            L.icon({ iconUrl: 'https://gongjupal.com/ingress/Drone1.png', iconSize: iconSize, iconAnchor: iconAnchor }),
-            L.icon({ iconUrl: 'https://gongjupal.com/ingress/Drone2.png', iconSize: iconSize, iconAnchor: iconAnchor }),
+            L.icon({ iconUrl: 'https://gongjupal.com/ingress/images/drone-marker.png', iconSize: iconSize, iconAnchor: iconAnchor }),
+            L.icon({ iconUrl: 'https://gongjupal.com/ingress/images/Drone1.png', iconSize: iconSize, iconAnchor: iconAnchor }),
+            L.icon({ iconUrl: 'https://gongjupal.com/ingress/images/Drone2.png', iconSize: iconSize, iconAnchor: iconAnchor }),
         ];
 
         self.droneLayer = new L.LayerGroup();
