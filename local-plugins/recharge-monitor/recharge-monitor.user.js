@@ -2,11 +2,11 @@
 // @id             iitc-plugin-recharge-monitor
 // @name           IITC plugin: Recharge Monitor & Decay Predictor
 // @category       Info
-// @version        0.2.0
+// @version        0.2.1
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/main/local-plugins/recharge-monitor/recharge-monitor.meta.js
 // @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/main/local-plugins/recharge-monitor/recharge-monitor.user.js
-// @description    监控 Portal 电量，预测视野外 Portal 衰减，允许手动修正部署时间。
+// @description    Monitors Portal energy, predicts decay for out-of-view Portals, and allows manual correction of deployment time.
 // @include        https://*.ingress.com/intel*
 // @match          https://intel.ingress.com/*
 // @match          https://intel-x.ingress.com/*
@@ -22,6 +22,12 @@ function wrapper(plugin_info) {
     plugin_info.pluginId = 'recharge-monitor';
 
     var changelog = [
+        {
+            version: '0.2.1',
+            changes: [
+                'UPD: Translated UI texts in Portal details pane from Chinese to English.',
+            ],
+        },
         {
             version: '0.2.0',
             changes: [
@@ -94,7 +100,7 @@ function wrapper(plugin_info) {
             const $box = $('<div id="recharge-monitor-controls" style="padding:5px;border-top:1px solid #20A8B1;"></div>');
 
             const $btn = $('<a>')
-                .text(watched ? '🛑 停止监控' : '🛡️ 加入充电监控')
+                .text(watched ? '🛑 Stop Monitoring' : '🛡️ Add to Watchlist')
                 .css('cursor', 'pointer')
                 .on('click', () => self.toggleWatch(guid));
 
@@ -102,7 +108,7 @@ function wrapper(plugin_info) {
 
             if (watched) {
                 const $edit = $('<a>')
-                    .text(' | 🕒 修改时间')
+                    .text(' | 🕒 Edit Deploy Time')
                     .css('cursor', 'pointer')
                     .on('click', () => self.editTime(guid));
                 $box.append($edit);
