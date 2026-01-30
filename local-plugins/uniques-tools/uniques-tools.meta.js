@@ -2,7 +2,7 @@
 // @author         3ch01c, mordenkainennn
 // @name           Uniques Tools
 // @category       Misc
-// @version        1.6.4
+// @version        1.6.5
 // @description    Modified version of the stock Uniques plugin to add support for Drone view, manual entry, and import of portal history.
 // @id             uniques-tools
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion

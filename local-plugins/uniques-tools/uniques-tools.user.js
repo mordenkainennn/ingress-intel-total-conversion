@@ -3,7 +3,7 @@
 // @author         3ch01c, mordenkainennn
 // @name           Uniques Tools
 // @category       Misc
-// @version        1.6.4
+// @version        1.6.5
 // @description    Modified version of the stock Uniques plugin to add support for Drone view, manual entry, and import of portal history.
 // @id             uniques-tools
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -30,6 +30,12 @@ function wrapper(plugin_info) {
     /* exported setup, changelog --eslint */
 
     var changelog = [
+        {
+            version: '1.6.5',
+            changes: [
+                'FIX: Changed the layout of checkboxes in the portal list to a single row to improve compactness.',
+            ],
+        },
         {
             version: '1.6.4',
             changes: [
@@ -621,7 +627,6 @@ function wrapper(plugin_info) {
 
                 createBox('visited', 'Visited?', !!info.visited, self.updateVisited);
                 createBox('captured', 'Captured?', !!info.captured, self.updateCaptured);
-                $(cell).append('<br>');
                 createBox('scoutControlled', 'Scanned?', !!info.scoutControlled, self.updateScoutControlled);
                 createBox('drone', 'Drone Visited?', !!info.droneVisited, self.updateDroneVisited);
             },
