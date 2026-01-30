@@ -34,3 +34,5 @@ node_modules
 
 local-plugins/homogeneous-fields/button-issue.md
 local-plugins/homogeneous-fields/issue.md
+
+*.bat
