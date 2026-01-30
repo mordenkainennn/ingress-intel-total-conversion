@@ -112,7 +112,7 @@
         <ul>
             <li>
                 <h3>完整的无人机 (Drone) 支持</h3>
-                <p>追踪通过无人机视角访问过的 Portal。本插件会记录最近3个被手动标记为无人机访问过的位置，在地图上显示特殊标记（最后、上一个、更早的），并允许您使用“寻找最后位置”按钮快速跳转到最新位置。**此外，在当前选中的Portal周围会绘制一个550米的无人机航程圈**，为您提供最大飞行距离的视觉参考。</p>
+                <p>追踪通过无人机视角访问过的 Portal。本插件会记录最近3个被手动标记为无人机访问过的位置，在地图上显示特殊标记（最后、上一个、更早的），并允许您使用“寻找最后位置”按钮快速跳转到最新位置。一个常驻的550米范围圈也会被绘制在“Drone Location”图层上，围绕您最后一个无人机访问过的位置。**此外，在当前选中的Portal周围会绘制一个临时的550米无人机航程圈**，为您提供最大飞行距离的视觉参考。</p>
             </li>
             <li>
                 <h3>侦察官 (Scout Controller) 追踪</h3>
@@ -147,7 +147,7 @@
         <p>在右侧的 IITC 工具箱中找到 "Uniques Tools" 按钮。点击它会打开一个对话框，您可以在其中：</p>
         <ul>
             <li><strong>Import History (导入历史):</strong> 点击此按钮，可以用官方游戏历史记录更新当前视野内 Portal 的本地数据。</li>
-            <li><strong>Clear Drone History (清除无人机历史):</strong> 移除所有的无人机位置标记和历史数据。</li>
+            <li><strong>Clear Drone Last Location (清除无人机最后位置):</strong> 移除地图上的无人机位置标记和常驻范围圈。</li>
             <li><strong>Find Last Location (寻找最后位置):</strong> 将地图平移并缩放到您的无人机最近访问过的 Portal。</li>
         </ul>
 
@@ -156,6 +156,14 @@
         </div>
 
         <h2>更新日志</h2>
+        <div class="changelog-entry">
+            <h3>版本 1.6.6</h3>
+            <ul>
+                <li>新增: 在“Drone Location”图层上，为最后一个无人机位置添加了常驻的550米范围圈。</li>
+                <li>更新: 为了更清晰地表述功能，将“Clear Drone History”按钮重命名为“Clear Drone Last Location”。</li>
+                <li>修复: 修正了常驻范围圈的实现，以确保它与无人机标记位于同一图层。</li>
+            </ul>
+        </div>
         <div class="changelog-entry">
             <h3>版本 1.6.2</h3>
             <ul>

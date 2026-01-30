@@ -112,7 +112,7 @@
         <ul>
             <li>
                 <h3>Full Drone Support</h3>
-                <p>Track portals visited via Drone View. The plugin remembers the last 3 locations you manually mark as drone-visited, displays special markers on the map (last, previous, oldest), and allows you to quickly jump to the last location using the "Find Last Location" button. Additionally, <strong>a 550m drone range circle is drawn around the currently selected portal</strong>, providing a visual guide for maximum flight distance.</p>
+                <p>Track portals visited via Drone View. The plugin remembers the last 3 locations you manually mark as drone-visited, displays special markers on the map (last, previous, oldest), and allows you to quickly jump to the last location using the "Find Last Location" button. A persistent 550m range circle is also drawn on the "Drone Location" layer around your last known drone location. Additionally, <strong>a temporary 550m drone range circle is drawn around the currently selected portal</strong>, providing a visual guide for maximum flight distance.</p>
             </li>
             <li>
                 <h3>Scout Controller Tracking</h3>
@@ -147,7 +147,7 @@
         <p>Find the "Uniques Tools" button in the IITC toolbox on the right. Clicking it opens a dialog where you can:</p>
         <ul>
             <li><strong>Import History:</strong> Click this to update your local data with official game history for portals in the current view.</li>
-            <li><strong>Clear Drone History:</strong> Removes all drone location markers and history data.</li>
+            <li><strong>Clear Drone Last Location:</strong> Removes the drone location markers and the persistent range circle from the map.</li>
             <li><strong>Find Last Location:</strong> Pans and zooms the map to the most recent portal visited by your drone.</li>
         </ul>
 
@@ -156,6 +156,14 @@
         </div>
 
         <h2>Changelog</h2>
+        <div class="changelog-entry">
+            <h3>Version 1.6.6</h3>
+            <ul>
+                <li>NEW: Added a persistent 550m range circle around the last drone location, displayed on the "Drone Location" layer.</li>
+                <li>UPD: Renamed "Clear Drone History" button to "Clear Drone Last Location" for clarity.</li>
+                <li>FIX: Corrected implementation of persistent drone range circle to use existing "Drone Location" layer.</li>
+            </ul>
+        </div>
         <div class="changelog-entry">
             <h3>Version 1.6.2</h3>
             <ul>
