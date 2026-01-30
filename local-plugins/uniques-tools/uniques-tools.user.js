@@ -3,7 +3,7 @@
 // @author         3ch01c, mordenkainennn
 // @name           Uniques Tools
 // @category       Misc
-// @version        1.6.5
+// @version        1.6.6
 // @description    Modified version of the stock Uniques plugin to add support for Drone view, manual entry, and import of portal history.
 // @id             uniques-tools
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -30,6 +30,14 @@ function wrapper(plugin_info) {
     /* exported setup, changelog --eslint */
 
     var changelog = [
+        {
+            version: '1.6.6',
+            changes: [
+                'NEW: Added a persistent 550m range circle around the last drone location, displayed on the "Drone Location" layer.',
+                'UPD: Renamed "Clear Drone History" button to "Clear Drone Last Location" for clarity.',
+                'FIX: Corrected implementation of persistent drone range circle to use existing "Drone Location" layer.',
+            ],
+        },
         {
             version: '1.6.5',
             changes: [
@@ -139,6 +147,37 @@ function wrapper(plugin_info) {
         if (!self.droneLayer) return;
         self.droneLayer.clearLayers();
 
+        // Draw the persistent last drone location range circle
+        if (self.droneLocationHistory.length > 0) {
+            var guid = self.droneLocationHistory[0];
+
+            var drawCircleForGuid = function(latlng, title) {
+                 L.circle(latlng, {
+                    radius: 550,
+                    color: 'cyan',
+                    fillColor: 'cyan',
+                    fillOpacity: 0.15, // Higher opacity as requested
+                    weight: 1.5, // slightly thinner to distinguish
+                    interactive: false,
+                    dashArray: '5,5', // Dashed line to distinguish
+                    title: 'Last Drone Location Range (550m) for ' + title
+                }).addTo(self.droneLayer); // Add to the existing droneLayer
+            };
+
+            var portal = window.portals[guid];
+            if (portal) {
+                drawCircleForGuid(portal.getLatLng(), portal.options.data.title);
+            } else {
+                window.portalDetail.request(guid).then(function (details) {
+                    if (details) {
+                        var latlng = L.latLng(details.latE6 / 1E6, details.lngE6 / 1E6);
+                        drawCircleForGuid(latlng, details.title);
+                    }
+                });
+            }
+        }
+
+        // Existing logic to draw drone markers
         self.droneLocationHistory.forEach(function (guid, index) {
             var portal = window.portals[guid];
 
@@ -530,7 +569,7 @@ function wrapper(plugin_info) {
             warningHTML +
             '<p style="margin: 5px 0 10px;">Select a portal on the map to display a 550m drone range circle.</p>'
             + '<button type="button" class="import-history" style="margin: 5px;">Import History</button>'
-            + '<button type="button" class="clear-drone-history" style="margin: 5px;">Clear Drone History</button>'
+            + '<button type="button" class="clear-drone-history" style="margin: 5px;">Clear Drone Last Location</button>'
             + '<br>'
             + '<button type="button" class="zoom-last-drone" style="margin: 5px;"' + (isHistoryEmpty ? ' disabled' : '') + '>Find Last Location</button>'
             + (hasOldData ? '<br><button type="button" class="import-old-data" style="margin: 5px;">Import from Old Version</button>' : '')
@@ -672,7 +711,9 @@ function wrapper(plugin_info) {
             }
         });
 
-        setTimeout(() => self.updateDroneMarkers(), 1000);
+        setTimeout(() => {
+            self.updateDroneMarkers();
+        }, 1000);
 
         if (window.plugin.portalslist) {
             self.setupPortalsList();
