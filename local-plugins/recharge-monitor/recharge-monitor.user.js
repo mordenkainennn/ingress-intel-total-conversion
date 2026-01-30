@@ -50,7 +50,7 @@ function wrapper(plugin_info) {
     const STORAGE_KEY = 'iitc-plugin-recharge-monitor-data';
     self.data = {};
 
-    /* ---------------- 数据存储 ---------------- */
+    /* ---------------- Data Storage ---------------- */
 
     self.save = function () {
         localStorage[STORAGE_KEY] = JSON.stringify(self.data);
@@ -67,7 +67,7 @@ function wrapper(plugin_info) {
         }
     };
 
-    /* ---------------- 核心逻辑 ---------------- */
+    /* ---------------- Core Logic ---------------- */
 
     self.calculateHealth = function (guid) {
         const pData = self.data[guid];
@@ -89,7 +89,7 @@ function wrapper(plugin_info) {
         return predicted > 0 ? predicted : 0;
     };
 
-    /* ---------------- Portal 详情页 ---------------- */
+    /* ---------------- Portal Details Page ---------------- */
 
     self.setupPortals = function () {
         window.addHook('portalDetailsUpdated', function (data) {
@@ -123,7 +123,7 @@ function wrapper(plugin_info) {
             delete self.data[guid];
         } else {
             const p = window.portals[guid];
-            if (!p) return alert('请先加载 Portal');
+            if (!p) return alert('Please load the Portal first');
             self.data[guid] = {
                 name: p.options.data.title,
                 latlng: p.getLatLng(),
@@ -139,7 +139,7 @@ function wrapper(plugin_info) {
     self.editTime = function (guid) {
         const d = new Date(self.data[guid].captureTime);
         const input = prompt(
-            '请输入部署时间 (YYYY-MM-DD HH:MM)',
+            'Please enter the deployment time (YYYY-MM-DD HH:MM)',
             d.toISOString().slice(0, 16).replace('T', ' ')
         );
         if (!input) return;
@@ -147,11 +147,11 @@ function wrapper(plugin_info) {
         if (!isNaN(t)) {
             self.data[guid].captureTime = t;
             self.save();
-            alert('时间已更新');
+            alert('Time updated');
         }
     };
 
-    /* ---------------- 列表窗口 ---------------- */
+    /* ---------------- List Window ---------------- */
 
     self.showList = function () {
         let html = `
@@ -186,7 +186,7 @@ function wrapper(plugin_info) {
         });
     };
 
-    /* ---------------- Toolbox 按钮与循环 ---------------- */
+    /* ---------------- Toolbox Button and Loop ---------------- */
 
     function addToolboxButton() {
         if (!window.IITC || !IITC.toolbox || !IITC.toolbox.addButton) return false;
@@ -244,7 +244,7 @@ function wrapper(plugin_info) {
     if (window.iitcLoaded) setup();
 }
 
-/* ---------------- 注入 ---------------- */
+/* ---------------- Injection ---------------- */
 
 const script = document.createElement('script');
 script.appendChild(
