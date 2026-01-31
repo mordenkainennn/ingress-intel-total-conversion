@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC Plugin: Recharge Monitor & Decay Predictor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Coda', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+             font-size: 1.2em;
+             color: #ffce00;
+        }
+        p, li {
+            color: #ccc;
+        }
+        strong {
+            color: #ffce00;
+        }
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .note strong {
+            color: #ffce00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index_zh-cn.html">中文</a> | <a href="index_ja.html">日本語</a>
+    </div>
+
+    <div class="container">
+        <h1>Recharge Monitor &amp; Decay Predictor</h1>
+
+        <p>This plugin is an essential utility for agents who manage multiple portals across different regions. It allows you to monitor portal health in real-time and provides intelligent predictions for when a portal will fully decay, even when it's out of your current map view.</p>
+        <p>By integrating with COMM data and other logging plugins, it ensures you never miss a recharge deadline again.</p>
+
+        <h2>Features</h2>
+        <ul>
+            <li>
+                <h3>Energy Monitoring Watchlist</h3>
+                <p>Add specific portals to your personal watchlist via the portal details pane. Keep track of their current health, last seen status, and deployment timestamps in a centralized dashboard.</p>
+            </li>
+            <li>
+                <h3>Intelligent Decay Prediction</h3>
+                <p>For portals that are not currently visible on your map, the plugin calculates an <code>Estimated Decay</code> date based on the standard 15% daily energy loss. It provides a reliable "countdown" to when the portal will be neutralized.</p>
+            </li>
+            <li>
+                <h3>Multi-Source History Sync</h3>
+                <p>Recover accurate deployment times automatically using two powerful methods:</p>
+                <ul>
+                    <li><code>COMM Backfilling</code>: Scans IITC's internal chat cache for capture and deployment events.</li>
+                    <li><code>Activity Log Integration</code>: Syncs historical data from the <strong>Player Activity Log</strong> plugin using precise GUID and coordinate matching.</li>
+                </ul>
+            </li>
+            <li>
+                <h3>Visual Recharge Alerts</h3>
+                <p>The "Recharge Mon" button in the IITC toolbox dynamically changes color and displays a warning count (e.g., <code>⚠️ Recharge (3)</code>) when any watched portal drops below 30% health.</p>
+            </li>
+            <li>
+                <h3>Localization &amp; Ease of Use</h3>
+                <p>Displays all timestamps in your <strong>local time zone</strong>. Includes a user-friendly interface for manually correcting deployment times if needed.</p>
+            </li>
+        </ul>
+
+        <h2>How to Use</h2>
+        <ol style="padding-left: 30px;">
+            <li>Select any portal on the map to open its details pane.</li>
+            <li>Click <strong>"🛡️ Add to Watchlist"</strong> to start monitoring that portal.</li>
+            <li>Launch the main dashboard by clicking the <strong>"Recharge Mon"</strong> button in the toolbox.</li>
+            <li>Inside the dashboard, use the <strong>"🔄 Sync History"</strong> button to pull historical data from COMM or logs to improve time accuracy.</li>
+            <li>If the toolbox button turns <strong>orange/red</strong>, it's time to head out or use some Hypercubes!</li>
+        </ol>
+
+        <div class="note">
+            <p><strong>Pro Tip:</strong> Using this plugin alongside the <strong>Player Activity Log</strong> is highly recommended. The monitor will automatically "vacuum" deployment times from your activity history whenever you add a new portal to your list.</p>
+        </div>
+
+        <h2>Changelog</h2>
+        <div class="changelog-entry">
+            <h3>Version 0.3.1</h3>
+            <ul>
+                <li>UPD: Unified terminology to "Decay" to align with official Ingress standards.</li>
+                <li>FIX: Improved robustness of health calculation to prevent data overwriting.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 0.3.0</h3>
+            <ul>
+                <li>NEW: Added real-time COMM monitoring and retroactive history sync.</li>
+                <li>NEW: Integrated history recovery from "Player Activity Log" via GUID matching.</li>
+                <li>NEW: Added "Est. Decay" column to the watchlist.</li>
+                <li>UPD: Switched all time displays to local time format.</li>
+                <li>UPD: Fully translated UI and comments to English.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 0.2.0</h3>
+            <ul>
+                <li>FIX: Major structural refactoring for better loading stability.</li>
+                <li>NEW: Added manual "Edit Deploy Time" feature.</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>
