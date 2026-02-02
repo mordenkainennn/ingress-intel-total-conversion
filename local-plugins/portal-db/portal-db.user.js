@@ -2,7 +2,7 @@
 // @author         mordenkainen
 // @name           Portal DB
 // @category       Database
-// @version        0.1.2
+// @version        0.2.0
 // @description    Save portal basic information (GUID, Lat, Lng, Team) to IndexedDB for cross-plugin use.
 // @id             portal-db@mordenkainen
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -23,6 +23,15 @@ function wrapper(plugin_info) {
   const self = window.plugin.portalDB;
 
   self.changelog = [
+    {
+      version: '0.2.0',
+      changes: [
+        'NEW: Added Update Statistics system with Hourly Buckets.',
+        'NEW: Persistent statistics using localStorage (no DB migration needed).',
+        'NEW: Real-time stats dashboard in management UI (refresh every 2s).',
+        'UPD: Refactored core update logic to track reasons (New, Changed, Refreshed, Skipped).',
+      ],
+    },
     {
       version: '0.1.2',
       changes: [
@@ -58,6 +67,113 @@ function wrapper(plugin_info) {
   // Default: 24 hours (24 * 60 * 60 * 1000 ms).
   // Set to 0 to force update every time (not recommended for high density areas).
   self.UPDATE_THRESHOLD = 24 * 60 * 60 * 1000;
+
+  // --- Statistics System ---
+  self.UpdateReason = {
+    NEW_PORTAL: 'new_portal',
+    TEAM_CHANGED: 'team_changed',
+    COORD_CHANGED: 'coord_changed',
+    BOTH_CHANGED: 'both_changed',
+    LASTSEEN_REFRESH: 'lastseen_refresh',
+    SKIPPED_FRESH: 'skipped_fresh',
+  };
+
+  self.debug = {
+    showStats: false,
+    refreshInterval: 2000,
+  };
+
+  self.stats = {
+    STORAGE_KEY: 'portal-db-update-stats',
+    buckets: {}, // format: { 'YYYY-MM-DDTHH': { reason: count } }
+    
+    getHourKey: function (date) {
+      const d = date || new Date();
+      const Y = d.getFullYear();
+      const M = String(d.getMonth() + 1).padStart(2, '0');
+      const D = String(d.getDate()).padStart(2, '0');
+      const H = String(d.getHours()).padStart(2, '0');
+      return `${Y}-${M}-${D}T${H}`;
+    },
+
+    initBucket: function (key) {
+      if (!this.buckets[key]) {
+        this.buckets[key] = {};
+      }
+      Object.values(self.UpdateReason).forEach(r => {
+        if (this.buckets[key][r] === undefined) this.buckets[key][r] = 0;
+      });
+    },
+
+    record: function (reason) {
+      const key = this.getHourKey();
+      this.initBucket(key);
+      this.buckets[key][reason]++;
+    },
+
+    load: function () {
+      try {
+        const stored = localStorage.getItem(this.STORAGE_KEY);
+        if (stored) {
+          const data = JSON.parse(stored);
+          if (data && data.buckets) {
+            this.buckets = data.buckets;
+            this.housekeeping();
+          }
+        }
+      } catch (e) {
+        console.error('PortalDB: Failed to load stats', e);
+      }
+    },
+
+    flush: function () {
+      this.housekeeping();
+      try {
+        const data = {
+          version: 1,
+          buckets: this.buckets,
+          lastFlushAt: Date.now()
+        };
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {
+        console.error('PortalDB: Failed to flush stats', e);
+      }
+    },
+
+    _keyToTime: function (key) {
+      const normalized = key.replace('T', ' ') + ':00:00';
+      return new Date(normalized).getTime();
+    },
+
+    housekeeping: function () {
+      const now = Date.now();
+      const limit = now - 48 * 60 * 60 * 1000;
+      let changed = false;
+      Object.keys(this.buckets).forEach(key => {
+        if (this._keyToTime(key) < limit) {
+          delete this.buckets[key];
+          changed = true;
+        }
+      });
+      return changed;
+    },
+
+    getSummary: function (hours) {
+      const results = {};
+      Object.values(self.UpdateReason).forEach(r => results[r] = 0);
+
+      const limit = Date.now() - hours * 60 * 60 * 1000;
+      Object.keys(this.buckets).forEach(key => {
+        if (this._keyToTime(key) >= limit) {
+          const b = this.buckets[key];
+          Object.keys(results).forEach(r => {
+            results[r] += (b[r] || 0);
+          });
+        }
+      });
+      return results;
+    }
+  };
 
   // --- Team Helper ---
   self.TEAM_MAP = {
@@ -163,33 +279,45 @@ function wrapper(plugin_info) {
             team: data.team,
             lastSeen: now,
           });
+          self.stats.record(self.UpdateReason.NEW_PORTAL);
           resolve(true);
           return;
         }
 
         const record = existing;
-        let needsUpdate = false;
+        let coordChanged = false;
+        let teamChanged = false;
 
         // Check content changes
         if (data.latE6 !== undefined && record.latE6 !== data.latE6) {
           record.latE6 = data.latE6;
-          needsUpdate = true;
+          coordChanged = true;
         }
         if (data.lngE6 !== undefined && record.lngE6 !== data.lngE6) {
           record.lngE6 = data.lngE6;
-          needsUpdate = true;
+          coordChanged = true;
         }
         if (data.team !== undefined && record.team !== data.team) {
           record.team = data.team;
-          needsUpdate = true;
+          teamChanged = true;
         }
 
-        // Check age threshold
-        if (needsUpdate || now - record.lastSeen > self.UPDATE_THRESHOLD) {
+        const needsUpdate = coordChanged || teamChanged;
+        const isExpired = now - record.lastSeen > self.UPDATE_THRESHOLD;
+
+        if (needsUpdate || isExpired) {
+          let reason;
+          if (coordChanged && teamChanged) reason = self.UpdateReason.BOTH_CHANGED;
+          else if (coordChanged) reason = self.UpdateReason.COORD_CHANGED;
+          else if (teamChanged) reason = self.UpdateReason.TEAM_CHANGED;
+          else reason = self.UpdateReason.LASTSEEN_REFRESH;
+
           record.lastSeen = now;
           store.put(record);
+          self.stats.record(reason);
           resolve(true);
         } else {
+          self.stats.record(self.UpdateReason.SKIPPED_FRESH);
           resolve(false);
         }
       };
@@ -219,30 +347,43 @@ function wrapper(plugin_info) {
               team: data.team,
               lastSeen: now,
             });
+            self.stats.record(self.UpdateReason.NEW_PORTAL);
             return;
           }
 
           const record = existing;
-          let needsUpdate = false;
+          let coordChanged = false;
+          let teamChanged = false;
 
           // Check content changes
           if (data.latE6 !== undefined && record.latE6 !== data.latE6) {
             record.latE6 = data.latE6;
-            needsUpdate = true;
+            coordChanged = true;
           }
           if (data.lngE6 !== undefined && record.lngE6 !== data.lngE6) {
             record.lngE6 = data.lngE6;
-            needsUpdate = true;
+            coordChanged = true;
           }
           if (data.team !== undefined && record.team !== data.team) {
             record.team = data.team;
-            needsUpdate = true;
+            teamChanged = true;
           }
 
-          // Check age threshold
-          if (needsUpdate || now - record.lastSeen > self.UPDATE_THRESHOLD) {
+          const needsUpdate = coordChanged || teamChanged;
+          const isExpired = now - record.lastSeen > self.UPDATE_THRESHOLD;
+
+          if (needsUpdate || isExpired) {
+            let reason;
+            if (coordChanged && teamChanged) reason = self.UpdateReason.BOTH_CHANGED;
+            else if (coordChanged) reason = self.UpdateReason.COORD_CHANGED;
+            else if (teamChanged) reason = self.UpdateReason.TEAM_CHANGED;
+            else reason = self.UpdateReason.LASTSEEN_REFRESH;
+
             record.lastSeen = now;
             store.put(record);
+            self.stats.record(reason);
+          } else {
+            self.stats.record(self.UpdateReason.SKIPPED_FRESH);
           }
         };
       });
@@ -309,6 +450,37 @@ function wrapper(plugin_info) {
 
   // --- UI Functions ---
 
+  self.updateStatsUI = function () {
+    const container = $('#portal-db-stats-container');
+    if (!container.length) return;
+
+    const summary1h = self.stats.getSummary(1);
+    const summary24h = self.stats.getSummary(24);
+
+    const renderBlock = (title, stats) => {
+      const updated = stats[self.UpdateReason.NEW_PORTAL] + stats[self.UpdateReason.TEAM_CHANGED] + stats[self.UpdateReason.COORD_CHANGED] + stats[self.UpdateReason.BOTH_CHANGED];
+      return `
+        <div style="margin-bottom: 10px;">
+          <h4 style="margin: 5px 0; color: #ffce00; font-size: 0.9em;">${title}</h4>
+          <ul style="margin: 0; padding-left: 15px; font-size: 0.85em; list-style: none;">
+            <li>Core Data Updated: <strong style="color: #00ff00;">${updated}</strong></li>
+            <li>Activity Refreshed: <strong style="color: #aaa;">${stats[self.UpdateReason.LASTSEEN_REFRESH]}</strong></li>
+            <li>Skipped (Redundant): <strong style="color: #aaa;">${stats[self.UpdateReason.SKIPPED_FRESH]}</strong></li>
+          </ul>
+        </div>
+      `;
+    };
+
+    const html = `
+      <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #555;">
+        <h3 style="margin: 0 0 10px 0; font-size: 1em; color: #0ff;">Update Statistics</h3>
+        ${renderBlock('Past 1 Hour', summary1h)}
+        ${renderBlock('Past 24 Hours', summary24h)}
+      </div>
+    `;
+    container.html(html);
+  };
+
   self.showDialog = async function () {
     const stats = await self.getStats();
     const html = `
@@ -318,17 +490,30 @@ function wrapper(plugin_info) {
           <button onclick="window.plugin.portalDB.exportData()">Export JSON</button>
           <button onclick="window.plugin.portalDB.importData()">Import JSON</button>
         </div>
+        <div id="portal-db-stats-container"></div>
         <div style="margin-top: 20px; border-top: 1px solid #444; padding-top: 10px;">
           <button style="color: #ff6666;" onclick="window.plugin.portalDB.resetDB()">RESET DATABASE</button>
         </div>
       </div>
     `;
 
-    window.dialog({
+    const dialog = window.dialog({
       title: 'Portal DB Management',
       html: html,
       id: 'portal-db-mgmt',
+      closeCallback: function() {
+        if (self._uiRefreshTimer) {
+          clearInterval(self._uiRefreshTimer);
+          self._uiRefreshTimer = null;
+        }
+        self.stats.flush();
+      }
     });
+
+    if (self.debug.showStats) {
+      self.updateStatsUI();
+      self._uiRefreshTimer = setInterval(self.updateStatsUI, self.debug.refreshInterval);
+    }
   };
 
   self.exportData = async function () {
@@ -399,6 +584,14 @@ function wrapper(plugin_info) {
   };
 
   const setup = function () {
+    self.stats.load();
+    
+    // Periodically save stats to localStorage
+    setInterval(() => self.stats.flush(), 5 * 60 * 1000);
+    
+    // Save on exit
+    window.addEventListener('beforeunload', () => self.stats.flush());
+
     self.initDB()
       .then(() => {
         // Implement Monkey Patch for entity injection (mapDataEntityInject equivalent)
