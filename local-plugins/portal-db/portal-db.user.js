@@ -2,7 +2,7 @@
 // @author         mordenkainen
 // @name           Portal DB
 // @category       Database
-// @version        0.1.0
+// @version        0.1.1
 // @description    Save portal basic information (GUID, Lat, Lng, Team) to IndexedDB for cross-plugin use.
 // @id             portal-db@mordenkainen
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -23,6 +23,13 @@ function wrapper(plugin_info) {
   const self = window.plugin.portalDB;
 
   self.changelog = [
+    {
+      version: '0.1.1',
+      changes: [
+        'UPD: Refactored data collection to capture raw entities via processGameEntities hook for better performance.',
+        'UPD: Implemented batch database updates.',
+      ],
+    },
     {
       version: '0.1.0',
       changes: [
@@ -177,6 +184,57 @@ function wrapper(plugin_info) {
     });
   };
 
+  self.bulkUpdatePortals = async function (portals) {
+    if (!self.db) await self.initDB();
+    return new Promise((resolve, reject) => {
+      const transaction = self.db.transaction([self.STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(self.STORE_NAME);
+      const now = Date.now();
+
+      portals.forEach((data) => {
+        const getRequest = store.get(data.guid);
+        getRequest.onsuccess = () => {
+          const existing = getRequest.result;
+          let changed = false;
+
+          const record = existing || {
+            guid: data.guid,
+            latE6: data.latE6,
+            lngE6: data.lngE6,
+            team: data.team,
+            lastSeen: now,
+          };
+
+          if (!existing) {
+            changed = true;
+          } else {
+            if (data.latE6 !== undefined && record.latE6 !== data.latE6) {
+              record.latE6 = data.latE6;
+              changed = true;
+            }
+            if (data.lngE6 !== undefined && record.lngE6 !== data.lngE6) {
+              record.lngE6 = data.lngE6;
+              changed = true;
+            }
+            if (data.team !== undefined && record.team !== data.team) {
+              record.team = data.team;
+              changed = true;
+            }
+            record.lastSeen = now;
+            changed = true;
+          }
+
+          if (changed) {
+            store.put(record);
+          }
+        };
+      });
+
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+  };
+
   self.getStats = async function () {
     if (!self.db) await self.initDB();
     return new Promise((resolve, reject) => {
@@ -190,23 +248,33 @@ function wrapper(plugin_info) {
 
   // --- Hooks ---
 
-  self.onPortalAdded = function (data) {
-    const portal = data.portal;
-    const guid = portal.options.guid;
-    const pData = portal.options.data;
+  self.processEntities = function (entities) {
+    const portalsToUpdate = [];
+    for (const i in entities) {
+      const ent = entities[i];
+      // ent format: [guid, timestamp, dataArr]
+      // dataArr for portal: ['p', teamStr, latE6, lngE6]
+      if (ent[2][0] === 'p') {
+        const guid = ent[0];
+        const dataArr = ent[2];
+        const teamStr = dataArr[1]; // 'E', 'R', 'N', 'M'
+        const latE6 = dataArr[2];
+        const lngE6 = dataArr[3];
 
-    // pData.team: 'R', 'E', 'N', 'M' or numeric
-    // In IITC, portal.options.data.team is usually 'R', 'E', 'N', 'M' after internal processing
-    let team = pData.team;
-    if (typeof team === 'number') {
-      team = self.getTeamChar(team);
+        portalsToUpdate.push({
+          guid: guid,
+          latE6: latE6,
+          lngE6: lngE6,
+          team: teamStr,
+        });
+      }
     }
 
-    self.refreshPortal(guid, {
-      latE6: pData.latE6,
-      lngE6: pData.lngE6,
-      team: team,
-    });
+    if (portalsToUpdate.length > 0) {
+      self.bulkUpdatePortals(portalsToUpdate).catch((err) => {
+        console.error('PortalDB: Bulk update failed', err);
+      });
+    }
   };
 
   self.onPortalDetailLoaded = function (data) {
@@ -316,7 +384,15 @@ function wrapper(plugin_info) {
   const setup = function () {
     self.initDB()
       .then(() => {
-        window.addHook('portalAdded', self.onPortalAdded.bind(self));
+        // Implement Monkey Patch for entity injection (mapDataEntityInject equivalent)
+        const originalProcessGameEntities = window.Render.prototype.processGameEntities;
+        window.Render.prototype.processGameEntities = function (entities, details) {
+          self.processEntities(entities);
+          if (originalProcessGameEntities) {
+            originalProcessGameEntities.call(this, entities, details);
+          }
+        };
+
         window.addHook('portalDetailLoaded', self.onPortalDetailLoaded.bind(self));
 
         // Add to sidebar
