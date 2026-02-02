@@ -2,7 +2,7 @@
 // @author         mordenkainen
 // @name           Portal DB
 // @category       Database
-// @version        0.1.1
+// @version        0.1.2
 // @description    Save portal basic information (GUID, Lat, Lng, Team) to IndexedDB for cross-plugin use.
 // @id             portal-db@mordenkainen
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -23,6 +23,12 @@ function wrapper(plugin_info) {
   const self = window.plugin.portalDB;
 
   self.changelog = [
+    {
+      version: '0.1.2',
+      changes: [
+        'UPD: Implemented update threshold to reduce database writes. Data is only updated if changed or older than 24 hours.',
+      ],
+    },
     {
       version: '0.1.1',
       changes: [
@@ -46,6 +52,12 @@ function wrapper(plugin_info) {
   self.DB_VERSION = 1;
   self.STORE_NAME = 'portals';
   self.db = null;
+
+  // --- Configuration ---
+  // Time threshold to skip updating 'lastSeen' if no other data changed.
+  // Default: 24 hours (24 * 60 * 60 * 1000 ms).
+  // Set to 0 to force update every time (not recommended for high density areas).
+  self.UPDATE_THRESHOLD = 24 * 60 * 60 * 1000;
 
   // --- Team Helper ---
   self.TEAM_MAP = {
@@ -141,46 +153,48 @@ function wrapper(plugin_info) {
       getRequest.onsuccess = () => {
         const existing = getRequest.result;
         const now = Date.now();
-        let changed = false;
-
-        const record = existing || {
-          guid: guid,
-          latE6: data.latE6,
-          lngE6: data.lngE6,
-          team: data.team,
-          lastSeen: now,
-        };
 
         if (!existing) {
-          changed = true;
-        } else {
-          // Rule: Coordinate is Strong Fact
-          if (data.latE6 !== undefined && record.latE6 !== data.latE6) {
-            record.latE6 = data.latE6;
-            changed = true;
-          }
-          if (data.lngE6 !== undefined && record.lngE6 !== data.lngE6) {
-            record.lngE6 = data.lngE6;
-            changed = true;
-          }
-          // Rule: Team is Best Effort
-          if (data.team !== undefined && record.team !== data.team) {
-            record.team = data.team;
-            changed = true;
-          }
-          // Rule: lastSeen update
-          record.lastSeen = now;
-          changed = true; // lastSeen always updates if we see it
+          // New record
+          store.put({
+            guid: guid,
+            latE6: data.latE6,
+            lngE6: data.lngE6,
+            team: data.team,
+            lastSeen: now,
+          });
+          resolve(true);
+          return;
         }
 
-        if (changed) {
-          const putRequest = store.put(record);
-          putRequest.onsuccess = () => resolve(true);
-          putRequest.onerror = () => reject(putRequest.error);
+        const record = existing;
+        let needsUpdate = false;
+
+        // Check content changes
+        if (data.latE6 !== undefined && record.latE6 !== data.latE6) {
+          record.latE6 = data.latE6;
+          needsUpdate = true;
+        }
+        if (data.lngE6 !== undefined && record.lngE6 !== data.lngE6) {
+          record.lngE6 = data.lngE6;
+          needsUpdate = true;
+        }
+        if (data.team !== undefined && record.team !== data.team) {
+          record.team = data.team;
+          needsUpdate = true;
+        }
+
+        // Check age threshold
+        if (needsUpdate || now - record.lastSeen > self.UPDATE_THRESHOLD) {
+          record.lastSeen = now;
+          store.put(record);
+          resolve(true);
         } else {
           resolve(false);
         }
       };
+
+      getRequest.onerror = () => reject(getRequest.error);
     });
   };
 
@@ -195,36 +209,39 @@ function wrapper(plugin_info) {
         const getRequest = store.get(data.guid);
         getRequest.onsuccess = () => {
           const existing = getRequest.result;
-          let changed = false;
-
-          const record = existing || {
-            guid: data.guid,
-            latE6: data.latE6,
-            lngE6: data.lngE6,
-            team: data.team,
-            lastSeen: now,
-          };
 
           if (!existing) {
-            changed = true;
-          } else {
-            if (data.latE6 !== undefined && record.latE6 !== data.latE6) {
-              record.latE6 = data.latE6;
-              changed = true;
-            }
-            if (data.lngE6 !== undefined && record.lngE6 !== data.lngE6) {
-              record.lngE6 = data.lngE6;
-              changed = true;
-            }
-            if (data.team !== undefined && record.team !== data.team) {
-              record.team = data.team;
-              changed = true;
-            }
-            record.lastSeen = now;
-            changed = true;
+            // New record
+            store.put({
+              guid: data.guid,
+              latE6: data.latE6,
+              lngE6: data.lngE6,
+              team: data.team,
+              lastSeen: now,
+            });
+            return;
           }
 
-          if (changed) {
+          const record = existing;
+          let needsUpdate = false;
+
+          // Check content changes
+          if (data.latE6 !== undefined && record.latE6 !== data.latE6) {
+            record.latE6 = data.latE6;
+            needsUpdate = true;
+          }
+          if (data.lngE6 !== undefined && record.lngE6 !== data.lngE6) {
+            record.lngE6 = data.lngE6;
+            needsUpdate = true;
+          }
+          if (data.team !== undefined && record.team !== data.team) {
+            record.team = data.team;
+            needsUpdate = true;
+          }
+
+          // Check age threshold
+          if (needsUpdate || now - record.lastSeen > self.UPDATE_THRESHOLD) {
+            record.lastSeen = now;
             store.put(record);
           }
         };
