@@ -2,7 +2,7 @@
 // @author         mordenkainen
 // @name           Portal DB
 // @category       Database
-// @version        0.2.0
+// @version        0.3.0
 // @description    Save portal basic information (GUID, Lat, Lng, Team) to IndexedDB for cross-plugin use.
 // @id             portal-db@mordenkainen
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -23,6 +23,15 @@ function wrapper(plugin_info) {
   const self = window.plugin.portalDB;
 
   self.changelog = [
+    {
+      version: '0.3.0',
+      changes: [
+        'NEW: Portal Move Detection. Automatically tracks if a portal is moved > 3 meters.',
+        'NEW: Toolbox notification. Sidebar link turns orange when portal movements are detected.',
+        'NEW: Moved Portals dashboard. View movement history and jump to portal locations.',
+        'UPD: Intelligent name resolution. Displays portal name if available, otherwise truncated GUID.',
+      ],
+    },
     {
       version: '0.2.0',
       changes: [
@@ -67,6 +76,101 @@ function wrapper(plugin_info) {
   // Default: 24 hours (24 * 60 * 60 * 1000 ms).
   // Set to 0 to force update every time (not recommended for high density areas).
   self.UPDATE_THRESHOLD = 24 * 60 * 60 * 1000;
+  self.MOVE_DISTANCE_THRESHOLD = 3; // 3 meters
+
+  // --- Helpers ---
+  self.getDistance = function (lat1E6, lng1E6, lat2E6, lng2E6) {
+    const R = 6371e3; // Earth radius in meters
+    const dLat = (lat2E6 - lat1E6) / 1e6 * Math.PI / 180;
+    const dLng = (lng2E6 - lng1E6) / 1e6 * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1E6 / 1e6 * Math.PI / 180) * Math.cos(lat2E6 / 1e6 * Math.PI / 180) *
+              Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  self.formatGuid = function (guid) {
+    if (!guid) return 'Unknown';
+    return guid.substring(0, 6) + '...' + guid.substring(guid.length - 4);
+  };
+
+  // --- Moves System ---
+  self.moves = {
+    STORAGE_KEY: 'portal-db-moved-portals',
+    list: [], // [{ guid, name, oldLatE6, oldLngE6, newLatE6, newLngE6, time, distance, unread }]
+
+    load: function () {
+      try {
+        const stored = localStorage.getItem(this.STORAGE_KEY);
+        if (stored) this.list = JSON.parse(stored);
+      } catch (e) {
+        console.error('PortalDB: Failed to load moves', e);
+      }
+    },
+
+    save: function () {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.list));
+      this.updateToolbox();
+    },
+
+    record: function (guid, oldLatE6, oldLngE6, newLatE6, newLngE6) {
+      const distance = self.getDistance(oldLatE6, oldLngE6, newLatE6, newLngE6);
+      if (distance < self.MOVE_DISTANCE_THRESHOLD) return;
+
+      // Try to get name from IITC
+      let name = null;
+      if (window.portals[guid]) {
+        name = window.portals[guid].options.data.title;
+      }
+
+      // Check if we already have this move recorded recently (avoid duplicates)
+      const existing = this.list.find(m => m.guid === guid && Math.abs(m.time - Date.now()) < 60000);
+      if (existing) return;
+
+      this.list.unshift({
+        guid: guid,
+        name: name || self.formatGuid(guid),
+        oldLatE6: oldLatE6,
+        oldLngE6: oldLngE6,
+        newLatE6: newLatE6,
+        newLngE6: newLngE6,
+        time: Date.now(),
+        distance: Math.round(distance * 10) / 10,
+        unread: true
+      });
+
+      // Keep only last 50 moves
+      if (this.list.length > 50) this.list.pop();
+      this.save();
+    },
+
+    markAllRead: function () {
+      this.list.forEach(m => m.unread = false);
+      this.save();
+    },
+
+    clear: function () {
+      this.list = [];
+      this.save();
+    },
+
+    updateToolbox: function () {
+      const unreadCount = this.list.filter(m => m.unread).length;
+      const link = $('#portal-db-toolbox-link');
+      if (!link.length) return;
+
+      if (unreadCount > 0) {
+        link.text(`⚠️ Portal Moved (${unreadCount})`)
+            .css('color', '#ff4500')
+            .css('font-weight', 'bold');
+      } else {
+        link.text('Portal DB')
+            .css('color', '')
+            .css('font-weight', '');
+      }
+    }
+  };
 
   // --- Statistics System ---
   self.UpdateReason = {
@@ -312,6 +416,11 @@ function wrapper(plugin_info) {
           else if (teamChanged) reason = self.UpdateReason.TEAM_CHANGED;
           else reason = self.UpdateReason.LASTSEEN_REFRESH;
 
+          // Record move if coordinate changed
+          if (coordChanged) {
+            self.moves.record(guid, existing.latE6, existing.lngE6, data.latE6, data.lngE6);
+          }
+
           record.lastSeen = now;
           store.put(record);
           self.stats.record(reason);
@@ -378,6 +487,11 @@ function wrapper(plugin_info) {
             else if (coordChanged) reason = self.UpdateReason.COORD_CHANGED;
             else if (teamChanged) reason = self.UpdateReason.TEAM_CHANGED;
             else reason = self.UpdateReason.LASTSEEN_REFRESH;
+
+            // Record move if coordinate changed
+            if (coordChanged) {
+              self.moves.record(data.guid, existing.latE6, existing.lngE6, data.latE6, data.lngE6);
+            }
 
             record.lastSeen = now;
             store.put(record);
@@ -483,6 +597,39 @@ function wrapper(plugin_info) {
 
   self.showDialog = async function () {
     const stats = await self.getStats();
+    
+    // Moved Portals Section
+    let movesHtml = '<p style="color:#aaa; font-style:italic; font-size:0.9em;">No portal movements detected recently.</p>';
+    if (self.moves.list.length > 0) {
+      movesHtml = `
+        <div style="max-height: 150px; overflow-y: auto; background: #111; padding: 5px; border: 1px solid #333;">
+          <table style="width: 100%; font-size: 0.85em; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 1px solid #444; color: #ffce00;">
+                <th style="text-align: left;">Portal</th>
+                <th style="text-align: right;">Dist.</th>
+                <th style="text-align: right;">Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${self.moves.list.map((m, idx) => `
+                <tr style="border-bottom: 1px solid #222; cursor: pointer; ${m.unread ? 'background: #2a1a00;' : ''}" 
+                    onclick="window.plugin.portalDB.jumpToMove(${idx})">
+                  <td style="padding: 4px 0;" title="${m.guid}">${m.name}</td>
+                  <td style="text-align: right; color: #ff6666;">${m.distance}m</td>
+                  <td style="text-align: right; color: #888;">${new Date(m.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top: 5px; text-align: right;">
+          <a href="#" onclick="event.preventDefault(); window.plugin.portalDB.moves.markAllRead(); window.plugin.portalDB.showDialog();" style="font-size: 0.8em; color: #0ff;">Mark all read</a> | 
+          <a href="#" onclick="event.preventDefault(); if(confirm('Clear all move logs?')) { window.plugin.portalDB.moves.clear(); window.plugin.portalDB.showDialog(); }" style="font-size: 0.8em; color: #ff6666;">Clear</a>
+        </div>
+      `;
+    }
+
     const html = `
       <div id="portal-db-dialog">
         <p>Total Portals in DB: <strong>${stats.count}</strong></p>
@@ -490,7 +637,15 @@ function wrapper(plugin_info) {
           <button onclick="window.plugin.portalDB.exportData()">Export JSON</button>
           <button onclick="window.plugin.portalDB.importData()">Import JSON</button>
         </div>
-        <div id="portal-db-stats-container"></div>
+
+        <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #555;">
+          <h3 style="margin: 0 0 10px 0; font-size: 1em; color: #ffce00;">⚠️ Moved Portals</h3>
+          ${movesHtml}
+        </div>
+
+        <div id="portal-db-stats-container">
+          ${self.debug.showStats ? '<p style="font-size:0.8em; color:#666;">Loading statistics...</p>' : ''}
+        </div>
         <div style="margin-top: 20px; border-top: 1px solid #444; padding-top: 10px;">
           <button style="color: #ff6666;" onclick="window.plugin.portalDB.resetDB()">RESET DATABASE</button>
         </div>
@@ -501,18 +656,46 @@ function wrapper(plugin_info) {
       title: 'Portal DB Management',
       html: html,
       id: 'portal-db-mgmt',
+      width: 400,
       closeCallback: function() {
         if (self._uiRefreshTimer) {
           clearInterval(self._uiRefreshTimer);
           self._uiRefreshTimer = null;
         }
         self.stats.flush();
+        self.moves.save();
       }
     });
 
     if (self.debug.showStats) {
-      self.updateStatsUI();
-      self._uiRefreshTimer = setInterval(self.updateStatsUI, self.debug.refreshInterval);
+      setTimeout(() => {
+        self.updateStatsUI();
+        self._uiRefreshTimer = setInterval(self.updateStatsUI, self.debug.refreshInterval);
+      }, 100);
+    }
+  };
+
+  self.jumpToMove = function (index) {
+    const move = self.moves.list[index];
+    if (!move) return;
+    
+    move.unread = false;
+    self.moves.save();
+    
+    const latlng = [move.newLatE6 / 1e6, move.newLngE6 / 1e6];
+    window.map.setView(latlng, 17);
+    
+    // Select portal if it's already on map
+    if (window.portals[move.guid]) {
+      window.renderPortalDetails(move.guid);
+    } else {
+      // Try to load details to get name if it was truncated GUID
+      window.portalDetail.request(move.guid).then(details => {
+        if (details && details.title) {
+          move.name = details.title;
+          self.moves.save();
+        }
+      });
     }
   };
 
@@ -585,12 +768,16 @@ function wrapper(plugin_info) {
 
   const setup = function () {
     self.stats.load();
+    self.moves.load();
     
     // Periodically save stats to localStorage
     setInterval(() => self.stats.flush(), 5 * 60 * 1000);
     
     // Save on exit
-    window.addEventListener('beforeunload', () => self.stats.flush());
+    window.addEventListener('beforeunload', () => {
+      self.stats.flush();
+      self.moves.save();
+    });
 
     self.initDB()
       .then(() => {
@@ -609,6 +796,7 @@ function wrapper(plugin_info) {
         const sidebar = document.getElementById('toolbox');
         if (sidebar) {
           const link = document.createElement('a');
+          link.id = 'portal-db-toolbox-link';
           link.textContent = 'Portal DB';
           link.title = 'Manage local Portal database';
           link.href = '#';
@@ -617,6 +805,9 @@ function wrapper(plugin_info) {
             self.showDialog();
           };
           sidebar.appendChild(link);
+          
+          // Initial toolbox update
+          self.moves.updateToolbox();
         }
       })
       .catch((err) => {

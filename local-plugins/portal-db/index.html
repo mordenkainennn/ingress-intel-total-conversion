@@ -137,8 +137,16 @@
                 <p>Automatically captures portal information from the map as you browse. It intercepts raw game entities to ensure high performance and extensive coverage without requiring manual action.</p>
             </li>
             <li>
-                <h3>Data Management</h3>
-                <p>Includes a simple management interface in the toolbox to <strong>Export</strong> (backup) and <strong>Import</strong> (restore/share) your JSON database.</p>
+                <h3>Portal Move Detection 🛡️</h3>
+                <p>Automatically detects if a portal has been moved. If a coordinate change greater than <strong>3 meters</strong> is detected, the plugin records the old and new positions. This helps identify tactical portal movements intended to break block links.</p>
+            </li>
+            <li>
+                <h3>Visual Alerts</h3>
+                <p>When new portal movements are detected, the <strong>"Portal DB"</strong> link in the IITC toolbox sidebar turns orange and displays a warning count (e.g., <code>⚠️ Portal Moved (3)</code>).</p>
+            </li>
+            <li>
+                <h3>Update Statistics (Debug)</h3>
+                <p>Features an hourly bucket statistics system to monitor data update reasons (New, Changed, Refreshed, Skipped). Useful for verifying filter efficiency.</p>
             </li>
         </ul>
 
@@ -179,9 +187,9 @@ window.plugin.portalDB.getPortalsInBounds(bounds)
 
         <h2>How to Use</h2>
         <ol style="padding-left: 30px;">
-            <li>Just browse the Intel Map! The plugin runs silently in the background, collecting data for every portal loaded into your view.</li>
-            <li>To manage your data, click the <strong>"Portal DB"</strong> link in the IITC toolbox sidebar.</li>
-            <li>A dialog will appear showing the total count of portals in your local database.</li>
+            <li>Just browse the Intel Map! The plugin runs silently in the background, collecting data and detecting portal moves.</li>
+            <li>If the toolbox link turns red, it means portals have moved. Click <strong>"Portal DB"</strong> to view details.</li>
+            <li>In the management dialog, the <strong>"Moved Portals"</strong> list shows all detected changes. Click an entry to jump to that portal on the map.</li>
             <li>Use the <strong>Export</strong> and <strong>Import</strong> buttons to backup or transfer your data.</li>
         </ol>
 
@@ -191,18 +199,25 @@ window.plugin.portalDB.getPortalsInBounds(bounds)
 
         <h2>Changelog</h2>
         <div class="changelog-entry">
-            <h3>Version 0.1.1</h3>
+            <h3>Version 0.3.0</h3>
             <ul>
-                <li>UPD: Refactored data collection to capture raw entities via <code>processGameEntities</code> hook for significantly better performance and data coverage.</li>
-                <li>UPD: Implemented batch database updates to reduce IndexedDB transaction overhead.</li>
+                <li>NEW: Portal Move Detection feature. Tracks portals moved > 3 meters.</li>
+                <li>NEW: Toolbox visual alerts. Link changes color and shows count when moves are detected.</li>
+                <li>NEW: Moved Portals dashboard. View history, jump to location, and auto-resolve names.</li>
             </ul>
         </div>
         <div class="changelog-entry">
-            <h3>Version 0.1.0</h3>
+            <h3>Version 0.2.0</h3>
             <ul>
-                <li>NEW: Initial release.</li>
-                <li>NEW: Persistent storage for portal basic info using IndexedDB.</li>
-                <li>NEW: Management UI for export/import and database reset.</li>
+                <li>NEW: Hourly bucket statistics system.</li>
+                <li>NEW: Persistent stats using localStorage.</li>
+                <li>NEW: Real-time stats dashboard in management UI.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 0.1.2</h3>
+            <ul>
+                <li>UPD: Implemented update threshold mechanism. Only writes to DB if data changed or 24h passed, reducing I/O.</li>
             </ul>
         </div>
     </div>

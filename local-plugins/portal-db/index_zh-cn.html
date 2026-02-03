@@ -137,8 +137,16 @@
                 <p>在您浏览地图时自动捕获 Portal 信息。它直接拦截原始游戏实体数据，确保高性能和广泛的数据覆盖，无需任何手动操作。</p>
             </li>
             <li>
-                <h3>数据管理</h3>
-                <p>在工具箱中包含一个简单的管理界面，用于 <strong>导出</strong> (备份) 和 <strong>导入</strong> (恢复/共享) 您的 JSON 数据库。</p>
+                <h3>Portal 移动检测 🛡️</h3>
+                <p>自动检测 Portal 的坐标变动。如果某个 Portal 的移动距离超过 <strong>3 米</strong>，插件会记录其原始位置、新位置以及发现时间。这对于防御通过申请移动 Portal 来破坏 Block Link 的战术非常有效。</p>
+            </li>
+            <li>
+                <h3>视觉预警提醒</h3>
+                <p>当检测到新的 Portal 移动时，侧边栏工具箱中的 <strong>"Portal DB"</strong> 链接会变为橙红色并显示警告数量（例如：<code>⚠️ Portal Moved (3)</code>）。</p>
+            </li>
+            <li>
+                <h3>更新统计 (Debug)</h3>
+                <p>内置详细的小时桶统计系统，记录数据的更新原因（新增、变更、刷新、跳过）。支持实时查看过滤效率。</p>
             </li>
         </ul>
 
@@ -179,9 +187,9 @@ window.plugin.portalDB.getPortalsInBounds(bounds)
 
         <h2>如何使用</h2>
         <ol style="padding-left: 30px;">
-            <li>只需浏览 Intel 地图！插件会在后台静默运行，收集加载到您视野中的每一个 Portal 的数据。</li>
-            <li>要管理数据，请点击 IITC 工具箱侧边栏中的 <strong>"Portal DB"</strong> 链接。</li>
-            <li>将会出现一个对话框，显示本地数据库中存储的 Portal 总数。</li>
+            <li>只需浏览 Intel 地图！插件会在后台静默运行，收集 Portal 数据并检测其移动。</li>
+            <li>如果侧边栏链接变红，说明有 Portal 被移动了。点击 <strong>"Portal DB"</strong> 查看详情。</li>
+            <li>在弹出的对话框中，<strong>"Moved Portals"</strong> 列表会展示所有移动记录。点击列表项可直接在地图上跳转到该 Portal。</li>
             <li>使用 <strong>Export</strong> (导出) 和 <strong>Import</strong> (导入) 按钮来备份或迁移您的数据。</li>
         </ol>
 
@@ -191,18 +199,25 @@ window.plugin.portalDB.getPortalsInBounds(bounds)
 
         <h2>更新日志</h2>
         <div class="changelog-entry">
-            <h3>版本 0.1.1</h3>
+            <h3>版本 0.3.0</h3>
             <ul>
-                <li>更新: 重构了数据采集逻辑，通过 <code>processGameEntities</code> 钩子捕获原始实体，显著提升了性能和数据覆盖率。</li>
-                <li>更新: 实现了批量数据库更新，以减少 IndexedDB 事务开销。</li>
+                <li>新增: Portal 移动检测功能。自动追踪移动超过 3 米的 Portal。</li>
+                <li>新增: 工具箱视觉提醒。当检测到移动时，侧边栏链接变色并显示数量。</li>
+                <li>新增: 移动记录仪表盘。支持查看历史、一键跳转及名称自动解析。</li>
             </ul>
         </div>
         <div class="changelog-entry">
-            <h3>版本 0.1.0</h3>
+            <h3>版本 0.2.0</h3>
             <ul>
-                <li>新增: 初始版本发布。</li>
-                <li>新增: 使用 IndexedDB 持久化存储 Portal 基础信息。</li>
-                <li>新增: 用于导出/导入和数据库重置的管理 UI。</li>
+                <li>新增: 基于小时桶的数据更新统计系统。</li>
+                <li>新增: 使用 localStorage 持久化统计数据。</li>
+                <li>新增: 管理界面实时统计仪表盘。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>版本 0.1.2</h3>
+            <ul>
+                <li>更新: 引入更新阈值机制。仅在数据变更或超过 24 小时后写入，极大减轻 I/O 压力。</li>
             </ul>
         </div>
     </div>
