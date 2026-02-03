@@ -22,6 +22,8 @@
 
 禁止使用eslint检查代码！
 
+注意：iitc-ce在master分支，而不是main分支。在撰写插件的UserScript时，一定要注意链接的准确性。
+
 
 
 

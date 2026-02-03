@@ -2,7 +2,7 @@
 // @id             iitc-plugin-ap-stats@mordenkainennn
 // @name           Available AP statistics [mordenkainennn]
 // @category       Info
-// @version        0.4.6.1
+// @version        0.4.6.2
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/main/local-plugins/ap-stats.meta.js
 // @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/main/local-plugins/ap-stats.user.js

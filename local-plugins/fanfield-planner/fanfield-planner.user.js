@@ -1,13 +1,13 @@
 // ==UserScript==
 // @id             iitc-plugin-fanfield-planner@mordenkainennn
 // @name           IITC Plugin: mordenkainennn's Fanfield Planner
-// @version        2.1
+// @version        2.1.1
 // @description    Plugin for planning fanfields/pincushions in IITC (Phase 1 Safe Mode)
 // @author         mordenkainennn
 // @category       Layer
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
-// @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/main/local-plugins/fanfield-planner/fanfield-planner.meta.js
-// @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/main/local-plugins/fanfield-planner/fanfield-planner.user.js
+// @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/fanfield-planner/fanfield-planner.meta.js
+// @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/fanfield-planner/fanfield-planner.user.js
 // @match          https://intel.ingress.com/*
 // @match          http://intel.ingress.com/*
 // @grant          none
@@ -16,6 +16,17 @@
 function wrapper(plugin_info) {
     if (typeof window.plugin !== 'function') window.plugin = function () { };
     const self = (window.plugin.fanfieldPlanner = function () { });
+
+    self.changelog = [
+        {
+            version: '2.1.1',
+            changes: ['FIX: Corrected UserScript update/download URLs to point to the correct `master` branch.'],
+        },
+        {
+            version: '2.1',
+            changes: ['Initial release for fanfield planning.'],
+        },
+    ];
 
     self.anchorPortal = null;
     self.basePortals = [];

@@ -2,10 +2,10 @@
 // @id             iitc-plugin-ap-stats@mordenkainennn
 // @name           Available AP statistics [mordenkainennn]
 // @category       Info
-// @version        0.4.6.1
+// @version        0.4.6.2
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
-// @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/main/local-plugins/ap-stats.meta.js
-// @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/main/local-plugins/ap-stats.user.js
+// @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/ap-stats.meta.js
+// @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/ap-stats.user.js
 // @description    Displays the per-team AP gains available in the current view. [mordenkainennn-tweak: Standalone script conversion]
 // @match          https://intel.ingress.com/*
 // @match          https://intel-x.ingress.com/*
@@ -27,6 +27,10 @@ function wrapper(plugin_info) {
     /* exported setup, changelog --eslint */
 
     var changelog = [
+        {
+            version: '0.4.6.2',
+            changes: ['FIX: Corrected UserScript update/download URLs to point to the correct `master` branch.'],
+        },
         {
             version: '0.4.6.1',
             changes: ['MOD: Converted to standalone script and updated metadata by mordenkainennn.'],
