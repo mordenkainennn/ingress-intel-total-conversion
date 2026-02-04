@@ -2,7 +2,7 @@
 // @author         mordenkainen
 // @name           Portal Afterimage
 // @category       Layer
-// @version        0.1.0
+// @version        0.1.1
 // @description    Draw a subtle afterimage of portals you've seen when official portals are hidden by zoom.
 // @id             portal-afterimage@mordenkainen
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -20,6 +20,14 @@ function wrapper(plugin_info) {
   const self = window.plugin.portalAfterimage;
 
   self.changelog = [
+    {
+      version: '0.1.1',
+      changes: [
+        'UPD: Use Portal DB API for portal coordinates and last-seen timestamps.',
+        'UPD: Afterimage database now stores only GUID and portal name.',
+        'UPD: Maintenance list now resolves coordinates and last-seen via Portal DB.',
+      ],
+    },
     {
       version: '0.1.0',
       changes: ['NEW: Initial release.'],
@@ -45,6 +53,8 @@ function wrapper(plugin_info) {
     minDays: 180,
     list: [],
   };
+  self.guidCache = new Set();
+  self.guidCacheLoaded = false;
 
   self.formatGuid = function (guid) {
     if (!guid) return 'Unknown';
@@ -84,11 +94,7 @@ function wrapper(plugin_info) {
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
         if (!db.objectStoreNames.contains(self.STORE_NAME)) {
-          const store = db.createObjectStore(self.STORE_NAME, { keyPath: 'guid' });
-          store.createIndex('lat', 'lat', { unique: false });
-          store.createIndex('lng', 'lng', { unique: false });
-          store.createIndex('lastSeen', 'lastSeen', { unique: false });
-          store.createIndex('s2cell', 's2cell', { unique: false });
+          db.createObjectStore(self.STORE_NAME, { keyPath: 'guid' });
         }
       };
 
@@ -182,13 +188,9 @@ function wrapper(plugin_info) {
   self.queuePortalUpdate = function (update) {
     if (!update || !update.guid) return;
     const guid = update.guid;
-    const now = Date.now();
 
     const pending = self.pending[guid] || { guid: guid };
-    if (typeof update.lat === 'number') pending.lat = update.lat;
-    if (typeof update.lng === 'number') pending.lng = update.lng;
     if (update.name) pending.name = update.name;
-    pending.lastSeen = update.lastSeen || now;
 
     self.pending[guid] = pending;
 
@@ -220,21 +222,13 @@ function wrapper(plugin_info) {
 
           updates.forEach((update) => {
             const getReq = store.get(update.guid);
+            if (self.guidCache) self.guidCache.add(update.guid);
 
             getReq.onsuccess = () => {
               const existing = getReq.result || {};
-              const lat = typeof update.lat === 'number' ? update.lat : existing.lat;
-              const lng = typeof update.lng === 'number' ? update.lng : existing.lng;
-
-              if (typeof lat !== 'number' || typeof lng !== 'number') return;
-
               const record = {
                 guid: update.guid,
-                lat: lat,
-                lng: lng,
                 name: update.name || existing.name || '',
-                lastSeen: Math.max(existing.lastSeen || 0, update.lastSeen || Date.now()),
-                s2cell: self.getS2CellId(lat, lng),
               };
 
               store.put(record);
@@ -257,9 +251,6 @@ function wrapper(plugin_info) {
       const ent = entities[i];
       if (!ent || !ent[2] || ent[2][0] !== 'p') continue;
       const guid = ent[0];
-      const data = ent[2];
-      const lat = data[2] / 1e6;
-      const lng = data[3] / 1e6;
       let name = null;
       if (window.portals && window.portals[guid] && window.portals[guid].options.data.title) {
         name = window.portals[guid].options.data.title;
@@ -267,10 +258,7 @@ function wrapper(plugin_info) {
 
       self.queuePortalUpdate({
         guid: guid,
-        lat: lat,
-        lng: lng,
         name: name,
-        lastSeen: Date.now(),
       });
     }
   };
@@ -278,16 +266,24 @@ function wrapper(plugin_info) {
   self.onPortalDetailLoaded = function (data) {
     if (!data || !data.success || !data.details) return;
     const guid = data.guid;
-    const lat = data.details.latE6 / 1e6;
-    const lng = data.details.lngE6 / 1e6;
     const name = data.details.title;
     self.queuePortalUpdate({
       guid: guid,
-      lat: lat,
-      lng: lng,
       name: name,
-      lastSeen: Date.now(),
     });
+  };
+
+  self.getPortalDB = function () {
+    if (!window.plugin || !window.plugin.portalDB) return null;
+    const api = window.plugin.portalDB;
+    if (typeof api.getPortalsInBounds !== 'function' || typeof api.getPortal !== 'function') return null;
+    return api;
+  };
+
+  self.warnPortalDB = function () {
+    if (self._warnedPortalDB) return;
+    self._warnedPortalDB = true;
+    console.warn('Portal Afterimage: Portal DB not available. Afterimage rendering is disabled.');
   };
 
   self.arePortalsVisible = function () {
@@ -319,56 +315,38 @@ function wrapper(plugin_info) {
 
   self.getPortalsInBounds = function (bounds) {
     if (!bounds) return Promise.resolve([]);
+    const portalDB = self.getPortalDB();
+    if (!portalDB) {
+      self.warnPortalDB();
+      return Promise.resolve([]);
+    }
 
-    return self.initDB().then(
-      () =>
-        new Promise((resolve, reject) => {
-          const sw = bounds.getSouthWest();
-          const ne = bounds.getNorthEast();
-          const minLat = sw.lat;
-          const maxLat = ne.lat;
-          const minLng = sw.lng;
-          const maxLng = ne.lng;
-          const crosses = minLng > maxLng;
-
-          const tx = self.db.transaction([self.STORE_NAME], 'readonly');
-          const store = tx.objectStore(self.STORE_NAME);
-          const index = store.index('lat');
-          const range = IDBKeyRange.bound(minLat, maxLat);
-          const results = [];
-
-          index.openCursor(range).onsuccess = (event) => {
-            const cursor = event.target.result;
-            if (cursor) {
-              const rec = cursor.value;
-              const inLng = crosses ? rec.lng >= minLng || rec.lng <= maxLng : rec.lng >= minLng && rec.lng <= maxLng;
-              if (inLng) results.push(rec);
-              cursor.continue();
-            } else {
-              resolve(results);
-            }
-          };
-
-          tx.onerror = () => reject(tx.error);
-        })
+    return portalDB.getPortalsInBounds(bounds).then((records) =>
+      (records || []).map((rec) => ({
+        guid: rec.guid,
+        lat: typeof rec.latE6 === 'number' ? rec.latE6 / 1e6 : null,
+        lng: typeof rec.lngE6 === 'number' ? rec.lngE6 / 1e6 : null,
+        lastSeen: rec.lastSeen || 0,
+      }))
     );
   };
 
   self.selectRepresentatives = function (records) {
     const map = new Map();
     records.forEach((rec) => {
-      if (!rec || !rec.s2cell) return;
-      const existing = map.get(rec.s2cell);
+      if (!rec || typeof rec.lat !== 'number' || typeof rec.lng !== 'number') return;
+      const cellId = self.getS2CellId(rec.lat, rec.lng);
+      const existing = map.get(cellId);
       if (!existing) {
-        map.set(rec.s2cell, rec);
+        map.set(cellId, rec);
         return;
       }
       const recSeen = rec.lastSeen || 0;
       const exSeen = existing.lastSeen || 0;
       if (self.REPRESENTATIVE_STRATEGY === 'oldest') {
-        if (recSeen < exSeen) map.set(rec.s2cell, rec);
+        if (recSeen < exSeen) map.set(cellId, rec);
       } else {
-        if (recSeen > exSeen) map.set(rec.s2cell, rec);
+        if (recSeen > exSeen) map.set(cellId, rec);
       }
     });
     return Array.from(map.values());
@@ -394,6 +372,13 @@ function wrapper(plugin_info) {
       return;
     }
 
+    if (!self.guidCacheLoaded) {
+      self.loadGuidCache()
+        .then(() => self.scheduleRender())
+        .catch((err) => console.error('Portal Afterimage: failed to load guid cache', err));
+      return;
+    }
+
     self.rendering = true;
 
     const bounds = window.map.getBounds();
@@ -404,7 +389,8 @@ function wrapper(plugin_info) {
           return;
         }
 
-        const reps = self.selectRepresentatives(records);
+        const filtered = records.filter((rec) => self.guidCache.has(rec.guid));
+        const reps = self.selectRepresentatives(filtered);
         self.layerGroup.clearLayers();
 
         let count = 0;
@@ -427,33 +413,33 @@ function wrapper(plugin_info) {
     const maxItems = limit || 300;
     const cutoff = days > 0 ? Date.now() - days * 24 * 60 * 60 * 1000 : null;
 
-    return self.initDB().then(
-      () =>
-        new Promise((resolve, reject) => {
-          const tx = self.db.transaction([self.STORE_NAME], 'readonly');
-          const store = tx.objectStore(self.STORE_NAME);
-          const index = store.index('lastSeen');
+    return self.getAfterimageRecords()
+      .then((records) => {
+        if (!records.length) return [];
+        const guids = records.map((rec) => rec.guid);
+        return self.fetchPortalDBRecords(guids).then((portalMap) => {
+          const enriched = records.map((rec) => {
+            const portal = portalMap[rec.guid];
+            const lastSeen = portal && typeof portal.lastSeen === 'number' ? portal.lastSeen : 0;
+            const lat = portal && typeof portal.latE6 === 'number' ? portal.latE6 / 1e6 : null;
+            const lng = portal && typeof portal.lngE6 === 'number' ? portal.lngE6 / 1e6 : null;
+            return {
+              guid: rec.guid,
+              name: rec.name || '',
+              lastSeen: lastSeen,
+              lat: lat,
+              lng: lng,
+            };
+          });
 
-          const range = cutoff ? IDBKeyRange.upperBound(cutoff) : null;
-          const results = [];
+          const filtered = cutoff
+            ? enriched.filter((rec) => rec.lastSeen === 0 || rec.lastSeen <= cutoff)
+            : enriched;
 
-          index.openCursor(range, 'next').onsuccess = (event) => {
-            const cursor = event.target.result;
-            if (cursor) {
-              results.push(cursor.value);
-              if (results.length >= maxItems) {
-                resolve(results);
-                return;
-              }
-              cursor.continue();
-            } else {
-              resolve(results);
-            }
-          };
-
-          tx.onerror = () => reject(tx.error);
-        })
-    );
+          filtered.sort((a, b) => (a.lastSeen || 0) - (b.lastSeen || 0));
+          return filtered.slice(0, maxItems);
+        });
+      });
   };
 
   self.renderMaintenanceList = function (records) {
@@ -464,13 +450,15 @@ function wrapper(plugin_info) {
         const name = self.escapeHtml(rec.name || self.formatGuid(rec.guid));
         const lastSeen = self.formatTime(rec.lastSeen);
         const ageDays = rec.lastSeen ? Math.floor((Date.now() - rec.lastSeen) / 86400000) : '-';
-        const lat = typeof rec.lat === 'number' ? rec.lat : 0;
-        const lng = typeof rec.lng === 'number' ? rec.lng : 0;
+        const hasCoords = typeof rec.lat === 'number' && typeof rec.lng === 'number';
+        const portalCell = hasCoords
+          ? `<a onclick="window.plugin.portalAfterimage.jumpToPortal('${rec.guid}', ${rec.lat}, ${rec.lng})">${name}</a>`
+          : `<span>${name}</span>`;
 
         return `
           <tr>
             <td><input type="checkbox" data-guid="${rec.guid}"></td>
-            <td><a onclick="window.plugin.portalAfterimage.jumpToPortal('${rec.guid}', ${lat}, ${lng})">${name}</a></td>
+            <td>${portalCell}</td>
             <td>${lastSeen}</td>
             <td style="text-align:right;">${ageDays}</td>
           </tr>
@@ -501,6 +489,12 @@ function wrapper(plugin_info) {
   };
 
   self.refreshMaintenance = function () {
+    if (!self.getPortalDB()) {
+      self.warnPortalDB();
+      $('#portal-afterimage-list').html('<div style="color:#f66;">Portal DB is required for maintenance data.</div>');
+      return;
+    }
+
     const input = $('#portal-afterimage-days');
     const value = input.length ? parseInt(input.val(), 10) : self.ui.minDays;
     self.ui.minDays = isNaN(value) ? 180 : Math.max(0, value);
@@ -520,6 +514,10 @@ function wrapper(plugin_info) {
 
   self.deletePortals = function (guids) {
     if (!guids || !guids.length) return Promise.resolve();
+
+    if (self.guidCache) {
+      guids.forEach((guid) => self.guidCache.delete(guid));
+    }
 
     return self.initDB().then(
       () =>
@@ -559,11 +557,91 @@ function wrapper(plugin_info) {
   };
 
   self.jumpToPortal = function (guid, lat, lng) {
-    if (window.zoomToAndShowPortal) {
-      window.zoomToAndShowPortal(guid, [lat, lng]);
-    } else {
-      window.map.setView([lat, lng], 16);
+    const hasCoords = typeof lat === 'number' && typeof lng === 'number';
+    if (hasCoords) {
+      if (window.zoomToAndShowPortal) {
+        window.zoomToAndShowPortal(guid, [lat, lng]);
+      } else {
+        window.map.setView([lat, lng], 16);
+      }
+      return;
     }
+
+    const portalDB = self.getPortalDB();
+    if (!portalDB) {
+      self.warnPortalDB();
+      return;
+    }
+
+    portalDB.getPortal(guid).then((record) => {
+      if (!record || typeof record.latE6 !== 'number' || typeof record.lngE6 !== 'number') return;
+      const target = [record.latE6 / 1e6, record.lngE6 / 1e6];
+      if (window.zoomToAndShowPortal) {
+        window.zoomToAndShowPortal(guid, target);
+      } else {
+        window.map.setView(target, 16);
+      }
+    });
+  };
+
+  self.getAfterimageRecords = function () {
+    return self.initDB().then(
+      () =>
+        new Promise((resolve, reject) => {
+          const tx = self.db.transaction([self.STORE_NAME], 'readonly');
+          const store = tx.objectStore(self.STORE_NAME);
+          const results = [];
+
+          store.openCursor().onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor) {
+              results.push(cursor.value);
+              cursor.continue();
+            } else {
+              resolve(results);
+            }
+          };
+
+          tx.onerror = () => reject(tx.error);
+        })
+    );
+  };
+
+  self.loadGuidCache = function () {
+    return self.getAfterimageRecords().then((records) => {
+      self.guidCache = new Set();
+      records.forEach((rec) => {
+        if (rec && rec.guid) self.guidCache.add(rec.guid);
+      });
+      self.guidCacheLoaded = true;
+    });
+  };
+
+  self.fetchPortalDBRecords = function (guids) {
+    const portalDB = self.getPortalDB();
+    if (!portalDB) {
+      self.warnPortalDB();
+      return Promise.resolve({});
+    }
+
+    const results = {};
+    const batchSize = 50;
+    let index = 0;
+
+    const next = function () {
+      if (index >= guids.length) return Promise.resolve(results);
+      const slice = guids.slice(index, index + batchSize);
+      index += batchSize;
+
+      return Promise.all(slice.map((guid) => portalDB.getPortal(guid).catch(() => null))).then((records) => {
+        records.forEach((record, idx) => {
+          if (record) results[slice[idx]] = record;
+        });
+        return next();
+      });
+    };
+
+    return next();
   };
 
   self.showMaintenanceDialog = function () {
