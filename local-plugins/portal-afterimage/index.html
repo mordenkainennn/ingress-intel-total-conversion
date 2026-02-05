@@ -1,0 +1,212 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC Plugin: Portal Afterimage</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Coda', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+             font-size: 1.2em;
+             color: #ffce00;
+             margin-top: 20px;
+        }
+        p, li {
+            color: #ccc;
+        }
+        strong {
+            color: #ffce00;
+        }
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border-bottom: 1px solid #233;
+            padding: 8px 6px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            color: #ffce00;
+        }
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index_zh-cn.html">中文</a> | <a href="index_ja.html">日本語</a>
+    </div>
+
+    <div class="container">
+        <h1>Portal Afterimage</h1>
+
+        <div class="note" style="border-color: #f66; background-color: rgba(255, 100, 100, 0.1);">
+            <p><strong style="color: #f66;">Prerequisite:</strong> This plugin <strong>requires</strong> the <code style="color:#fada5e">Portal DB</code> plugin to be installed and enabled. Afterimage relies on Portal DB for all portal coordinates and timestamps.</p>
+        </div>
+
+        <p><strong>Portal Afterimage</strong> draws a subtle memory layer of portals you have already seen, but only when the official portal layer is hidden by zoom. It never guesses or fills missing data — it only visualizes what your client has actually received.</p>
+        <p>This plugin depends on <strong>Portal DB</strong> for portal coordinates and last-seen timestamps. Afterimage itself stores only GUID and name locally.</p>
+
+        <h2>Features</h2>
+        <ul>
+            <li>
+                <h3>Memory Layer Only</h3>
+                <p>Displays faint afterimages only when official portals are hidden by zoom. It never replaces or modifies native portal rendering.</p>
+            </li>
+            <li>
+                <h3>Local & Private</h3>
+                <p>All data stays in your browser. Nothing is uploaded or shared across devices.</p>
+            </li>
+            <li>
+                <h3>S2 Cell Abstraction</h3>
+                <p>Portals are grouped by S2 cells (configurable level). Each cell shows a limited number of portals to avoid overload.</p>
+            </li>
+            <li>
+                <h3>Safe Degradation</h3>
+                <p>Hard cap (<code>MAX_DRAWN_ELEMENTS</code>) prevents heavy areas from freezing the map.</p>
+            </li>
+        </ul>
+
+        <h2>Settings</h2>
+        <ul>
+            <li><strong>S2 Level (15–18):</strong> Higher level = smaller cells = more detail.</li>
+            <li><strong>Per Cell (1–3):</strong> How many portals to display inside each S2 cell.</li>
+            <li><strong>Selection Rule:</strong> Portals are chosen by <code>lastSeen</code> from Portal DB (most recent first).</li>
+        </ul>
+
+        <h2>S2 Level Reference (L15–L19)</h2>
+        <p>Approximate sizes shown below are for latitude ~37°. Actual sizes vary by latitude.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Level</th>
+                    <th>E-W Edge</th>
+                    <th>N-S Edge</th>
+                    <th>Approx Area</th>
+                    <th>Typical Use</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>L15</td>
+                    <td>~509 m</td>
+                    <td>~637 m</td>
+                    <td>~0.32 km&sup2;</td>
+                    <td>Map data loading boundary</td>
+                </tr>
+                <tr>
+                    <td>L16</td>
+                    <td>~254 m</td>
+                    <td>~318 m</td>
+                    <td>~0.08 km&sup2;</td>
+                    <td>Control Field rendering precision</td>
+                </tr>
+                <tr>
+                    <td>L17</td>
+                    <td>~127 m</td>
+                    <td>~159 m</td>
+                    <td>~0.02 km&sup2;</td>
+                    <td>Pokémon GO POI density limit</td>
+                </tr>
+                <tr>
+                    <td>L18</td>
+                    <td>~63 m</td>
+                    <td>~79 m</td>
+                    <td>~0.005 km&sup2;</td>
+                    <td>Fine geofencing</td>
+                </tr>
+                <tr>
+                    <td>L19</td>
+                    <td>~32 m</td>
+                    <td>~40 m</td>
+                    <td>~1,280 m&sup2;</td>
+                    <td>Portal placement uniqueness check</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="note">
+            <p><strong>Tip:</strong> Start at L18 with Per Cell = 1, then increase level or per-cell count based on density. Higher detail means more markers and faster hitting the 5000 cap.</p>
+        </div>
+    </div>
+
+</body>
+</html>
+

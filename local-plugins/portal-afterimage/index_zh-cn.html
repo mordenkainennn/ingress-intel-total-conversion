@@ -1,0 +1,206 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC 插件: Portal Afterimage</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', 'Noto Sans SC', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Coda', 'Noto Sans SC', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+             font-size: 1.2em;
+             color: #ffce00;
+             margin-top: 20px;
+        }
+        p, li {
+            color: #ccc;
+        }
+        strong {
+            color: #ffce00;
+        }
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 8px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border-bottom: 1px solid #233;
+            padding: 8px 6px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            color: #ffce00;
+        }
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index.html">English</a> | <a href="index_ja.html">日本語</a>
+    </div>
+
+    <div class="container">
+        <h1>Portal Afterimage</h1>
+
+        <div class="note" style="border-color: #f66; background-color: rgba(255, 100, 100, 0.1);">
+            <p><strong style="color: #f66;">前置要求:</strong> 本插件<strong>依赖</strong> <code style="color:#fada5e">Portal DB</code> 插件。您必须先安装并启用 Portal DB，本插件才能正常工作，因为它需要从 Portal DB 获取所有 Portal 的坐标和时间戳数据。</p>
+        </div>
+
+        <p><strong>Portal Afterimage</strong> 是一个“记忆层”插件：当官方 Portal 图层在低缩放下不可见时，它会以淡淡的残影显示你曾经见过的 Portal。它不会猜测，也不会补全未获得的数据。</p>
+        <p>该插件依赖 <strong>Portal DB</strong> 提供坐标与 lastSeen 时间；Afterimage 自身仅存储 GUID 与名称。</p>
+
+        <h2>主要特性</h2>
+        <ul>
+            <li>
+                <h3>只显示记忆层</h3>
+                <p>仅在官方 Portal 不显示时绘制残影，不覆盖、不修改原生渲染。</p>
+            </li>
+            <li>
+                <h3>本地且私有</h3>
+                <p>所有数据仅保存在浏览器本地，不上传、不共享。</p>
+            </li>
+            <li>
+                <h3>S2 Cell 抽象</h3>
+                <p>按 S2 Cell 分组（可设置 Level），每个 Cell 仅显示有限数量 Portal，避免密集区域过载。</p>
+            </li>
+            <li>
+                <h3>性能安全阀</h3>
+                <p>设置了硬性上限（<code>MAX_DRAWN_ELEMENTS</code>），高密度场景下保证稳定性。</p>
+            </li>
+        </ul>
+
+        <h2>可调设置</h2>
+        <ul>
+            <li><strong>S2 Level (15–18)：</strong> Level 越高，Cell 越小，细节越多。</li>
+            <li><strong>Per Cell (1–3)：</strong> 每个 Cell 最多显示多少个 Portal。</li>
+            <li><strong>选择规则：</strong> 按 Portal DB 的 <code>lastSeen</code> 选取（默认取最新）。</li>
+        </ul>
+
+        <h2>S2 Level 参考表 (L15–L19)</h2>
+        <p>以下尺寸为平均近似值，真实形状会随纬度变化。可作为 Ingress 中选择设置的实用参考。</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Level</th>
+                    <th>近似边长</th>
+                    <th>近似面积</th>
+                    <th>Ingress 实用含义</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>L15</td>
+                    <td>≈281 m</td>
+                    <td>≈79,000 m&sup2; (0.079 km&sup2;)</td>
+                    <td>小街区/社区尺度。适合大范围概览，压缩密集城区 Portal。</td>
+                </tr>
+                <tr>
+                    <td>L16</td>
+                    <td>≈141 m</td>
+                    <td>≈19,800 m&sup2; (0.020 km&sup2;)</td>
+                    <td>大型街区或公园分区尺度，城市环境较均衡。</td>
+                </tr>
+                <tr>
+                    <td>L17</td>
+                    <td>≈70 m</td>
+                    <td>≈4,950 m&sup2; (0.0049 km&sup2;)</td>
+                    <td>街区侧边尺度，常接近高密度区域 Portal 间距。</td>
+                </tr>
+                <tr>
+                    <td>L18</td>
+                    <td>≈35 m</td>
+                    <td>≈1,240 m&sup2; (0.0012 km&sup2;)</td>
+                    <td>建筑群尺度，适合细致记录小范围。</td>
+                </tr>
+                <tr>
+                    <td>L19</td>
+                    <td>≈18 m</td>
+                    <td>≈309 m&sup2; (0.00031 km&sup2;)</td>
+                    <td>极细尺度，常用于区分单个 Portal 或紧密群。</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="note">
+            <p><strong>建议：</strong> 初始可用 L18 / Per Cell = 1，随后根据密度逐步调高 Level 或数量。细节越高，越容易触达 5000 上限。</p>
+        </div>
+    </div>
+
+</body>
+</html>
+

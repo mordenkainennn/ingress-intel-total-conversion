@@ -2,7 +2,7 @@
 // @author         mordenkainen
 // @name           Portal Afterimage
 // @category       Layer
-// @version        0.1.1
+// @version        0.1.3
 // @description    Draw a subtle afterimage of portals you've seen when official portals are hidden by zoom.
 // @id             portal-afterimage@mordenkainen
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -20,6 +20,23 @@ function wrapper(plugin_info) {
   const self = window.plugin.portalAfterimage;
 
   self.changelog = [
+    {
+      version: '0.1.3',
+      changes: [
+        'NEW: Toolbox button warns when Portal DB is missing and auto-updates once the dependency loads.',
+        'NEW: Maintenance dialog adds an explicit dependency note if Portal DB is not enabled.',
+        'FIX: Robust dependency detection for Portal DB with retry mechanism.',
+      ],
+    },
+    {
+      version: '0.1.2',
+      changes: [
+        'NEW: Rendering settings for S2 level and per-cell count in the maintenance UI.',
+        'NEW: About dialog explaining selection rules and settings.',
+        'UPD: Maintenance filter defaults to an integer day value on open.',
+        'UPD: Added console helper to refresh maintenance list with fractional days.',
+      ],
+    },
     {
       version: '0.1.1',
       changes: [
@@ -39,6 +56,10 @@ function wrapper(plugin_info) {
   self.STORE_NAME = 'portals';
 
   self.S2_LEVEL = 15;
+  self.S2_LEVEL_MIN = 15;
+  self.S2_LEVEL_MAX = 18;
+  self.PER_CELL_MIN = 1;
+  self.PER_CELL_MAX = 3;
   self.MAX_DRAWN_ELEMENTS = 5000;
   self.REPRESENTATIVE_STRATEGY = 'recent';
 
@@ -49,12 +70,19 @@ function wrapper(plugin_info) {
   self.flushTimer = null;
   self.renderTimer = null;
   self.rendering = false;
+  self.DEFAULT_MIN_DAYS = 180;
   self.ui = {
     minDays: 180,
     list: [],
   };
   self.guidCache = new Set();
   self.guidCacheLoaded = false;
+  self.settings = {
+    s2Level: self.S2_LEVEL,
+    perCell: 1,
+  };
+  self.toolboxButtonId = 'portal-afterimage-btn';
+  self.portalDBAvailable = false;
 
   self.formatGuid = function (guid) {
     if (!guid) return 'Unknown';
@@ -77,6 +105,47 @@ function wrapper(plugin_info) {
     if (isNaN(d.getTime())) return '-';
     const pad = (n) => (n < 10 ? '0' + n : n);
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  self.clampInt = function (value, min, max, fallback) {
+    const v = parseInt(value, 10);
+    if (isNaN(v)) return fallback;
+    return Math.min(max, Math.max(min, v));
+  };
+
+  self.loadSettings = function () {
+    let stored = null;
+    try {
+      stored = JSON.parse(localStorage.getItem('portal-afterimage-settings') || 'null');
+    } catch (e) {
+      stored = null;
+    }
+
+    const base = stored || {};
+    self.settings.s2Level = self.clampInt(base.s2Level, self.S2_LEVEL_MIN, self.S2_LEVEL_MAX, self.S2_LEVEL);
+    self.settings.perCell = self.clampInt(base.perCell, self.PER_CELL_MIN, self.PER_CELL_MAX, 1);
+  };
+
+  self.saveSettings = function () {
+    localStorage.setItem('portal-afterimage-settings', JSON.stringify(self.settings));
+  };
+
+  self.applySettingsFromUI = function () {
+    const levelInput = $('#portal-afterimage-s2level');
+    const perCellInput = $('#portal-afterimage-percell');
+
+    const nextLevel = self.clampInt(levelInput.val(), self.S2_LEVEL_MIN, self.S2_LEVEL_MAX, self.settings.s2Level);
+    const nextPerCell = self.clampInt(perCellInput.val(), self.PER_CELL_MIN, self.PER_CELL_MAX, self.settings.perCell);
+
+    const changed = nextLevel !== self.settings.s2Level || nextPerCell !== self.settings.perCell;
+    self.settings.s2Level = nextLevel;
+    self.settings.perCell = nextPerCell;
+    self.saveSettings();
+
+    levelInput.val(self.settings.s2Level);
+    perCellInput.val(self.settings.perCell);
+
+    if (changed) self.scheduleRender();
   };
 
   self.initDB = function () {
@@ -179,10 +248,10 @@ function wrapper(plugin_info) {
 
   self.getS2CellId = function (lat, lng) {
     if (window.S2 && window.S2.S2Cell) {
-      return window.S2.S2Cell.FromLatLng(L.latLng(lat, lng), self.S2_LEVEL).toString();
+      return window.S2.S2Cell.FromLatLng(L.latLng(lat, lng), self.settings.s2Level).toString();
     }
     const mini = self.getMiniS2();
-    return mini.cellId(lat, lng, self.S2_LEVEL);
+    return mini.cellId(lat, lng, self.settings.s2Level);
   };
 
   self.queuePortalUpdate = function (update) {
@@ -284,6 +353,25 @@ function wrapper(plugin_info) {
     if (self._warnedPortalDB) return;
     self._warnedPortalDB = true;
     console.warn('Portal Afterimage: Portal DB not available. Afterimage rendering is disabled.');
+    self.updateToolboxStatus();
+  };
+
+  self.updateToolboxStatus = function () {
+    const missing = !self.getPortalDB();
+    const wasAvailable = self.portalDBAvailable;
+    const label = missing ? '⚠ Afterimage (Portal DB)' : 'Afterimage';
+    const title = missing ? 'Portal DB required for Portal Afterimage' : 'Portal Afterimage maintenance';
+
+    const link = document.getElementById(self.toolboxButtonId) || document.getElementById('portal-afterimage-toolbox');
+    if (link) {
+      link.textContent = label;
+      link.title = title;
+      link.style.color = missing ? '#ff4500' : '';
+      link.style.fontWeight = missing ? 'bold' : '';
+    }
+
+    self.portalDBAvailable = !missing;
+    if (!missing && !wasAvailable) self.scheduleRender();
   };
 
   self.arePortalsVisible = function () {
@@ -333,23 +421,31 @@ function wrapper(plugin_info) {
 
   self.selectRepresentatives = function (records) {
     const map = new Map();
+    const perCell = self.settings.perCell || 1;
+
     records.forEach((rec) => {
       if (!rec || typeof rec.lat !== 'number' || typeof rec.lng !== 'number') return;
       const cellId = self.getS2CellId(rec.lat, rec.lng);
-      const existing = map.get(cellId);
-      if (!existing) {
-        map.set(cellId, rec);
-        return;
-      }
-      const recSeen = rec.lastSeen || 0;
-      const exSeen = existing.lastSeen || 0;
-      if (self.REPRESENTATIVE_STRATEGY === 'oldest') {
-        if (recSeen < exSeen) map.set(cellId, rec);
-      } else {
-        if (recSeen > exSeen) map.set(cellId, rec);
+      const list = map.get(cellId) || [];
+      list.push(rec);
+      map.set(cellId, list);
+    });
+
+    const results = [];
+    map.forEach((list) => {
+      list.sort((a, b) => {
+        const aSeen = a.lastSeen || 0;
+        const bSeen = b.lastSeen || 0;
+        if (self.REPRESENTATIVE_STRATEGY === 'oldest') return aSeen - bSeen;
+        return bSeen - aSeen;
+      });
+
+      for (let i = 0; i < list.length && i < perCell; i += 1) {
+        results.push(list[i]);
       }
     });
-    return Array.from(map.values());
+
+    return results;
   };
 
   self.getMarkerStyle = function () {
@@ -497,8 +593,8 @@ function wrapper(plugin_info) {
 
     const input = $('#portal-afterimage-days');
     const value = input.length ? parseInt(input.val(), 10) : self.ui.minDays;
-    self.ui.minDays = isNaN(value) ? 180 : Math.max(0, value);
-    localStorage.setItem('portal-afterimage-min-days', String(self.ui.minDays));
+    self.ui.minDays = isNaN(value) ? self.DEFAULT_MIN_DAYS : Math.max(0, value);
+    if (input.length) input.val(self.ui.minDays);
 
     self.loadMaintenanceList(self.ui.minDays)
       .then((records) => self.renderMaintenanceList(records))
@@ -506,6 +602,44 @@ function wrapper(plugin_info) {
         console.error('Portal Afterimage: failed to load maintenance list', err);
         $('#portal-afterimage-list').html('<div style="color:#f66;">Failed to load data.</div>');
       });
+  };
+
+  self.refreshMaintenanceWithDays = function (days) {
+    if (!self.getPortalDB()) {
+      self.warnPortalDB();
+      return;
+    }
+
+    const value = parseFloat(days);
+    if (isNaN(value)) return;
+    const safeDays = Math.max(0, value);
+
+    self.loadMaintenanceList(safeDays)
+      .then((records) => self.renderMaintenanceList(records))
+      .catch((err) => {
+        console.error('Portal Afterimage: failed to load maintenance list', err);
+        $('#portal-afterimage-list').html('<div style="color:#f66;">Failed to load data.</div>');
+      });
+  };
+
+  self.showAboutDialog = function () {
+    const selectionRule = self.REPRESENTATIVE_STRATEGY === 'oldest' ? 'oldest last-seen first' : 'most recent last-seen first';
+    const html = `
+      <div style="line-height:1.4;">
+        <p><strong>Portal Afterimage</strong> draws a subtle memory layer of portals you have previously seen when official portal markers are hidden by zoom.</p>
+        <p><strong>S2 Level:</strong> Portals are grouped by S2 cells at the selected level. Higher levels show more detail.</p>
+        <p><strong>Per Cell:</strong> For each S2 cell, you can display <strong>${self.PER_CELL_MIN}–${self.PER_CELL_MAX}</strong> portals. Current: <strong>${self.settings.perCell}</strong>.</p>
+        <p><strong>Selection:</strong> Portals are chosen by last-seen time from Portal DB (${selectionRule}).</p>
+        <p><strong>Tip:</strong> For fractional days, use the console: <code>window.plugin.portalAfterimage.refreshMaintenanceWithDays(0.1)</code></p>
+      </div>
+    `;
+
+    window.dialog({
+      title: 'About Portal Afterimage',
+      html: html,
+      id: 'portal-afterimage-about',
+      width: 420,
+    });
   };
 
   self.toggleSelectAll = function (checked) {
@@ -645,11 +779,24 @@ function wrapper(plugin_info) {
   };
 
   self.showMaintenanceDialog = function () {
+    self.ui.minDays = self.DEFAULT_MIN_DAYS;
+    const missingPortalDB = !self.getPortalDB();
+    const dependencyNote = missingPortalDB
+      ? '<div style="margin-bottom:10px; padding:8px; border:1px solid #ff4500; color:#ffb366;">Portal Afterimage requires the <strong>Portal DB</strong> plugin. Install and enable it to use this feature.</div>'
+      : '';
     const html = `
       <div id="portal-afterimage-maint">
+        ${dependencyNote}
+        <div style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px dashed #444;">
+          <label for="portal-afterimage-s2level">S2 Level</label>
+          <input id="portal-afterimage-s2level" type="number" min="${self.S2_LEVEL_MIN}" max="${self.S2_LEVEL_MAX}" value="${self.settings.s2Level}" style="width:70px; margin:0 6px;">
+          <label for="portal-afterimage-percell">Per Cell</label>
+          <input id="portal-afterimage-percell" type="number" min="${self.PER_CELL_MIN}" max="${self.PER_CELL_MAX}" value="${self.settings.perCell}" style="width:70px; margin:0 6px;">
+          <button onclick="window.plugin.portalAfterimage.applySettingsFromUI()">Apply</button>
+        </div>
         <div style="margin-bottom:8px;">
           <label for="portal-afterimage-days">Show portals not seen for</label>
-          <input id="portal-afterimage-days" type="number" min="0" value="${self.ui.minDays}" style="width:70px; margin:0 6px;">
+          <input id="portal-afterimage-days" type="number" min="0" step="1" value="${self.ui.minDays}" style="width:70px; margin:0 6px;">
           <span>days</span>
           <button onclick="window.plugin.portalAfterimage.refreshMaintenance()">Refresh</button>
         </div>
@@ -667,6 +814,14 @@ function wrapper(plugin_info) {
       html: html,
       id: 'portal-afterimage-maint',
       width: 540,
+      buttons: {
+        About: function () {
+          window.plugin.portalAfterimage.showAboutDialog();
+        },
+        OK: function () {
+          $(this).dialog('close');
+        },
+      },
     });
 
     self.refreshMaintenance();
@@ -677,8 +832,8 @@ function wrapper(plugin_info) {
   };
 
   const setup = function () {
-    const storedDays = parseInt(localStorage.getItem('portal-afterimage-min-days'), 10);
-    if (!isNaN(storedDays)) self.ui.minDays = storedDays;
+    self.loadSettings();
+    self.ui.minDays = self.DEFAULT_MIN_DAYS;
 
     self.layerGroup = L.layerGroup();
     window.addLayerGroup('Portal Afterimage', self.layerGroup, false);
@@ -701,7 +856,7 @@ function wrapper(plugin_info) {
 
     if (window.IITC && IITC.toolbox && IITC.toolbox.addButton) {
       IITC.toolbox.addButton({
-        id: 'portal-afterimage-btn',
+        id: self.toolboxButtonId,
         label: 'Afterimage',
         title: 'Portal Afterimage maintenance',
         action: self.showMaintenanceDialog,
@@ -720,6 +875,16 @@ function wrapper(plugin_info) {
         };
         toolbox.appendChild(link);
       }
+    }
+
+    self.updateToolboxStatus();
+    if (!self.portalDBAvailable) {
+      let tries = 0;
+      const t = setInterval(() => {
+        tries += 1;
+        self.updateToolboxStatus();
+        if (self.portalDBAvailable || tries > 20) clearInterval(t);
+      }, 500);
     }
 
     self.initDB().catch((err) => console.error('Portal Afterimage: DB init failed', err));
