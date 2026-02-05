@@ -1,57 +1,58 @@
 <div align="center">
-
   <img src="https://raw.githubusercontent.com/IITC-CE/ingress-intel-total-conversion/master/assets/IITC_circle.svg" alt="iitc logo" width="150px" />
 
-# Ingress Intel Total Conversion (IITC)
+# IITC-CE (Custom Fork)
 
 ---
 
-<!-- [START badges] -->
-[![Build Status](https://github.com/IITC-CE/ingress-intel-total-conversion/actions/workflows/build.yml/badge.svg)](https://github.com/IITC-CE/ingress-intel-total-conversion/actions/workflows/build.yml)
-[![Release](https://img.shields.io/github/v/release/IITC-CE/ingress-intel-total-conversion)](https://github.com/IITC-CE/ingress-intel-total-conversion/releases)
-[![Commits since](https://img.shields.io/github/commits-since/IITC-CE/ingress-intel-total-conversion/latest)](https://github.com/IITC-CE/ingress-intel-total-conversion/commits/master/)
-[![LICENSE](https://img.shields.io/badge/license-ISC-blue.svg)](LICENSE)
-<!-- [END badges] -->
+IITC is a browser add-on that modifies the Ingress intel map. This repository is a custom fork maintained for personal plugin development and enhancements.
 
-IITC is a browser add-on that modifies the Ingress intel map.
-It is faster than the standard site, and offers many more features.
-It is available for desktop browsers, such as Firefox and Chrome, and as a mobile application.
-
-**IITC "Community Edition"** (**_IITC-CE_**) started by [modos189](https://github.com/modos189) to continue development of stalled [iitc-project](https://github.com/iitc-project/ingress-intel-total-conversion).
-
-**[Website](https://iitc.app/) | [API Documentation](https://iitc-ce.github.io/ingress-intel-total-conversion/) | [Wiki](https://github.com/IITC-CE/ingress-intel-total-conversion/wiki) | [Telegram channel](https://t.me/iitc_news)**
+**[Repository](https://github.com/mordenkainennn/ingress-intel-total-conversion) | [Official Website](https://iitc.app/) | [Official Wiki](https://github.com/IITC-CE/ingress-intel-total-conversion/wiki)**
 </div>
 
 ---
 
-## Users
+## Custom & Improved Plugins (Local Plugins)
 
-Install IITC: https://iitc.app/
+All custom-built and enhanced plugins are located in the `local-plugins/` directory. These plugins are designed to provide advanced features and a better spatial memory layer for Ingress agents.
 
-- Latest news, release announcements, etc:
-  - https://www.reddit.com/r/IITC/
-  - https://t.me/iitc_news
+| Plugin | Features & Capabilities | Docs (Bilingual/Trilingual) |
+| :--- | :--- | :--- |
+| **Portal DB** | **The Infrastructure.** Creates a persistent IndexedDB of portals. Features **Move Detection** (warns if a portal is moved > 3m) and **Update Statistics**. | [CN](./local-plugins/portal-db/index_zh-cn.html) / [EN](./local-plugins/portal-db/index.html) / [JA](./local-plugins/portal-db/index_ja.html) |
+| **Portal Afterimage** | **The Memory Layer.** Draws subtle "afterimages" of portals you've seen when zoomed out beyond the official display limit. *Requires Portal DB.* | [CN](./local-plugins/portal-afterimage/index_zh-cn.html) / [EN](./local-plugins/portal-afterimage/index.html) / [JA](./local-plugins/portal-afterimage/index_ja.html) |
+| **Player Activity Log** | **Intel Tracking.** Logs player activities from COMM and visualizes movement trails on the map with time-based color coding. | [CN](./local-plugins/player-activity-log/index_zh-cn.html) / [EN](./local-plugins/player-activity-log/index.html) / [JA](./local-plugins/player-activity-log/index_ja.html) |
+| **Recharge Monitor** | **Strategic Defense.** Real-time health monitoring and decay prediction. Syncs with Activity Log to "vacuum" deployment times. | [CN](./local-plugins/recharge-monitor/index_zh-cn.html) / [EN](./local-plugins/recharge-monitor/index.html) / [JA](./local-plugins/recharge-monitor/index_ja.html) |
+| **Uniques Tools** | **History Tracking.** Enhanced version of "Uniques" with full Drone support, Scout Controller tracking, and official history import. | [CN](./local-plugins/uniques-tools/index_zh-cn.html) / [EN](./local-plugins/uniques-tools/index.html) / [JA](./local-plugins/uniques-tools/index_ja.html) |
 
-- [Report](https://github.com/IITC-CE/ingress-intel-total-conversion/issues/new) an issue: [wiki/Reporting-Bugs](https://github.com/IITC-CE/ingress-intel-total-conversion/wiki/Reporting-Bugs)
+---
 
+## Project Conventions
 
-## Developers
+To ensure clean maintenance and compatibility with upstream IITC-CE:
 
-- See [Contribution Guidelines](https://github.com/IITC-CE/ingress-intel-total-conversion/wiki/Contributing-to-IITC%E2%80%90CE)
-- and [Quickstart](https://github.com/IITC-CE/ingress-intel-total-conversion/wiki/HACKING).
+1.  **Do not modify `plugins/` directly.** All built-in plugins are kept in their original state.
+2.  **Use `local-plugins/` for everything.** 
+    -   If you want to improve an official plugin, copy it to `local-plugins/` first.
+    -   All new custom plugins must be placed in `local-plugins/`.
+3.  **Build System**: Use the standard build script to generate user scripts:
+    ```bash
+    python build.py local
+    ```
 
+---
 
-## Related projects
+## About IITC "Community Edition"
 
-- **https://iitc.app**: IITC-CE homepage, template developed [here][website-repo].
+**IITC-CE** is a community-driven continuation of the original IITC project. It is faster than the standard site and offers many more features via its extensive plugin system.
 
-- **[IITC-Button]**: browser extension, the easiest (though not sole) way to use IITC on desktop.
+### Users
+- Install Official IITC: [https://iitc.app/](https://iitc.app/)
+- Telegram News: [https://t.me/iitc_news](https://t.me/iitc_news)
 
-- **[IITC Mobile]**: Android app developed [here](https://github.com/IITC-CE/ingress-intel-total-conversion/tree/master/mobile) (available on [Google Play](https://play.google.com/store/apps/details?id=org.exarhteam.iitc_mobile) and [F-Droid](https://f-droid.org/packages/org.exarhteam.iitc_mobile/)).
+### Developers
+- [Contribution Guidelines](https://github.com/IITC-CE/ingress-intel-total-conversion/wiki/Contributing-to-IITC%E2%80%90CE)
+- [Hacking Quickstart](https://github.com/IITC-CE/ingress-intel-total-conversion/wiki/HACKING)
 
-- **[IITC-Mobile for iOS]**: 3rd-party application, developed by [_Yangkun Zhang_](https://github.com/HubertZhang).
+---
 
-[website-repo]: https://github.com/IITC-CE/website
-[IITC-Button]: https://github.com/IITC-CE/IITC-Button
-[IITC Mobile]: https://github.com/IITC-CE/ingress-intel-total-conversion/wiki/IITC-Mobile-(Android-app)
-[IITC-Mobile for iOS]: https://github.com/HubertZhang/IITC-Mobile
+*Note: This repository is for personal use and individual plugin development. No competition advantage is intended. **Portal DB and Portal Afterimage are based on locally received data only, do not interact with or upload to the server, and do not violate Niantic's TOS.** All features are based on data already received by the client.*
