@@ -2,7 +2,7 @@
 // @author         mordenkainen
 // @name           Portal Afterimage
 // @category       Layer
-// @version        0.1.3
+// @version        0.1.5
 // @description    Draw a subtle afterimage of portals you've seen when official portals are hidden by zoom.
 // @id             portal-afterimage@mordenkainen
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
