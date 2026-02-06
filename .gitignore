@@ -32,7 +32,11 @@ node_modules
 
 # Ignored files as per user request
 
-local-plugins/homogeneous-fields/button-issue.md
-local-plugins/homogeneous-fields/issue.md
+local-plugins/**/*.md
+
 
 *.bat
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+IFLOW.md
