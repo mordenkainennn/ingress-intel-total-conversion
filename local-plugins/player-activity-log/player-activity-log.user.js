@@ -173,10 +173,10 @@ function wrapper(plugin_info) {
         `).appendTo('head');
     };
 
-        window.plugin.playerActivityLog.displayLog = function () {
-            $('.activity-log-modal-backdrop').remove();
-    
-            var modal = `
+    window.plugin.playerActivityLog.displayLog = function () {
+        $('.activity-log-modal-backdrop').remove();
+
+        var modal = `
                 <div class="activity-log-modal-backdrop">
                     <div class="activity-log-modal-content">
                         <div class="activity-log-modal-header">
@@ -209,97 +209,97 @@ function wrapper(plugin_info) {
                     </div>
                 </div>
             `;
-            $(document.body).append(modal);
-    
-            window.plugin.playerActivityLog.updateToggleLoggingButton();
-    
-            var logData = JSON.parse(localStorage.getItem(window.plugin.playerActivityLog.STORAGE_KEY) || '{}');
-            var playerListContainer = $('.activity-log-player-list');
-            var playerNames = Object.keys(logData).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-    
-            playerNames.forEach(function (name) {
-                var player = logData[name];
-                if (!player || !player.team) return;
-    
-                var teamClass = (player.team && player.team.toUpperCase() === 'RESISTANCE') ? 'res' : 'enl';
-                var itemCount = player.activities ? player.activities.length : 0;
-                var playerDiv = $(`<div class="activity-log-player-item" data-player="${name}"></div>`);
-    
-                var checkbox = $(`<input type="checkbox" class="trail-checkbox" title="Track this player on map">`);
-                checkbox.prop('checked', window.plugin.playerActivityLog.playersToTrack.includes(name));
-                checkbox.on('click', function(e) {
-                    e.stopPropagation(); // prevent player log from opening
-                    var checked = $(this).prop('checked');
-                    var currentTracked = window.plugin.playerActivityLog.playersToTrack;
-                    if (checked) {
-                        if (currentTracked.length >= 3) {
-                            alert('You can only track up to 3 players at a time.');
-                            $(this).prop('checked', false);
-                        } else {
-                            currentTracked.push(name);
-                        }
+        $(document.body).append(modal);
+
+        window.plugin.playerActivityLog.updateToggleLoggingButton();
+
+        var logData = JSON.parse(localStorage.getItem(window.plugin.playerActivityLog.STORAGE_KEY) || '{}');
+        var playerListContainer = $('.activity-log-player-list');
+        var playerNames = Object.keys(logData).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+        playerNames.forEach(function (name) {
+            var player = logData[name];
+            if (!player || !player.team) return;
+
+            var teamClass = (player.team && player.team.toUpperCase() === 'RESISTANCE') ? 'res' : 'enl';
+            var itemCount = player.activities ? player.activities.length : 0;
+            var playerDiv = $(`<div class="activity-log-player-item" data-player="${name}"></div>`);
+
+            var checkbox = $(`<input type="checkbox" class="trail-checkbox" title="Track this player on map">`);
+            checkbox.prop('checked', window.plugin.playerActivityLog.playersToTrack.includes(name));
+            checkbox.on('click', function (e) {
+                e.stopPropagation(); // prevent player log from opening
+                var checked = $(this).prop('checked');
+                var currentTracked = window.plugin.playerActivityLog.playersToTrack;
+                if (checked) {
+                    if (currentTracked.length >= 3) {
+                        alert('You can only track up to 3 players at a time.');
+                        $(this).prop('checked', false);
                     } else {
-                        var index = currentTracked.indexOf(name);
-                        if (index > -1) {
-                            currentTracked.splice(index, 1);
-                        }
+                        currentTracked.push(name);
                     }
-                });
-    
-                var nameSpan = $(`<span class="player-name-container"><span class="${teamClass}">${name}</span> (${itemCount})</span>`);
-                var removeIcon = $('<span class="remove-player-icon" title="Delete this player\'s logs">&times;</span>');
-    
-                removeIcon.on('click', function (e) {
-                    e.stopPropagation();
-                    window.plugin.playerActivityLog.removePlayerData(name);
-                });
-    
-                playerDiv.append(checkbox).append(nameSpan).append(removeIcon);
-                playerDiv.on('click', function () {
-                    $('.activity-log-player-item.selected').removeClass('selected');
-                    $(this).addClass('selected');
-                    window.plugin.playerActivityLog.renderPlayerLog(name, logData);
-                });
-                playerListContainer.append(playerDiv);
-            });
-    
-            $('#activity-log-draw-trails').on('click', function() {
-                if (window.plugin.playerActivityLog.drawPlayerTrails) {
-                    window.plugin.playerActivityLog.drawPlayerTrails();
                 } else {
-                    console.warn('drawPlayerTrails function not yet implemented');
-                }
-            });
-            $('#activity-log-clear-trails').on('click', function() {
-                if (window.plugin.playerActivityLog.clearAllTrails) {
-                    window.plugin.playerActivityLog.clearAllTrails();
-                } else {
-                    console.warn('clearAllTrails function not yet implemented');
-                }
-            });
-    
-            $('#activity-log-toggle-logging').on('click', window.plugin.playerActivityLog.toggleLogging);
-            $('#activity-log-export').on('click', window.plugin.playerActivityLog.exportToCsv);
-            $('#activity-log-clear').on('click', window.plugin.playerActivityLog.clearAllData);
-            $('.activity-log-modal-backdrop, .activity-log-modal-close').on('click', function (e) {
-                if ($(e.target).is('.activity-log-modal-backdrop, .activity-log-modal-close')) {
-                    $('.activity-log-modal-backdrop').remove();
-                }
-            });
-    
-            // search filter
-            $('#player-list-search').on('keyup', function() {
-                var searchTerm = $(this).val().toLowerCase();
-                $('.activity-log-player-list .activity-log-player-item').each(function() {
-                    var playerName = $(this).data('player').toLowerCase();
-                    if (playerName.includes(searchTerm)) {
-                        $(this).show();
-                    } else {
-                        $(this).hide();
+                    var index = currentTracked.indexOf(name);
+                    if (index > -1) {
+                        currentTracked.splice(index, 1);
                     }
-                });
+                }
             });
-        };
+
+            var nameSpan = $(`<span class="player-name-container"><span class="${teamClass}">${name}</span> (${itemCount})</span>`);
+            var removeIcon = $('<span class="remove-player-icon" title="Delete this player\'s logs">&times;</span>');
+
+            removeIcon.on('click', function (e) {
+                e.stopPropagation();
+                window.plugin.playerActivityLog.removePlayerData(name);
+            });
+
+            playerDiv.append(checkbox).append(nameSpan).append(removeIcon);
+            playerDiv.on('click', function () {
+                $('.activity-log-player-item.selected').removeClass('selected');
+                $(this).addClass('selected');
+                window.plugin.playerActivityLog.renderPlayerLog(name, logData);
+            });
+            playerListContainer.append(playerDiv);
+        });
+
+        $('#activity-log-draw-trails').on('click', function () {
+            if (window.plugin.playerActivityLog.drawPlayerTrails) {
+                window.plugin.playerActivityLog.drawPlayerTrails();
+            } else {
+                console.warn('drawPlayerTrails function not yet implemented');
+            }
+        });
+        $('#activity-log-clear-trails').on('click', function () {
+            if (window.plugin.playerActivityLog.clearAllTrails) {
+                window.plugin.playerActivityLog.clearAllTrails();
+            } else {
+                console.warn('clearAllTrails function not yet implemented');
+            }
+        });
+
+        $('#activity-log-toggle-logging').on('click', window.plugin.playerActivityLog.toggleLogging);
+        $('#activity-log-export').on('click', window.plugin.playerActivityLog.exportToCsv);
+        $('#activity-log-clear').on('click', window.plugin.playerActivityLog.clearAllData);
+        $('.activity-log-modal-backdrop, .activity-log-modal-close').on('click', function (e) {
+            if ($(e.target).is('.activity-log-modal-backdrop, .activity-log-modal-close')) {
+                $('.activity-log-modal-backdrop').remove();
+            }
+        });
+
+        // search filter
+        $('#player-list-search').on('keyup', function () {
+            var searchTerm = $(this).val().toLowerCase();
+            $('.activity-log-player-list .activity-log-player-item').each(function () {
+                var playerName = $(this).data('player').toLowerCase();
+                if (playerName.includes(searchTerm)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+    };
     window.plugin.playerActivityLog.toggleLogging = function () {
         var plugin = window.plugin.playerActivityLog;
         plugin.isLoggingEnabled = !plugin.isLoggingEnabled;
@@ -514,7 +514,7 @@ function wrapper(plugin_info) {
         var now = Date.now();
         var isTouchDev = window.isTouchDevice();
 
-        playersToDraw.forEach(function(playerName) {
+        playersToDraw.forEach(function (playerName) {
             var playerData = logData[playerName];
             if (!playerData || !playerData.activities || playerData.activities.length === 0) {
                 return; // No data for this player
@@ -597,7 +597,7 @@ function wrapper(plugin_info) {
 
             // OMS-friendly popup handling
             m.options.desc = popup[0];
-            m.on('spiderfiedclick', function(e) {
+            m.on('spiderfiedclick', function (e) {
                 if (!plugin.playerPopup) {
                     plugin.playerPopup = new L.Popup({ offset: new L.Point([1, -34]) });
                 }
@@ -613,7 +613,7 @@ function wrapper(plugin_info) {
 
             m.addTo(plugin.getDrawnTracesByTeam(playerData.team));
             window.registerMarkerForOMS(m);
-             if (!isTouchDev) {
+            if (!isTouchDev) {
                 window.setupTooltips($(m._icon));
             }
         });

@@ -1,5 +1,5 @@
 // ==UserScript==
-// @author         mordenkainen
+// @author         cloverjune
 // @name           Portal Afterimage
 // @category       Layer
 // @version        0.1.6

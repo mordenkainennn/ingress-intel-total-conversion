@@ -3,7 +3,7 @@
 // @name           IITC Plugin: mordenkainennn's Fanfield Planner
 // @version        2.1.1
 // @description    Plugin for planning fanfields/pincushions in IITC (Phase 1 Safe Mode)
-// @author         mordenkainennn
+// @author         cloverjune
 // @category       Layer
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/fanfield-planner/fanfield-planner.meta.js

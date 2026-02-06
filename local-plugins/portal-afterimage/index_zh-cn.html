@@ -199,6 +199,59 @@
         <div class="note">
             <p><strong>建议：</strong> 初始可用 L18 / Per Cell = 1，随后根据密度逐步调高 Level 或数量。细节越高，越容易触达 5000 上限。</p>
         </div>
+
+        <h2>更新日志</h2>
+        <div class="changelog-entry">
+            <h3>版本 0.1.6</h3>
+            <ul>
+                <li>更新: 重新设计了 Portal 残影样式，以更好地在深色和浅色/灰色底图（如 Google 地图、高德灰色）上显示。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>版本 0.1.5</h3>
+            <ul>
+                <li>重构: 移除了本地名称存储。现在完全依赖 Portal DB 获取 Portal 名称。</li>
+                <li>更新: 名称搜寻（Scavenging）现在直接更新 Portal DB，而不是本地存储。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>版本 0.1.4</h3>
+            <ul>
+                <li>新增: 自动从地图内存中搜寻名称。如果打开维护列表时缺失名称且该 Portal 当前在地图上可见，则会自动恢复名称。</li>
+                <li>更新: 提高了 Portal 跳转期间名称解析的稳健性。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>版本 0.1.3</h3>
+            <ul>
+                <li>新增: 当缺失 Portal DB 时，工具箱按钮会发出警告，并在依赖加载后自动更新。</li>
+                <li>新增: 如果未启用 Portal DB，维护对话框会添加明确的依赖提示。</li>
+                <li>修复: 针对 Portal DB 增加了带重试机制的稳健依赖检测。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>版本 0.1.2</h3>
+            <ul>
+                <li>新增: 维护界面中增加了 S2 Level 和每个单元格数量的渲染设置。</li>
+                <li>新增: 关于对话框，解释选择规则和设置。</li>
+                <li>更新: 打开时，维护过滤器默认使用整数天数值。</li>
+                <li>更新: 添加了控制台辅助工具，以支持使用小数天数刷新维护列表。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>版本 0.1.1</h3>
+            <ul>
+                <li>更新: 使用 Portal DB API 获取 Portal 坐标和最后可见时间戳。</li>
+                <li>更新: Afterimage 数据库现在仅存储 GUID 和 Portal 名称。</li>
+                <li>更新: 维护列表现在通过 Portal DB 解析坐标和最后可见时间。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>版本 0.1.0</h3>
+            <ul>
+                <li>新增: 初始版本发布。</li>
+            </ul>
+        </div>
     </div>
 
 </body>

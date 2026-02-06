@@ -205,6 +205,59 @@
         <div class="note">
             <p><strong>Tip:</strong> Start at L18 with Per Cell = 1, then increase level or per-cell count based on density. Higher detail means more markers and faster hitting the 5000 cap.</p>
         </div>
+
+        <h2>Changelog</h2>
+        <div class="changelog-entry">
+            <h3>Version 0.1.6</h3>
+            <ul>
+                <li>UPD: Redesigned portal afterimage style for better visibility on both dark and light/gray basemaps (e.g., Google Maps, Gaode Gray).</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 0.1.5</h3>
+            <ul>
+                <li>REF: Removed local name storage. Now fully relies on Portal DB for portal names.</li>
+                <li>UPD: Name scavenging now updates Portal DB directly instead of local storage.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 0.1.4</h3>
+            <ul>
+                <li>NEW: Automatic name scavenging from map memory. Missing portal names are now automatically recovered when opening the maintenance list if they are currently visible on the map.</li>
+                <li>UPD: Improved robustness of name resolution during portal jumps.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 0.1.3</h3>
+            <ul>
+                <li>NEW: Toolbox button warns when Portal DB is missing and auto-updates once the dependency loads.</li>
+                <li>NEW: Maintenance dialog adds an explicit dependency note if Portal DB is not enabled.</li>
+                <li>FIX: Robust dependency detection for Portal DB with retry mechanism.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 0.1.2</h3>
+            <ul>
+                <li>NEW: Rendering settings for S2 level and per-cell count in the maintenance UI.</li>
+                <li>NEW: About dialog explaining selection rules and settings.</li>
+                <li>UPD: Maintenance filter defaults to an integer day value on open.</li>
+                <li>UPD: Added console helper to refresh maintenance list with fractional days.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 0.1.1</h3>
+            <ul>
+                <li>UPD: Use Portal DB API for portal coordinates and last-seen timestamps.</li>
+                <li>UPD: Afterimage database now stores only GUID and portal name.</li>
+                <li>UPD: Maintenance list now resolves coordinates and last-seen via Portal DB.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 0.1.0</h3>
+            <ul>
+                <li>NEW: Initial release.</li>
+            </ul>
+        </div>
     </div>
 
 </body>

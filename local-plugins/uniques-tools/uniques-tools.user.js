@@ -1,6 +1,6 @@
 // ==UserScript==
 /* global IITC */
-// @author         3ch01c, mordenkainennn
+// @author         3ch01c, cloverjune
 // @name           Uniques Tools
 // @category       Misc
 // @version        1.6.7
@@ -89,7 +89,7 @@ function wrapper(plugin_info) {
     self.droneIcons = [];
 
     // --- HELPER TO LOAD HISTORY FROM UNIQUES OBJECT ---
-    self.loadDroneHistoryFromUniques = function() {
+    self.loadDroneHistoryFromUniques = function () {
         var droneHistoryData = self.uniques[self.DRONE_HISTORY_SYNC_KEY];
         self.droneLocationHistory = (Array.isArray(droneHistoryData) && droneHistoryData) || [];
     };
@@ -140,7 +140,7 @@ function wrapper(plugin_info) {
                         window.map.setView([lat, lng], 17);
                         if (window.selectedPortal !== guid) window.selectPortal(guid);
                     } else {
-                         alert('Could not fetch details for the last drone location.');
+                        alert('Could not fetch details for the last drone location.');
                     }
                 });
             }
@@ -157,8 +157,8 @@ function wrapper(plugin_info) {
         if (self.droneLocationHistory.length > 0) {
             var guid = self.droneLocationHistory[0];
 
-            var drawCircleForGuid = function(latlng, title) {
-                 L.circle(latlng, {
+            var drawCircleForGuid = function (latlng, title) {
+                L.circle(latlng, {
                     radius: 550,
                     color: 'cyan',
                     fillColor: 'cyan',
@@ -226,7 +226,7 @@ function wrapper(plugin_info) {
 
         // Prevent duplicate markers for the same GUID if multiple requests fire
         var existing = false;
-        self.droneLayer.eachLayer(function(layer) {
+        self.droneLayer.eachLayer(function (layer) {
             if (layer.options.guid === guid) existing = true;
         });
 
@@ -255,18 +255,18 @@ function wrapper(plugin_info) {
                 var latlng = portal.getLatLng();
                 self.drawDroneRange(latlng);
             } else {
-                 // Fallback for detailed view where portal entity might be missing from map
-                 window.portalDetail.request(window.selectedPortal).then(function(details) {
-                     if(details) {
-                         var latlng = L.latLng(details.latE6/1E6, details.lngE6/1E6);
-                         self.drawDroneRange(latlng);
-                     }
-                 });
+                // Fallback for detailed view where portal entity might be missing from map
+                window.portalDetail.request(window.selectedPortal).then(function (details) {
+                    if (details) {
+                        var latlng = L.latLng(details.latE6 / 1E6, details.lngE6 / 1E6);
+                        self.drawDroneRange(latlng);
+                    }
+                });
             }
         }
     };
 
-    self.drawDroneRange = function(latlng) {
+    self.drawDroneRange = function (latlng) {
         if (!self.droneRangeLayer) return;
         L.circle(latlng, {
             radius: 550,
@@ -431,7 +431,7 @@ function wrapper(plugin_info) {
             }
             data.portal.setStyle(style);
         },
-        setSelected: function (active) {},
+        setSelected: function (active) { },
     };
 
     self.scoutHighlighter = {
@@ -448,7 +448,7 @@ function wrapper(plugin_info) {
             }
             data.portal.setStyle(style);
         },
-        setSelected: function (active) {},
+        setSelected: function (active) { },
     };
 
     self.highlighter = {

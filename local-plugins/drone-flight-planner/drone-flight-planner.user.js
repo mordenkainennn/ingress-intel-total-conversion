@@ -1,9 +1,9 @@
 // ==UserScript==
-// @id             iitc-plugin-drone-planner@mordenkainennn
-// @name           IITC Plugin: mordenkainennn's Drone Flight Planner
+// @id             iitc-plugin-drone-planner@cloverjune
+// @name           IITC Plugin: cloverjune's Drone Flight Planner
 // @version        0.1.1
 // @description    Plugin for planning drone flights in IITC
-// @author         mordenkainennn
+// @author         cloverjune
 // @category       Layer
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/drone-flight-planner/drone-flight-planner.meta.js

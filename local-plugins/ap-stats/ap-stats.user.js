@@ -1,6 +1,6 @@
 // ==UserScript==
-// @id             iitc-plugin-ap-stats@mordenkainennn
-// @name           Available AP statistics [mordenkainennn]
+// @id             iitc-plugin-ap-stats@cloverjune
+// @name           Available AP statistics [cloverjune]
 // @category       Info
 // @version        0.4.6.2
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -9,7 +9,7 @@
 // @description    Displays the per-team AP gains available in the current view. [mordenkainennn-tweak: Standalone script conversion]
 // @match          https://intel.ingress.com/*
 // @match          https://intel-x.ingress.com/*
-// @author         Hollow011, mordenkainennn
+// @author         Hollow011, cloverjune
 // @grant          none
 // ==/UserScript==
 
@@ -54,7 +54,7 @@ function wrapper(plugin_info) {
     ];
 
     // use own namespace for plugin
-    window.plugin.compAPStats = function () {};
+    window.plugin.compAPStats = function () { };
 
     window.plugin.compAPStats.setupCallback = function () {
         // add a new div to the bottom of the sidebar and style it
@@ -158,18 +158,18 @@ function wrapper(plugin_info) {
                     result.res.finishPortals++;
                 }
             } else if (portal.options.team === window.TEAM_MAC) {
-              // it's a machina portal, destroy AP for both teams.
-              // Add a fallback for the RECLAIM_PORTAL_FROM_MACHINA constant, which might not exist in all IITC versions
-              var reclaimAp = window.RECLAIM_PORTAL_FROM_MACHINA === undefined ? 1331 : window.RECLAIM_PORTAL_FROM_MACHINA;
-            
-              result.enl.AP += destroyAp + PORTAL_FULL_DEPLOY_AP + reclaimAp;
-              result.res.AP += destroyAp + PORTAL_FULL_DEPLOY_AP + reclaimAp;
-            
-              result.enl.destroyPortals++;
-              result.res.destroyPortals++;
-            
-              result.enl.reclaimPortals++;
-              result.res.reclaimPortals++;
+                // it's a machina portal, destroy AP for both teams.
+                // Add a fallback for the RECLAIM_PORTAL_FROM_MACHINA constant, which might not exist in all IITC versions
+                var reclaimAp = window.RECLAIM_PORTAL_FROM_MACHINA === undefined ? 1331 : window.RECLAIM_PORTAL_FROM_MACHINA;
+
+                result.enl.AP += destroyAp + PORTAL_FULL_DEPLOY_AP + reclaimAp;
+                result.res.AP += destroyAp + PORTAL_FULL_DEPLOY_AP + reclaimAp;
+
+                result.enl.destroyPortals++;
+                result.res.destroyPortals++;
+
+                result.enl.reclaimPortals++;
+                result.res.reclaimPortals++;
             } else {                // it's a neutral portal, potential for both teams. by definition no fields or edges
                 result.enl.AP += PORTAL_FULL_DEPLOY_AP;
                 result.res.AP += PORTAL_FULL_DEPLOY_AP;
