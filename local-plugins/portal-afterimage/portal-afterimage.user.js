@@ -2,7 +2,7 @@
 // @author         mordenkainen
 // @name           Portal Afterimage
 // @category       Layer
-// @version        0.1.5
+// @version        0.1.6
 // @description    Draw a subtle afterimage of portals you've seen when official portals are hidden by zoom.
 // @id             portal-afterimage@mordenkainen
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -14,14 +14,20 @@
 // ==/UserScript==
 
 function wrapper(plugin_info) {
-    if (typeof window.plugin !== 'function') window.plugin = function () { };
+  if (typeof window.plugin !== 'function') window.plugin = function () {};
 
-    window.plugin.portalAfterimage = function () { };
-    const self = window.plugin.portalAfterimage;
+  window.plugin.portalAfterimage = function () {};
+  const self = window.plugin.portalAfterimage;
 
-    self.changelog = [
-        {
-            version: '0.1.5',
+  self.changelog = [
+    {
+      version: '0.1.6',
+      changes: [
+        'UPD: Redesigned portal afterimage style for better visibility on both dark and light/gray basemaps (e.g., Google Maps, Gaode Gray).',
+      ],
+    },
+    {
+      version: '0.1.5',
             changes: [
                 'REF: Removed local name storage. Now fully relies on Portal DB for portal names.',
                 'UPD: Name scavenging now updates Portal DB directly instead of local storage.',
@@ -430,18 +436,17 @@ function wrapper(plugin_info) {
         return results;
     };
 
-    self.getMarkerStyle = function () {
+      self.getMarkerStyle = function () {
         return {
-            radius: 3,
-            weight: 1,
-            color: '#9aa3b2',
-            opacity: 0.45,
-            fillColor: '#9aa3b2',
-            fillOpacity: 0.2,
-            interactive: false,
+          radius: 4,
+          weight: 1.5,              // Slightly tighter stroke
+          color: '#1A1A1A',         // Very dark gray for visibility on light/gray maps
+          opacity: 0.8,             // High stroke opacity
+          fillColor: '#BDBDBD',     // Neutral bright gray for visibility on dark maps
+          fillOpacity: 0.45,        // Maintain ghost-like feel
+          interactive: false,
         };
-    };
-
+      };
     self.render = function () {
         if (self.rendering) return;
 
