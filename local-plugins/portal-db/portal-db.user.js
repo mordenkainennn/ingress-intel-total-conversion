@@ -2,7 +2,7 @@
 // @author         mordenkainen
 // @name           Portal DB
 // @category       Database
-// @version        0.3.0
+// @version        0.4.0
 // @description    Save portal basic information (GUID, Lat, Lng, Team) to IndexedDB for cross-plugin use.
 // @id             portal-db@mordenkainen
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -23,6 +23,14 @@ function wrapper(plugin_info) {
   const self = window.plugin.portalDB;
 
   self.changelog = [
+    {
+      version: '0.4.0',
+      changes: [
+        'NEW: Added support for storing Portal names (titles) in the database.',
+        'UPD: API methods (getPortal, getPortalsInBounds) now return the `title` field if available.',
+        'UPD: Data collection hooks updated to capture portal titles from both map entities and portal details.',
+      ],
+    },
     {
       version: '0.3.0',
       changes: [
@@ -381,6 +389,7 @@ function wrapper(plugin_info) {
             latE6: data.latE6,
             lngE6: data.lngE6,
             team: data.team,
+            title: data.title || null, // Store title if available
             lastSeen: now,
           });
           self.stats.record(self.UpdateReason.NEW_PORTAL);
@@ -391,6 +400,7 @@ function wrapper(plugin_info) {
         const record = existing;
         let coordChanged = false;
         let teamChanged = false;
+        let titleChanged = false;
 
         // Check content changes
         if (data.latE6 !== undefined && record.latE6 !== data.latE6) {
@@ -405,8 +415,13 @@ function wrapper(plugin_info) {
           record.team = data.team;
           teamChanged = true;
         }
+        // Only update title if provided and different. Don't overwrite with null/undefined.
+        if (data.title && record.title !== data.title) {
+          record.title = data.title;
+          titleChanged = true;
+        }
 
-        const needsUpdate = coordChanged || teamChanged;
+        const needsUpdate = coordChanged || teamChanged || titleChanged;
         const isExpired = now - record.lastSeen > self.UPDATE_THRESHOLD;
 
         if (needsUpdate || isExpired) {
@@ -454,6 +469,7 @@ function wrapper(plugin_info) {
               latE6: data.latE6,
               lngE6: data.lngE6,
               team: data.team,
+              title: data.title || null,
               lastSeen: now,
             });
             self.stats.record(self.UpdateReason.NEW_PORTAL);
@@ -463,6 +479,7 @@ function wrapper(plugin_info) {
           const record = existing;
           let coordChanged = false;
           let teamChanged = false;
+          let titleChanged = false;
 
           // Check content changes
           if (data.latE6 !== undefined && record.latE6 !== data.latE6) {
@@ -477,8 +494,13 @@ function wrapper(plugin_info) {
             record.team = data.team;
             teamChanged = true;
           }
+          // Only update title if provided and different
+          if (data.title && record.title !== data.title) {
+            record.title = data.title;
+            titleChanged = true;
+          }
 
-          const needsUpdate = coordChanged || teamChanged;
+          const needsUpdate = coordChanged || teamChanged || titleChanged;
           const isExpired = now - record.lastSeen > self.UPDATE_THRESHOLD;
 
           if (needsUpdate || isExpired) {
@@ -525,19 +547,21 @@ function wrapper(plugin_info) {
     for (const i in entities) {
       const ent = entities[i];
       // ent format: [guid, timestamp, dataArr]
-      // dataArr for portal: ['p', teamStr, latE6, lngE6]
+      // dataArr for portal: ['p', teamStr, latE6, lngE6, level, health, resCount, image, title, ...]
       if (ent[2][0] === 'p') {
         const guid = ent[0];
         const dataArr = ent[2];
         const teamStr = dataArr[1]; // 'E', 'R', 'N', 'M'
         const latE6 = dataArr[2];
         const lngE6 = dataArr[3];
+        const title = dataArr[8]; // Title is usually at index 8
 
         portalsToUpdate.push({
           guid: guid,
           latE6: latE6,
           lngE6: lngE6,
           team: teamStr,
+          title: title || null,
         });
       }
     }
@@ -558,6 +582,7 @@ function wrapper(plugin_info) {
         latE6: data.details.latE6,
         lngE6: data.details.lngE6,
         team: team,
+        title: data.details.title,
       });
     }
   };

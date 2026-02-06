@@ -2,7 +2,7 @@
 // @author         mordenkainen
 // @name           Portal DB
 // @category       Database
-// @version        0.3.0
+// @version        0.4.0
 // @description    Save portal basic information (GUID, Lat, Lng, Team) to IndexedDB for cross-plugin use.
 // @id             portal-db@mordenkainen
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
