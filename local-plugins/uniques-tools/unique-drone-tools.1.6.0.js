@@ -1,6 +1,6 @@
 // ==UserScript==
 /* global IITC */
-// @author         3ch01c, mordenkainennn
+// @author         3ch01c, cloverjune
 // @name           Uniques Tools
 // @category       Misc
 // @version        1.6.0
