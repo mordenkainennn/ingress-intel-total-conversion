@@ -33,6 +33,7 @@ node_modules
 # Ignored files as per user request
 
 local-plugins/**/*.md
+local-plugins/**/*.html
 
 
 *.bat
