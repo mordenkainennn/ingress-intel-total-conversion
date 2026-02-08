@@ -2,7 +2,7 @@
 // @id             iitc-plugin-recharge-monitor
 // @name           IITC plugin: Recharge Monitor & Decay Predictor
 // @category       Info
-// @version        0.4.1
+// @version        0.4.2
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/recharge-monitor/recharge-monitor.meta.js
 // @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/recharge-monitor/recharge-monitor.user.js
@@ -18,10 +18,17 @@ function wrapper(plugin_info) {
     if (typeof window.plugin !== 'function') window.plugin = function () { };
 
     plugin_info.buildName = 'RechargeMonitor';
-    plugin_info.dateTimeVersion = '202402080001';
+    plugin_info.dateTimeVersion = '202402080003';
     plugin_info.pluginId = 'recharge-monitor';
 
     var changelog = [
+        {
+            version: '0.4.2',
+            changes: [
+                'NEW: Added "About" button to the watchlist dialog.',
+                'DOC: Added explicit dependency documentation in the About dialog.',
+            ],
+        },
         {
             version: '0.4.1',
             changes: [
@@ -316,11 +323,32 @@ function wrapper(plugin_info) {
         }
     };
 
+    self.showAbout = function() {
+        const html = `
+            <div style="font-size:14px; line-height:1.5;">
+                <p><strong>Recharge Monitor</strong> helps you track Portal energy states and predict neutralization times.</p>
+                <ul style="list-style-type:disc; padding-left:20px;">
+                    <li><strong>Health Monitoring:</strong> Tracks energy levels visible on the map.</li>
+                    <li><strong>Decay Prediction:</strong> Calculates exact neutralization time based on Ingress 24h decay cycles anchored to the deployment time.</li>
+                </ul>
+                <hr style="border:0; border-top:1px solid #444; margin:10px 0;">
+                <p style="color:#ffce00"><strong>Dependency Note:</strong></p>
+                <p>The <em>"Sync History"</em> feature requires the <strong style="color:#fff">Player Activity Log</strong> plugin to be installed and enabled.</p>
+                <p>It queries the local IndexedDB database to retrieve past capture times for Portals in your watchlist, ensuring accurate decay predictions even if you didn't see the deployment happen live.</p>
+            </div>
+        `;
+        window.dialog({
+            html: html,
+            title: 'About Recharge Monitor',
+            id: 'recharge-monitor-about',
+            width: 400
+        });
+    };
+
     self.showList = function () {
         if ($('#recharge-monitor-dialog').length === 0 && arguments.length === 0) return; 
         try {
-            let html = `<div style="margin-bottom:10px;"><button onclick="window.plugin.rechargeMonitor.scanActivityLog()" style="cursor:pointer;background:#20A8B1;border:none;padding:5px 10px;color:white;">🔄 Sync History</button></div>`;
-            html += `<table class="recharge-table" style="width:100%"><tr><th>Portal</th><th>Health</th><th>Deploy Time</th><th>Est. Decay</th><th>Action</th></tr>`;
+            let html = `<table class="recharge-table" style="width:100%"><tr><th>Portal</th><th>Health</th><th>Deploy Time</th><th>Est. Decay</th><th>Action</th></tr>`;
             for (const guid in self.data) {
                 const p = self.data[guid];
                 if (!p || !p.latlng) continue;
@@ -332,7 +360,18 @@ function wrapper(plugin_info) {
                 html += `<tr><td><a onclick="window.zoomToAndShowPortal('${guid}',[${lat},${lng}]);">${safeName}</a></td><td style="color:${c};font-weight:bold">${(h || 0).toFixed(0)}%</td><td>${self.formatTime(p.captureTime)}</td><td>${self.estimateDecay(h, p.lastSeenTime, p.captureTime)}</td><td><a onclick="window.plugin.rechargeMonitor.toggleWatch('${guid}'); setTimeout(window.plugin.rechargeMonitor.showList, 100);">Del</a></td></tr>`;
             }
             html += '</table>';
-            window.dialog({ html, title: 'Recharge Watchlist', id: 'recharge-monitor-dialog', width: 550 });
+            
+            window.dialog({ 
+                html: html, 
+                title: 'Recharge Watchlist', 
+                id: 'recharge-monitor-dialog', 
+                width: 550,
+                buttons: {
+                    'Sync History': function() { window.plugin.rechargeMonitor.scanActivityLog(); },
+                    'About': function() { window.plugin.rechargeMonitor.showAbout(); },
+                    'OK': function() { $(this).dialog('close'); }
+                }
+            });
         } catch (e) { console.error(e); }
     };
 
