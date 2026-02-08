@@ -2,7 +2,7 @@
 // @id             iitc-plugin-recharge-monitor
 // @name           IITC plugin: Recharge Monitor & Decay Predictor
 // @category       Info
-// @version        0.3.2
+// @version        0.4.1
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/recharge-monitor/recharge-monitor.meta.js
 // @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/recharge-monitor/recharge-monitor.user.js
@@ -18,53 +18,22 @@ function wrapper(plugin_info) {
     if (typeof window.plugin !== 'function') window.plugin = function () { };
 
     plugin_info.buildName = 'RechargeMonitor';
-    plugin_info.dateTimeVersion = '202401310002';
+    plugin_info.dateTimeVersion = '202402080001';
     plugin_info.pluginId = 'recharge-monitor';
 
     var changelog = [
+        {
+            version: '0.4.1',
+            changes: [
+                'REF: Migrated history sync to use the new asynchronous API of "Player Activity Log" (IndexedDB).',
+                'UPD: Improved reliability of data synchronization between plugins.',
+            ],
+        },
         {
             version: '0.3.2',
             changes: [
                 'FIX: Corrected UserScript update/download URLs to point to the correct `master` branch.',
             ],
-        },
-        {
-            version: '0.3.1',
-            changes: [
-                'UPD: Changed UI terminology from "Depletion" to "Decay" to match Ingress standards.',
-            ],
-        },
-        {
-            version: '0.3.0',
-            changes: [
-                'NEW: Added real-time Comm monitoring and retroactive history sync.',
-                'NEW: Integrated history recovery from "Player Activity Log" plugin via GUID matching.',
-                'NEW: Added "Est. Decay" column showing predicted time until 0% energy.',
-                'UPD: All time displays are now in local time (YYYY-MM-DD HH:MM).',
-                'UPD: Translated all UI texts and comments to English.',
-                'FIX: Improved robustness of health calculation to prevent overwriting valid cache with incomplete map data.',
-                'FIX: Added error handling and data validation to prevent UI crashes.',
-            ],
-        },
-        {
-            version: '0.2.1',
-            changes: [
-                'UPD: Translated UI texts in Portal details pane from Chinese to English.',
-            ],
-        },
-        {
-            version: '0.2.0',
-            changes: [
-                'FIX: Major structural refactoring to solve scope isolation issues, ensuring the plugin loads correctly and the toolbox link is always visible.',
-                'FIX: Adopted a robust, retry-based pattern for adding the toolbox button to prevent race conditions.',
-                'FIX: Added error handling for loading data from localStorage to prevent crashes on corrupted data.',
-                'UPD: Added .meta.js file and updated UserScript header for Tampermonkey update checks.',
-                'FIX: Corrected several minor UI bugs related to updating and closing the watchlist dialog.',
-            ],
-        },
-        {
-            version: '0.1.0',
-            changes: ['Initial creation of the plugin.'],
         }
     ];
 
@@ -137,12 +106,37 @@ function wrapper(plugin_info) {
         return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
     };
 
-    self.estimateDecay = function (currentHealth, lastSeenTime) {
+    self.estimateDecay = function (currentHealth, lastSeenTime, captureTime) {
         if (currentHealth <= 0) return 'Decayed';
+        
+        // Accurate prediction aligned to Ingress Decay Ticks
+        if (captureTime && captureTime > 0) {
+            const msPerDay = 24 * 60 * 60 * 1000;
+            const now = Date.now();
+            
+            // Calculate the most recent decay tick (in the past)
+            const elapsed = now - captureTime;
+            const daysSinceCapture = Math.floor(elapsed / msPerDay);
+            const lastTick = captureTime + (daysSinceCapture * msPerDay);
+            
+            // The next decay tick (in the future)
+            let nextTick = lastTick + msPerDay;
+            if (nextTick <= now) nextTick += msPerDay; // Safety for edge case
+            
+            // Calculate remaining ticks
+            // Health 15% -> dies on 1st tick (ticksLeft=1) -> date = nextTick
+            // Health 100% -> dies on 7th tick (ticksLeft=7) -> date = nextTick + 6 days
+            const ticksLeft = Math.ceil(currentHealth / 15);
+            
+            const depletionTime = nextTick + (ticksLeft - 1) * msPerDay;
+            return self.formatTime(depletionTime);
+        }
+
+        // Fallback: Linear estimation if capture time is unknown
         if (!lastSeenTime) return '-';
         const daysLeft = currentHealth / 15;
         const depletionTime = lastSeenTime + (daysLeft * 24 * 3600 * 1000);
-        return self.formatTime(depletionTime);
+        return '~ ' + self.formatTime(depletionTime); // Prefix with ~ to indicate approximation
     };
 
     /* ---------------- History Integration ---------------- */
@@ -211,24 +205,29 @@ function wrapper(plugin_info) {
         scanChannel(window.chat._faction ? window.chat._faction.data : null);
     };
 
-    self.scanActivityLog = function (targetGuid) {
+    self.scanActivityLog = async function (targetGuid) {
         self.scanCommHistory(targetGuid);
-        const LOG_KEY = 'player-activity-log';
-        const raw = localStorage[LOG_KEY];
-        if (!raw) return targetGuid ? null : alert('Scanned Comm History. (Activity Log plugin data not found)');
-
-        let logData;
-        try { logData = JSON.parse(raw); } catch (e) { return; }
-
-        const events = [];
-        for (const playerName in logData) {
-            const player = logData[playerName];
-            if (!player.activities) continue;
-            player.activities.forEach(act => {
-                const type = self.parseActivityType(act.activity);
-                if (type) events.push({ time: act.time, type: type, guid: act.guid, lat: act.portal.lat, lng: act.portal.lng });
-            });
+        
+        const logPlugin = window.plugin.playerActivityLog;
+        if (!logPlugin || typeof logPlugin.getAllActivities !== 'function') {
+            return targetGuid ? null : alert('Scanned Comm History. (Player Activity Log plugin/API not found)');
         }
+
+        console.log('Recharge Monitor: Syncing with Player Activity Log API...');
+        const activities = await logPlugin.getAllActivities();
+        
+        if (!activities || activities.length === 0) {
+            return targetGuid ? null : alert('Sync Complete. (No records found in Activity Log)');
+        }
+
+        const events = activities.map(act => ({
+            time: act.time,
+            type: self.parseActivityType(act.activity),
+            guid: act.guid,
+            lat: act.portal.lat,
+            lng: act.portal.lng
+        })).filter(e => e.type !== null);
+
         events.sort((a, b) => a.time - b.time);
 
         const processPortal = (guid, pData) => {
@@ -318,7 +317,7 @@ function wrapper(plugin_info) {
     };
 
     self.showList = function () {
-        if ($('#recharge-monitor-dialog').length === 0 && arguments.length === 0) return; // Prevent auto-opening
+        if ($('#recharge-monitor-dialog').length === 0 && arguments.length === 0) return; 
         try {
             let html = `<div style="margin-bottom:10px;"><button onclick="window.plugin.rechargeMonitor.scanActivityLog()" style="cursor:pointer;background:#20A8B1;border:none;padding:5px 10px;color:white;">🔄 Sync History</button></div>`;
             html += `<table class="recharge-table" style="width:100%"><tr><th>Portal</th><th>Health</th><th>Deploy Time</th><th>Est. Decay</th><th>Action</th></tr>`;
@@ -330,7 +329,7 @@ function wrapper(plugin_info) {
                 const lat = typeof p.latlng.lat !== 'undefined' ? p.latlng.lat : (Array.isArray(p.latlng) ? p.latlng[0] : 0);
                 const lng = typeof p.latlng.lng !== 'undefined' ? p.latlng.lng : (Array.isArray(p.latlng) ? p.latlng[1] : 0);
                 const safeName = (p.name || 'Unknown').replace(/"/g, '&quot;');
-                html += `<tr><td><a onclick="window.zoomToAndShowPortal('${guid}',[${lat},${lng}]);">${safeName}</a></td><td style="color:${c};font-weight:bold">${(h || 0).toFixed(0)}%</td><td>${self.formatTime(p.captureTime)}</td><td>${self.estimateDecay(h, p.lastSeenTime)}</td><td><a onclick="window.plugin.rechargeMonitor.toggleWatch('${guid}'); setTimeout(window.plugin.rechargeMonitor.showList, 100);">Del</a></td></tr>`;
+                html += `<tr><td><a onclick="window.zoomToAndShowPortal('${guid}',[${lat},${lng}]);">${safeName}</a></td><td style="color:${c};font-weight:bold">${(h || 0).toFixed(0)}%</td><td>${self.formatTime(p.captureTime)}</td><td>${self.estimateDecay(h, p.lastSeenTime, p.captureTime)}</td><td><a onclick="window.plugin.rechargeMonitor.toggleWatch('${guid}'); setTimeout(window.plugin.rechargeMonitor.showList, 100);">Del</a></td></tr>`;
             }
             html += '</table>';
             window.dialog({ html, title: 'Recharge Watchlist', id: 'recharge-monitor-dialog', width: 550 });
