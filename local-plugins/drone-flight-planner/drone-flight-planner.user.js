@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-drone-planner@cloverjune
 // @name           IITC Plugin: cloverjune's Drone Flight Planner
-// @version        0.1.1
+// @version        0.2.0.20260211
 // @description    Plugin for planning drone flights in IITC
 // @author         cloverjune
 // @category       Layer
@@ -24,8 +24,19 @@
 // ==/UserScript==
 
 pluginName = "mordenkainennn's Drone Planner";
-version = "0.1.1";
+version = "0.2.0.20260211";
 changeLog = [
+    {
+        version: '0.2.0.20260211',
+        changes: [
+            'NEW: Added time-sliced A* for Perfect mode to keep the UI responsive.',
+            'NEW: Added active S2 grid overlay and one-way jump warnings (with settings toggles).',
+            'NEW: Added S2 cell pre-binning and cache resets on grid setting changes.',
+            'UPD: Improved hop classification and heuristic to honor S2 mechanics.',
+            'FIX: Updated DrawTools export and legacy settings migration for view radius.',
+            'FIX: Settings now load on startup.',
+        ],
+    },
     {
         version: '0.1.1',
         changes: ['FIX: Corrected UserScript update/download URLs to point to the correct `master` branch.'],
@@ -70,13 +81,349 @@ changeLog = [
 function wrapper(plugin_info) {
     if (typeof window.plugin !== 'function') window.plugin = function () { };
     plugin_info.buildName = '';
-    plugin_info.dateTimeVersion = '20251231-120000';
+    plugin_info.dateTimeVersion = '20260211-120000';
     plugin_info.pluginId = 'mordenkainennnsDronePlanner';
 
     // PLUGIN START
     console.log('loading drone plugin')
     var changelog = changeLog;
     let self = window.plugin.dronePlanner = function () { };
+
+    // --- S2 Geometry Library Integration ---
+    const d2r = Math.PI / 180.0;
+    const r2d = 180.0 / Math.PI;
+
+    if (!window.S2) {
+        (function () {
+            window.S2 = {};
+
+            function LatLngToXYZ(latLng) {
+                const phi = latLng.lat * d2r;
+                const theta = latLng.lng * d2r;
+                const cosphi = Math.cos(phi);
+                return [Math.cos(theta) * cosphi, Math.sin(theta) * cosphi, Math.sin(phi)];
+            }
+
+            function XYZToLatLng(xyz) {
+                const lat = Math.atan2(xyz[2], Math.sqrt(xyz[0] * xyz[0] + xyz[1] * xyz[1]));
+                const lng = Math.atan2(xyz[1], xyz[0]);
+                return { lat: lat * r2d, lng: lng * r2d };
+            }
+
+            function largestAbsComponent(xyz) {
+                const temp = [Math.abs(xyz[0]), Math.abs(xyz[1]), Math.abs(xyz[2])];
+                if (temp[0] > temp[1]) {
+                    if (temp[0] > temp[2]) return 0;
+                    return 2;
+                }
+                if (temp[1] > temp[2]) return 1;
+                return 2;
+            }
+
+            function faceXYZToUV(face, xyz) {
+                let u, v;
+                switch (face) {
+                    case 0: u = xyz[1] / xyz[0]; v = xyz[2] / xyz[0]; break;
+                    case 1: u = -xyz[0] / xyz[1]; v = xyz[2] / xyz[1]; break;
+                    case 2: u = -xyz[0] / xyz[2]; v = -xyz[1] / xyz[2]; break;
+                    case 3: u = xyz[2] / xyz[0]; v = xyz[1] / xyz[0]; break;
+                    case 4: u = xyz[2] / xyz[1]; v = -xyz[0] / xyz[1]; break;
+                    case 5: u = -xyz[1] / xyz[2]; v = -xyz[0] / xyz[2]; break;
+                    default: throw { error: 'Invalid face' };
+                }
+                return [u, v];
+            }
+
+            function XYZToFaceUV(xyz) {
+                let face = largestAbsComponent(xyz);
+                if (xyz[face] < 0) face += 3;
+                const uv = faceXYZToUV(face, xyz);
+                return [face, uv];
+            }
+
+            function FaceUVToXYZ(face, uv) {
+                const u = uv[0];
+                const v = uv[1];
+                switch (face) {
+                    case 0: return [1, u, v];
+                    case 1: return [-u, 1, v];
+                    case 2: return [-u, -v, 1];
+                    case 3: return [-1, -v, -u];
+                    case 4: return [v, -1, -u];
+                    case 5: return [v, u, -1];
+                    default: throw { error: 'Invalid face' };
+                }
+            }
+
+            function STToUV(st) {
+                const singleSTtoUV = function (st) {
+                    if (st >= 0.5) return (1 / 3.0) * (4 * st * st - 1);
+                    return (1 / 3.0) * (1 - (4 * (1 - st) * (1 - st)));
+                };
+                return [singleSTtoUV(st[0]), singleSTtoUV(st[1])];
+            }
+
+            function UVToST(uv) {
+                const singleUVtoST = function (uv) {
+                    if (uv >= 0) return 0.5 * Math.sqrt(1 + 3 * uv);
+                    return 1 - 0.5 * Math.sqrt(1 - 3 * uv);
+                };
+                return [singleUVtoST(uv[0]), singleUVtoST(uv[1])];
+            }
+
+            function STToIJ(st, order) {
+                const maxSize = 1 << order;
+                const singleSTtoIJ = function (st) {
+                    const ij = Math.floor(st * maxSize);
+                    return Math.max(0, Math.min(maxSize - 1, ij));
+                };
+                return [singleSTtoIJ(st[0]), singleSTtoIJ(st[1])];
+            }
+
+            function IJToST(ij, order, offsets) {
+                const maxSize = 1 << order;
+                return [
+                    (ij[0] + offsets[0]) / maxSize,
+                    (ij[1] + offsets[1]) / maxSize
+                ];
+            }
+
+            S2.S2Cell = function () { };
+
+            S2.S2Cell.FromLatLng = function (latLng, level) {
+                const xyz = LatLngToXYZ(latLng);
+                const faceuv = XYZToFaceUV(xyz);
+                const st = UVToST(faceuv[1]);
+                const ij = STToIJ(st, level);
+                return S2.S2Cell.FromFaceIJ(faceuv[0], ij, level);
+            };
+
+            S2.S2Cell.FromFaceIJ = function (face, ij, level) {
+                const cell = new S2.S2Cell();
+                cell.face = face;
+                cell.ij = ij;
+                cell.level = level;
+                return cell;
+            };
+
+            S2.S2Cell.prototype.toString = function () {
+                return 'F' + this.face + 'ij[' + this.ij[0] + ',' + this.ij[1] + ']@' + this.level;
+            };
+
+            S2.S2Cell.prototype.getLatLng = function () {
+                const st = IJToST(this.ij, this.level, [0.5, 0.5]);
+                const uv = STToUV(st);
+                const xyz = FaceUVToXYZ(this.face, uv);
+                return XYZToLatLng(xyz);
+            };
+
+            S2.S2Cell.prototype.getCornerLatLngs = function () {
+                const offsets = [
+                    [0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0]
+                ];
+                return offsets.map(offset => {
+                    const st = IJToST(this.ij, this.level, offset);
+                    const uv = STToUV(st);
+                    const xyz = FaceUVToXYZ(this.face, uv);
+                    return XYZToLatLng(xyz);
+                });
+            };
+
+            S2.S2Cell.prototype.getNeighbors = function () {
+                const fromFaceIJWrap = function (face, ij, level) {
+                    const maxSize = 1 << level;
+                    if (ij[0] >= 0 && ij[1] >= 0 && ij[0] < maxSize && ij[1] < maxSize) {
+                        return S2.S2Cell.FromFaceIJ(face, ij, level);
+                    }
+                    let st = IJToST(ij, level, [0.5, 0.5]);
+                    let uv = STToUV(st);
+                    let xyz = FaceUVToXYZ(face, uv);
+                    const faceuv = XYZToFaceUV(xyz);
+                    return S2.S2Cell.FromFaceIJ(faceuv[0], STToIJ(UVToST(faceuv[1]), level), level);
+                };
+                const face = this.face;
+                const i = this.ij[0];
+                const j = this.ij[1];
+                const level = this.level;
+                const deltas = [
+                    { a: -1, b: 0 }, { a: 0, b: -1 }, { a: 1, b: 0 }, { a: 0, b: 1 }
+                ];
+                return deltas.map(values => fromFaceIJWrap(face, [i + values.a, j + values.b], level));
+            };
+        })();
+    }
+    // --- End of S2 Geometry Library ---
+
+    // Settings Management
+    const KEY_SETTINGS = "plugin-drone-flight-planner-settings";
+    
+    self.defaultSettings = {
+        // Appearance
+        shortHopColor: "#cc44ff",
+        longHopColor: "#ff0000",
+        fullTreeColor: "#ffcc44",
+        
+        // Path Finding
+        pathType: "min-long-hops", // min-hops, balanced, min-long-hops
+        allowLongHops: "yes-long-hops", // yes-long-hops, no-long-hops
+        optimisationType: "none", // none, greedy, balanced, perfect
+        
+        // S2 Mechanics
+        useS2: true, // Toggle S2 logic
+        s2Level: 16, // 16 or 17
+        viewRadius: 550, // Replacing 'longHopLength', default 550m
+        showOneWayWarning: true,
+        displayActiveGrid: false
+    };
+
+    self.settings = Object.assign({}, self.defaultSettings);
+
+    self.planRunToken = 0;
+
+    self.loadSettings = function() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(KEY_SETTINGS));
+            if (saved) {
+                if (saved.longHopLength !== undefined && saved.viewRadius === undefined) {
+                    saved.viewRadius = saved.longHopLength;
+                }
+                if (saved.s2Level !== undefined) {
+                    saved.s2Level = parseInt(saved.s2Level, 10);
+                }
+                if (saved.viewRadius !== undefined) {
+                    saved.viewRadius = parseInt(saved.viewRadius, 10);
+                }
+                self.settings = Object.assign({}, self.defaultSettings, saved);
+                if (![16, 17].includes(self.settings.s2Level)) {
+                    self.settings.s2Level = self.defaultSettings.s2Level;
+                }
+                if (!Number.isFinite(self.settings.viewRadius)) {
+                    self.settings.viewRadius = self.defaultSettings.viewRadius;
+                }
+            }
+        } catch(e) {
+            console.warn("DronePlanner: Failed to load settings", e);
+        }
+    };
+
+    self.saveSettings = function() {
+        localStorage.setItem(KEY_SETTINGS, JSON.stringify(self.settings));
+    };
+
+    // --- S2 Helper Functions & Cache ---
+    
+    self.reachableCellsCache = {}; // Map<S2CellString, Set<S2CellString>>
+    self.portalCellIdByGuid = {}; // Map<PortalGuid, S2CellString>
+    self.portalCellByGuid = {}; // Map<PortalGuid, S2Cell>
+
+    self.clearReachabilityCache = function() {
+        self.reachableCellsCache = {};
+    }
+
+    self.clearS2Caches = function() {
+        self.reachableCellsCache = {};
+        self.portalCellIdByGuid = {};
+        self.portalCellByGuid = {};
+    }
+
+    function haversine(lat1, lon1, lat2, lon2) {
+        const R = 6371e3; 
+        const phi1 = lat1 * Math.PI / 180;
+        const phi2 = lat2 * Math.PI / 180;
+        const deltaPhi = (lat2 - lat1) * Math.PI / 180;
+        const deltaLambda = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+            Math.cos(phi1) * Math.cos(phi2) *
+            Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; 
+    }
+
+    function getCellFaceMidpointLatLngs(corners) {
+        let midpoints = [];
+        let _corners = [...corners, corners[0]];
+        for (let i = 0; i < 4; i++) {
+            const mlat = (_corners[i].lat + _corners[i + 1].lat) / 2;
+            const mlng = (_corners[i].lng + _corners[i + 1].lng) / 2;
+            midpoints.push({ "lat": mlat, "lng": mlng });
+        }
+        return midpoints;
+    }
+
+    function isCellInRange(cell, centerLatLng, radius) {
+        const cellCenter = cell.getLatLng();
+        if (haversine(cellCenter.lat, cellCenter.lng, centerLatLng.lat, centerLatLng.lng) < radius) return true;
+        const corners = cell.getCornerLatLngs();
+        for (let i = 0; i < corners.length; i++) {
+            if (haversine(corners[i].lat, corners[i].lng, centerLatLng.lat, centerLatLng.lng) < radius) return true;
+        }
+        const midpoints = getCellFaceMidpointLatLngs(corners);
+        for (let i = 0; i < midpoints.length; i++) {
+            if (haversine(midpoints[i].lat, midpoints[i].lng, centerLatLng.lat, centerLatLng.lng) < radius) return true;
+        }
+        return false;
+    }
+
+    self.getReachableCells = function(centerLatLng) {
+        const gridLevel = self.settings.s2Level;
+        const radius = self.settings.viewRadius;
+        const centerCell = S2.S2Cell.FromLatLng(centerLatLng, gridLevel);
+        const centerCellId = centerCell.toString();
+        
+        // We use a combined key of CellID + Radius to allow radius adjustments
+        const cacheKey = `${centerCellId}_${radius}`;
+        if (self.reachableCellsCache[cacheKey]) return self.reachableCellsCache[cacheKey];
+
+        const seenCells = new Set();
+        const reachable = new Set();
+        const queue = [centerCell];
+        seenCells.add(centerCellId);
+        reachable.add(centerCellId);
+
+        while (queue.length > 0) {
+            const current = queue.pop();
+            const neighbors = current.getNeighbors();
+            for (let n of neighbors) {
+                const nStr = n.toString();
+                if (!seenCells.has(nStr)) {
+                    seenCells.add(nStr);
+                    if (isCellInRange(n, centerLatLng, radius)) {
+                        reachable.add(nStr);
+                        queue.push(n);
+                    }
+                }
+            }
+        }
+        self.reachableCellsCache[cacheKey] = reachable;
+        return reachable;
+    }
+
+    self.getCellFromId = function(cellId) {
+        if (!cellId) return null;
+        const match = /^F(\d+)ij\[(\d+),(\d+)\]@(\d+)$/.exec(cellId);
+        if (!match) return null;
+        const face = parseInt(match[1], 10);
+        const i = parseInt(match[2], 10);
+        const j = parseInt(match[3], 10);
+        const level = parseInt(match[4], 10);
+        return S2.S2Cell.FromFaceIJ(face, [i, j], level);
+    };
+
+    self.getPortalCell = function(guid, latLng) {
+        if (self.portalCellByGuid[guid]) return self.portalCellByGuid[guid];
+        const ll = latLng || self.getLatLng(guid);
+        if (!ll) return null;
+        const cell = S2.S2Cell.FromLatLng(ll, self.settings.s2Level);
+        self.portalCellByGuid[guid] = cell;
+        self.portalCellIdByGuid[guid] = cell.toString();
+        return cell;
+    };
+
+    self.getPortalCellId = function(guid, latLng) {
+        if (self.portalCellIdByGuid[guid]) return self.portalCellIdByGuid[guid];
+        const cell = self.getPortalCell(guid, latLng);
+        return cell ? cell.toString() : null;
+    };
 
     // helper function to convert portal ID to portal object
     function portalIdToObject(portalId) {
@@ -114,6 +461,9 @@ function wrapper(plugin_info) {
             var portalLatLng = portal.getLatLng(); // Portal's latitude and longitude
             if (!self.allPortals.hasOwnProperty(key) && bounds.contains(portalLatLng)) {
                 self.allPortals[key] = portal; // Add new portal
+                if (window.S2) {
+                    self.getPortalCellId(key, portalLatLng);
+                }
 
                 // Initialize graph entry for the new portal
                 graph[key] = [];
@@ -165,6 +515,33 @@ function wrapper(plugin_info) {
             return;
         }
         let graph = self.graph;
+        const planToken = ++self.planRunToken;
+
+        if (self.settings.optimisationType === 'perfect') {
+            console.time("A* Time (Perfect)");
+            let pnfp = self.createSpanningTreeAndFindFurthestPortal(graph);
+            let previousNodes = pnfp.pn;
+            let furthestPortal = pnfp.fp;
+            let tree = self.constructTree(previousNodes);
+
+            self.applyAStarAsync(graph, self.startPortal.guid, furthestPortal, self.heuristic, planToken, function (path) {
+                if (planToken !== self.planRunToken) return;
+                tree.furthestPath = path;
+                self.plan = tree;
+                console.timeEnd("A* Time (Perfect)");
+
+                console.time("update Layer Time");
+                self.updateLayer();
+                console.timeEnd("update Layer Time");
+
+                const planJson = self.getPlanAsJson();
+                if (planJson) {
+                    localStorage.setItem('drone-flight-plan-autosave', JSON.stringify(planJson));
+                }
+            });
+            return;
+        }
+
         console.time("A* Time");
         self.plan = self.findMinimumCostPath(graph);
         console.timeEnd("A* Time");
@@ -190,7 +567,7 @@ function wrapper(plugin_info) {
         let tree = self.constructTree(previousNodes);
         console.timeEnd("construct tree Time");
         console.time("furthest path Time");
-        if (document.getElementById('opt-none').checked) {
+        if (self.settings.optimisationType === 'none') {
             tree.furthestPath = self.reconstructPath(previousNodes, furthestPortal);
         } else {
             tree.furthestPath = self.applyAStar(graph, self.startPortal.guid, furthestPortal, self.heuristic);
@@ -207,7 +584,6 @@ function wrapper(plugin_info) {
         let queue = [self.startPortal.guid];
         let furthestPortal = self.startPortal.guid;
         let maxDistance = 0;
-        let longHopThreshold = self.getLongHopThreshold();
         while (queue.length > 0) {
             let current = queue.shift();
             let currentDistance = self.getDistance(self.startPortal.guid, current);
@@ -219,14 +595,13 @@ function wrapper(plugin_info) {
             if (graph[current]) {
                 graph[current].forEach(neighbor => {
                     if (!visited.has(neighbor)) {
-                        let distance = self.getDistance(current, neighbor);
-                        let isShortHop = distance <= longHopThreshold;
-                        if (!isShortHop && !self.areLongHopsAllowed()) {
+                        let hopInfo = self.getHopInfo(current, neighbor);
+                        if (!hopInfo.reachable) {
                             return;
                         }
                         visited.add(neighbor);
                         previousNodes[neighbor] = current;
-                        if (isShortHop) {
+                        if (hopInfo.short) {
                             queue.unshift(neighbor);
                         } else {
                             queue.push(neighbor);
@@ -240,67 +615,121 @@ function wrapper(plugin_info) {
     };
 
     self.getOptimisationScale = function () {
-        if (document.getElementById('opt-perfect') && document.getElementById('opt-perfect').checked) {
-            return 1;
-        } else if (document.getElementById('opt-balanced').checked) {
-            return 3;
-        } else if (document.getElementById('opt-greedy').checked) {
-            return 10;
-        } else {
-            // 'None' or no option selected, default or undefined behavior
-            return undefined; // Or any other default value you'd prefer
+        switch (self.settings.optimisationType) {
+            case 'perfect': return 1;
+            case 'balanced': return 3;
+            case 'greedy': return 10;
+            default: return undefined;
         }
     }
 
-    self.heuristic = function (node, goal) {
-        let distMetres = self.getDistance(node, goal);
-        let longHopThreshold = self.getLongHopThreshold();
-        // Calculate the total cost assuming only short hops
-        let shortHopCost = self.getCostFromHops(0, Math.ceil(distMetres / longHopThreshold))
-
-        // Calculate the maximum number of long and short hops
-        let numLongHops = Math.floor(distMetres / self.getHardMaxDistance()); // 1.25km max hop length
-        let numShortHops = 0;
-        if (distMetres - self.getHardMaxDistance() * numLongHops > longHopThreshold) {
-            numLongHops++;
-        } else {
-            numShortHops++;
+    self.getHopInfo = function (fromGuid, toGuid) {
+        const pA = self.getLatLng(fromGuid);
+        const pB = self.getLatLng(toGuid);
+        if (!pA || !pB) {
+            return { distance: Infinity, short: false, long: false, reachable: false };
         }
-        // Calculate the total cost assuming all (or mostly) long hops
-        let longHopCost = self.getCostFromHops(numLongHops, numShortHops);
+
+        const dist = haversine(pA.lat, pA.lng, pB.lat, pB.lng);
+        let isShort = false;
+
+        // 1. Check Short Hop
+        if (self.settings.useS2) {
+            const reachableCells = self.getReachableCells(pA);
+            const targetCellId = self.getPortalCellId(toGuid, pB);
+            if (targetCellId && reachableCells.has(targetCellId)) {
+                isShort = true;
+            }
+        } else {
+            if (dist <= self.settings.viewRadius) {
+                isShort = true;
+            }
+        }
+
+        const isLong = !isShort && self.areLongHopsAllowed() && dist <= self.getHardMaxDistance();
+
+        return { distance: dist, short: isShort, long: isLong, reachable: isShort || isLong };
+    };
+
+    // Combined reachability and cost logic
+    self.getHopCost = function (fromGuid, toGuid) {
+        const hopInfo = self.getHopInfo(fromGuid, toGuid);
+        if (!hopInfo.reachable) return Infinity;
+
+        // 1. Short Hop (Cost 1)
+        if (hopInfo.short) return 1;
+
+        // 2. Long Hop (Cost based on Path Type)
+        if (hopInfo.long) {
+            const PENALTY_MIN_HOPS = 1.01;
+            const PENALTY_BALANCED = 3;
+            const PENALTY_MIN_LONG_HOPS = 100;
+
+            switch (self.settings.pathType) {
+                case 'min-long-hops': return PENALTY_MIN_LONG_HOPS;
+                case 'min-hops': return PENALTY_MIN_HOPS;
+                case 'balanced': return PENALTY_BALANCED;
+                default: return PENALTY_BALANCED;
+            }
+        }
+
+        return Infinity;
+    };
+
+    self.heuristic = function (node, goal) {
+        const pA = self.getLatLng(node);
+        const pB = self.getLatLng(goal);
+        if (!pA || !pB) return Infinity;
+
+        if (self.settings.useS2) {
+            const cellA = self.getPortalCell(node, pA);
+            const cellB = self.getPortalCell(goal, pB);
+            if (cellA && cellB && cellA.face === cellB.face) {
+                const di = Math.abs(cellA.ij[0] - cellB.ij[0]);
+                const dj = Math.abs(cellA.ij[1] - cellB.ij[1]);
+                const gridSpan = Math.max(di, dj);
+                const scale = self.getOptimisationScale();
+                return gridSpan * (scale || 1);
+            }
+        }
+
+        const distMetres = haversine(pA.lat, pA.lng, pB.lat, pB.lng);
+        const viewRadius = self.settings.viewRadius;
+        
+        // Estimate cost based on straight line distance
+        // Minimum possible cost is distance / max_hop_distance
+        let minHops = Math.ceil(distMetres / 1250); 
+        
+        // If we only used short hops
+        let shortHopOnlyCost = Math.ceil(distMetres / viewRadius);
 
         let scale = self.getOptimisationScale();
-
-
-        // Return the minimum of the two costs
-        return Math.min(longHopCost, shortHopCost) * scale;
+        return Math.min(minHops * 1.01, shortHopOnlyCost) * (scale || 1);
     }
 
     self.applyAStar = function (graph, start, end, heuristic) {
-        let openSet = [start]; // Open set as a list
+        let openSet = [start];
         let cameFrom = {};
         let gScore = { [start]: 0 };
-        let fScore = { [start]: heuristic(start, end) }; // Initialize fScore for start node
-        let longHopThreshold = self.getLongHopThreshold();
+        let fScore = { [start]: heuristic(start, end) };
+
+        // Clear cache before each search to ensure fresh results if settings changed
+        self.clearReachabilityCache();
 
         while (openSet.length > 0) {
-            // Sort the open set based on fScore
             openSet.sort((a, b) => fScore[a] - fScore[b]);
             let current = openSet.shift();
+            
             if (current === end) {
-                console.time("reconstructPath");
-                let rtn = self.reconstructPath(cameFrom, current);
-                console.timeEnd("reconstructPath");
-                return rtn;
+                return self.reconstructPath(cameFrom, current);
             }
 
+            if (!graph[current]) continue;
+
             graph[current].forEach(neighbor => {
-                let distance = self.getDistance(current, neighbor);
-                let isLongHop = distance > longHopThreshold;
-                if (isLongHop && !self.areLongHopsAllowed()) {
-                    return;
-                }
-                let cost = isLongHop ? self.getCostFromHops(1, 0) : self.getCostFromHops(0, 1);
+                const cost = self.getHopCost(current, neighbor);
+                if (cost === Infinity) return;
+
                 let tentative_gScore = gScore[current] + cost;
                 if (!gScore.hasOwnProperty(neighbor) || tentative_gScore < gScore[neighbor]) {
                     cameFrom[neighbor] = current;
@@ -315,61 +744,89 @@ function wrapper(plugin_info) {
                 }
             });
         }
-
         return [];
+    };
+
+    self.applyAStarAsync = function (graph, start, end, heuristic, token, onDone) {
+        let openSet = [start];
+        let cameFrom = {};
+        let gScore = { [start]: 0 };
+        let fScore = { [start]: heuristic(start, end) };
+
+        self.clearReachabilityCache();
+
+        const runSlice = (deadline) => {
+            if (token !== self.planRunToken) return;
+
+            const sliceStart = performance.now();
+            while (openSet.length > 0) {
+                if (token !== self.planRunToken) return;
+                if (deadline && deadline.timeRemaining && deadline.timeRemaining() <= 1) break;
+                if (performance.now() - sliceStart > 16) break;
+
+                openSet.sort((a, b) => fScore[a] - fScore[b]);
+                let current = openSet.shift();
+
+                if (current === end) {
+                    onDone(self.reconstructPath(cameFrom, current));
+                    return;
+                }
+
+                if (!graph[current]) continue;
+
+                graph[current].forEach(neighbor => {
+                    const cost = self.getHopCost(current, neighbor);
+                    if (cost === Infinity) return;
+
+                    let tentative_gScore = gScore[current] + cost;
+                    if (!gScore.hasOwnProperty(neighbor) || tentative_gScore < gScore[neighbor]) {
+                        cameFrom[neighbor] = current;
+                        gScore[neighbor] = tentative_gScore;
+                        let tentative_fScore = gScore[neighbor] + heuristic(neighbor, end);
+                        if (!fScore.hasOwnProperty(neighbor)) {
+                            fScore[neighbor] = tentative_fScore;
+                            openSet.push(neighbor);
+                        } else if (tentative_fScore < fScore[neighbor]) {
+                            fScore[neighbor] = tentative_fScore;
+                        }
+                    }
+                });
+            }
+
+            if (openSet.length === 0) {
+                onDone([]);
+                return;
+            }
+
+            if (window.requestIdleCallback) {
+                window.requestIdleCallback(runSlice);
+            } else {
+                setTimeout(runSlice, 0);
+            }
+        };
+
+        if (window.requestIdleCallback) {
+            window.requestIdleCallback(runSlice);
+        } else {
+            setTimeout(runSlice, 0);
+        }
     };
 
     self.reconstructPath = function (cameFrom, current) {
         let totalPath = [current];
-        while (Object.keys(cameFrom).includes(current)) {
+        while (cameFrom.hasOwnProperty(current)) {
             current = cameFrom[current];
             totalPath.unshift(current);
-            if (totalPath.length > 1000) return [current];
+            if (totalPath.length > 2000) break; 
         }
         return totalPath;
     };
 
-    self.getLongHopThreshold = function () {
-        return parseInt(document.getElementById('long-hop-length').value);
-    }
-
-    self.getCostFromHops = function (longHops, shortHops) {
-        const PENALTY_MIN_HOPS = 1.01;
-        const PENALTY_BALANCED = 3; // You can adjust this later as needed
-        const PENALTY_MIN_LONG_HOPS = 100;
-
-        let pathType = document.querySelector('input[name="path-type"]:checked').value;
-        let penalty;
-
-        switch (pathType) {
-            case 'min-long-hops':
-                penalty = PENALTY_MIN_LONG_HOPS;
-                break;
-            case 'min-hops':
-                penalty = PENALTY_MIN_HOPS;
-                break;
-            case 'balanced':
-                penalty = PENALTY_BALANCED;
-                break;
-            default:
-                penalty = PENALTY_BALANCED; // Default case, can be adjusted
-        }
-
-        let rtn = shortHops + (longHops * penalty);
-        return rtn;
-    };
-
     self.areLongHopsAllowed = function () {
-        let longHopsAllowedString = document.querySelector('input[name="allow-long-hops"]:checked').value;
-        let longHopsAllowed = longHopsAllowedString == "yes-long-hops" ? true : false;
-        return longHopsAllowed;
+        return self.settings.allowLongHops === "yes-long-hops";
     }
 
     self.getHardMaxDistance = function () {
-        //        let longHopsAllowedString = document.querySelector('input[name="allow-long-hops"]:checked').value;
-        //        let longHopsAllowed = longHopsAllowedString == "yes-long-hops" ? true : false;
-        //        if (longHopsAllowed) return 1250;
-        //        return self.getLongHopThreshold();
         return 1250;
     }
 
@@ -386,27 +843,28 @@ function wrapper(plugin_info) {
     };
 
     self.exportPlanAsText = function () {
-        let totalHops = self.plan.furthestPath.length - 1; // Number of hops is one less than the number of portals
+        let totalHops = self.plan.furthestPath.length - 1; 
         let longHops = 0;
-        let longHopThreshold = parseInt(document.getElementById('long-hop-length').value);
 
         let totalDistance = self.getDistance(self.plan.furthestPath[0], self.plan.furthestPath.slice(-1)[0]);
 
         for (let i = 0; i < self.plan.furthestPath.length - 1; i++) {
-            let distance = self.getDistance(self.plan.furthestPath[i], self.plan.furthestPath[i + 1]);
-            if (distance > longHopThreshold) {
+            let hopInfo = self.getHopInfo(self.plan.furthestPath[i], self.plan.furthestPath[i + 1]);
+            if (hopInfo.long) {
                 longHops++;
             }
         }
 
-        // Convert total distance to kilometers
         totalDistance = totalDistance / 1000;
 
-        // Update the text with the calculated values
         let message = totalDistance.toFixed(2) + " km path found, with " + totalHops + " hops total, and " + longHops + " long hops\n\n";
         for (let i = 0; i < self.plan.furthestPath.length; i++) {
             let distance = i == 0 ? 0 : self.getDistance(self.plan.furthestPath[i], self.plan.furthestPath[i - 1]);
-            let longHop = (distance > longHopThreshold);
+            let longHop = false;
+            if (i > 0) {
+                let hopInfo = self.getHopInfo(self.plan.furthestPath[i - 1], self.plan.furthestPath[i]);
+                longHop = hopInfo.long;
+            }
             let prefix = i == 0 ? "Place drone at " : "Move drone to ";
             let portalName = self.getPortalNameFromGUID(self.plan.furthestPath[i]);
             let line = i + ". " + prefix + portalName;
@@ -445,12 +903,10 @@ function wrapper(plugin_info) {
 
         // 3. Build the pruned graph and the portal details dictionary for ONLY the kept portals
         for (const guid of guidsToKeep) {
-            // Copy the connections for the kept portal, but only keep links to other kept portals
             if (self.graph[guid]) {
                 prunedGraph[guid] = self.graph[guid].filter(neighbor => guidsToKeep.has(neighbor));
             }
 
-            // Copy the portal details for the kept portal
             let portal = window.portals[guid] || self.allPortals[guid];
             if (portal) {
                 let latLng = self.getLatLng(guid);
@@ -467,9 +923,9 @@ function wrapper(plugin_info) {
             name: "Drone Flight Plan",
             version: "1.0",
             startPortalGuid: self.startPortal.guid,
-            path: self.plan.furthestPath, // The path itself remains the same
-            graph: prunedGraph, // Use the PRUNED graph
-            portals: portalsToKeepDetails // Use the PRUNED portal list
+            path: self.plan.furthestPath, 
+            graph: prunedGraph, 
+            portals: portalsToKeepDetails 
         };
         return planJson;
     };
@@ -496,20 +952,18 @@ function wrapper(plugin_info) {
 
     self.loadPlan = function (planJson) {
         try {
-            // Basic validation
             if (!planJson.version || !planJson.startPortalGuid || !planJson.path || !planJson.portals) {
                 console.warn('Drone Planner: Invalid plan format in storage.');
                 return;
             }
 
-            // Clear current plan
             self.clearLayers();
             self.plan = null;
-            self.graph = {}; // Clear graph initially
+            self.graph = {}; 
+            self.clearS2Caches();
 
-            // Load portal data from JSON into self.allPortals
             for (const guid in planJson.portals) {
-                if (!window.portals[guid] && !self.allPortals[guid]) { // Only add if not already present
+                if (!window.portals[guid] && !self.allPortals[guid]) { 
                     const portalData = planJson.portals[guid];
                     self.allPortals[guid] = {
                         options: {
@@ -526,12 +980,10 @@ function wrapper(plugin_info) {
             self.startPortal = { guid: planJson.startPortalGuid };
             self.plan = { furthestPath: planJson.path };
 
-            // Load the graph if it exists in the saved data
             if (planJson.graph) {
                 self.graph = planJson.graph;
             }
 
-            // Programmatically enable layers before drawing
             if (self.linksLayerGroup && !window.map.hasLayer(self.linksLayerGroup)) {
                 window.map.addLayer(self.linksLayerGroup);
             }
@@ -539,7 +991,7 @@ function wrapper(plugin_info) {
                 window.map.addLayer(self.fieldsLayerGroup);
             }
 
-            self.drawLayer(); // Directly draw on map without updating dialog UI
+            self.drawLayer(); 
             console.log('Drone Planner: Loaded plan from storage.');
 
         } catch (err) {
@@ -553,28 +1005,19 @@ function wrapper(plugin_info) {
         input.accept = 'application/json,.json';
         input.onchange = function (e) {
             const file = e.target.files[0];
-            if (!file) {
-                return;
-            }
+            if (!file) return;
 
             const reader = new FileReader();
             reader.onload = function (event) {
                 try {
                     const planJson = JSON.parse(event.target.result);
-
-                    // Basic validation
                     if (!planJson.version || !planJson.startPortalGuid || !planJson.path || !planJson.portals) {
                         alert('Invalid plan file format.');
                         return;
                     }
-
-                    // Clear current plan
                     self.clearLayers();
                     self.plan = null;
-
-                    // Load portal data from JSON into self.allPortals
-                    // This is a simplified way to make getLatLng and getPortalNameFromGUID work.
-                    // We create mock portal objects.
+                    self.clearS2Caches();
                     for (const guid in planJson.portals) {
                         if (!self.allPortals[guid]) {
                             const portalData = planJson.portals[guid];
@@ -589,17 +1032,10 @@ function wrapper(plugin_info) {
                             };
                         }
                     }
-
                     self.startPortal = { guid: planJson.startPortalGuid };
-
-                    // Reconstruct a minimal 'plan' object for drawing
-                    self.plan = {
-                        furthestPath: planJson.path
-                    };
-
+                    self.plan = { furthestPath: planJson.path };
                     self.updateLayer();
                     alert('Plan imported successfully!');
-
                 } catch (err) {
                     alert('Failed to parse JSON file: ' + err);
                 }
@@ -611,12 +1047,9 @@ function wrapper(plugin_info) {
 
     self.getPortalNameFromGUID = function (guid) {
         let portalData = self.allPortals[guid];
-
         if (portalData && portalData.options && portalData.options.data && portalData.options.data.title) {
-            // Return the portal's name if it's available
             return portalData.options.data.title;
         } else {
-            // If the name isn't available, use the lat/lng as a fallback
             let latLng = self.getLatLng(guid);
             if (latLng) {
                 return "?? Portal at " + latLng.lat.toFixed(6) + ", " + latLng.lng.toFixed(6);
@@ -632,23 +1065,21 @@ function wrapper(plugin_info) {
             $("#hcf-plan-text").val(message);
             self.drawLayer();
         } else {
-            // Handle case where self.plan or self.plan.furthestPath is not available
             $("#hcf-plan-text").val("No plan available.");
+            self.clearLayers();
         }
     };
 
     self.drawLayer = function () {
         self.clearLayers();
-        // Retrieve color values from color picker widgets
-        let shortHopColor = document.getElementById('short-hop-colorPicker').value;
-        let longHopColor = document.getElementById('long-hop-colorPicker').value;
-        let fullTreeColor = document.getElementById('full-tree-colorPicker').value;
-        let longHopThreshold = parseInt(document.getElementById('long-hop-length').value);
-
-        // Function to determine the style based on hop length
-        function getStyle(distance, isTree) {
+        let shortHopColor = self.settings.shortHopColor;
+        let longHopColor = self.settings.longHopColor;
+        let fullTreeColor = self.settings.fullTreeColor;
+        
+        function getStyleForHop(fromGuid, toGuid, isTree) {
+            const hopInfo = self.getHopInfo(fromGuid, toGuid);
             return {
-                color: isTree ? fullTreeColor : distance > longHopThreshold ? longHopColor : shortHopColor,
+                color: isTree ? fullTreeColor : hopInfo.short ? shortHopColor : longHopColor,
                 opacity: 1,
                 weight: isTree ? 1.5 : 4.5,
                 clickable: false,
@@ -658,27 +1089,86 @@ function wrapper(plugin_info) {
             };
         }
 
-        // Draw links in the tree
         for (let guid in self.plan) {
             if (self.plan[guid].parent) {
                 let startLatLng = self.getLatLng(guid);
                 let endLatLng = self.getLatLng(self.plan[guid].parent);
-                let distance = self.getDistance(guid, self.plan[guid].parent);
-                self.drawLine(self.linksLayerGroup, startLatLng, endLatLng, getStyle(distance, true));
+                self.drawLine(self.linksLayerGroup, startLatLng, endLatLng, getStyleForHop(guid, self.plan[guid].parent, true));
             }
         }
 
-        // Draw links in the furthest distance path
         for (let i = 0; i < self.plan.furthestPath.length - 1; i++) {
             let startLatLng = self.getLatLng(self.plan.furthestPath[i]);
             let endLatLng = self.getLatLng(self.plan.furthestPath[i + 1]);
-            let distance = self.getDistance(self.plan.furthestPath[i], self.plan.furthestPath[i + 1]);
-            self.drawLine(self.fieldsLayerGroup, startLatLng, endLatLng, getStyle(distance, false));
+            self.drawLine(self.fieldsLayerGroup, startLatLng, endLatLng, getStyleForHop(self.plan.furthestPath[i], self.plan.furthestPath[i + 1], false));
+        }
+
+        self.drawActiveGrid();
+        self.drawOneWayWarnings();
+    };
+
+    self.drawActiveGrid = function () {
+        if (!self.settings.displayActiveGrid || !self.settings.useS2) return;
+        if (!window.map.hasLayer(self.activeGridLayerGroup)) return;
+
+        const centerLatLng = self.startPortal ? self.getLatLng(self.startPortal.guid) : map.getCenter();
+        if (!centerLatLng) return;
+
+        const reachableCells = self.getReachableCells(centerLatLng);
+        reachableCells.forEach(cellId => {
+            const cell = self.getCellFromId(cellId);
+            if (!cell) return;
+            const corners = cell.getCornerLatLngs();
+            const poly = L.polygon(corners, {
+                color: '#00aaff',
+                weight: 1,
+                opacity: 0.6,
+                fill: false,
+                interactive: false,
+            });
+            poly.addTo(self.activeGridLayerGroup);
+        });
+    };
+
+    self.drawOneWayWarnings = function () {
+        if (!self.settings.showOneWayWarning || !self.settings.useS2) return;
+        if (!self.plan || !self.plan.furthestPath || self.plan.furthestPath.length < 2) return;
+        if (!window.map.hasLayer(self.oneWayWarningLayerGroup)) return;
+
+        for (let i = 0; i < self.plan.furthestPath.length - 1; i++) {
+            const fromGuid = self.plan.furthestPath[i];
+            const toGuid = self.plan.furthestPath[i + 1];
+            const forwardInfo = self.getHopInfo(fromGuid, toGuid);
+            if (!forwardInfo.short) continue;
+
+            const backInfo = self.getHopInfo(toGuid, fromGuid);
+            if (backInfo.short) continue;
+
+            const latLng = self.getLatLng(toGuid);
+            if (!latLng) continue;
+
+            const tooltipText = self.areLongHopsAllowed()
+                ? 'One-way warning: return may require a key'
+                : 'One-way warning: return not possible with keys disabled';
+
+            const marker = L.circleMarker(latLng, {
+                radius: 7,
+                color: '#ff3333',
+                weight: 2,
+                fillOpacity: 0.8,
+                fillColor: '#ff3333',
+                interactive: true,
+            }).bindTooltip(tooltipText);
+
+            marker.addTo(self.oneWayWarningLayerGroup);
         }
     };
 
 
     self.setup = function () {
+        self.loadSettings();
+        self.clearS2Caches();
+
         // Add button to toolbox
         $('#toolbox').append('<a onclick="window.plugin.dronePlanner.openDialog(); return false;">Plan Drone Flight</a>');
 
@@ -692,7 +1182,13 @@ function wrapper(plugin_info) {
 
         self.fieldsLayerGroup = new L.LayerGroup();
         window.addLayerGroup('Longest Drone Path', self.fieldsLayerGroup, false);
-        // debugger;
+        
+        self.activeGridLayerGroup = new L.LayerGroup();
+        window.addLayerGroup('Drone Active Grid (S2)', self.activeGridLayerGroup, true);
+
+        self.oneWayWarningLayerGroup = new L.LayerGroup();
+        window.addLayerGroup('One-Way Jump Warnings', self.oneWayWarningLayerGroup, true);
+
         self.highlightLayergroup = new L.LayerGroup();
         window.addLayerGroup('Start Portal Highlights', self.highlightLayergroup, true);
 
@@ -723,6 +1219,12 @@ function wrapper(plugin_info) {
         }
         if (window.map.hasLayer(self.fieldsLayerGroup)) {
             self.fieldsLayerGroup.clearLayers();
+        }
+        if (window.map.hasLayer(self.activeGridLayerGroup)) {
+            self.activeGridLayerGroup.clearLayers();
+        }
+        if (window.map.hasLayer(self.oneWayWarningLayerGroup)) {
+            self.oneWayWarningLayerGroup.clearLayers();
         }
         if (window.map.hasLayer(self.highlightLayergroup)) {
             self.highlightLayergroup.clearLayers();
@@ -758,13 +1260,12 @@ function wrapper(plugin_info) {
     self.exportDrawtoolsLink = function (p1, p2) {
         let alatlng = self.getLatLng(p1);
         let blatlng = self.getLatLng(p2);
-        let distance = self.distance(alatlng, blatlng);
         let opts = { ...window.plugin.drawTools.lineOptions };
         let shortHopColor = document.getElementById('short-hop-colorPicker').value;
         let longHopColor = document.getElementById('long-hop-colorPicker').value;
-        let longHopThreshold = parseInt(document.getElementById('long-hop-length').value);
+        let hopInfo = self.getHopInfo(p1, p2);
 
-        opts.color = distance > longHopThreshold ? longHopColor : shortHopColor;
+        opts.color = hopInfo.short ? shortHopColor : longHopColor;
 
         let layer = L.geodesicPolyline([alatlng, blatlng], opts);
         window.plugin.drawTools.drawnItems.addLayer(layer);
@@ -873,42 +1374,40 @@ function wrapper(plugin_info) {
         '</div></div>';
 
     // ATTENTION! DO NOT EVER TOUCH THE STYLES WITHOUT INTENSE TESTING!
-    self.dialog_html = '<div id="hcf-plan-container" ' +
-        '                    style="height: inherit; display: flex; flex-direction: column; align-items: stretch;">\n' +
+    self.dialog_html = '<div id="hcf-plan-container" style="height: inherit; display: flex; flex-direction: column; align-items: stretch;">\n' +
         '   <div style="display: flex;justify-content: space-between;align-items: center;">' +
-        '      <span>Hello from your friendly drone flight planner!</span><br/>' +
-        '      <span>Short Hop Color: <input type="color" id="short-hop-colorPicker" value="#cc44ff"></span>' +
-        '      <span>Long Hop Color: <input type="color" id="long-hop-colorPicker" value="#ff0000"></span>' +
-        '      <span>Full Tree Color: <input type="color" id="full-tree-colorPicker" value="#ffcc44"></span>' +
+        '      <span>Short Hop: <input type="color" id="short-hop-colorPicker"></span>' +
+        '      <span>Long Hop: <input type="color" id="long-hop-colorPicker"></span>' +
+        '      <span>Full Tree: <input type="color" id="full-tree-colorPicker"></span>' +
         '   </div>' +
         '    <fieldset style="margin: 2px;">\n' +
-        '      <legend>Options</legend>\n' +
-        '      <label for="path-type">Path optimisation: </label><br/>\n' +
-        '      <input type="radio" id="path-min-hops" name="path-type" value="min-hops" />\n' +
-        '      <label for="path-min-hops" title="Minimise the number of hops at any cost">Minimise Hops</label>\n' +
-        '      <input type="radio" id="path-balanced" name="path-type" value="balanced" />\n' +
-        '      <label for="path-balanced" title="A balance between minimising long hops or total number of hops">Balance Keys and Hops</label>\n' +
-        '      <input type="radio" id="path-min-long-hops" name="path-type" value="min-long-hops" checked />\n' +
-        '      <label for="path-min-long-hops" title="Avoid long hops if at all possible">Minimise Keys Needed</label><br/>\n' +
+        '      <legend>Path Options</legend>\n' +
+        '      <label>Optimization Goal:</label><br/>\n' +
+        '      <input type="radio" id="path-min-hops" name="path-type" value="min-hops" /> <label for="path-min-hops">Min Hops</label>\n' +
+        '      <input type="radio" id="path-balanced" name="path-type" value="balanced" /> <label for="path-balanced">Balanced</label>\n' +
+        '      <input type="radio" id="path-min-long-hops" name="path-type" value="min-long-hops" /> <label for="path-min-long-hops">Min Keys</label><br/>\n' +
         '      <br/>\n' +
-        '      <label for="allow-long-hops">Allow long hops? </label><br/>\n' +
-        '      <input type="radio" id="path-yes-long-hops" name="allow-long-hops" value="yes-long-hops" checked />\n' +
-        '      <label for="path-yes-long-hops" title="Key trick needed sometimes">Yes</label>\n' +
-        '      <input type="radio" id="path-no-long-hops" name="allow-long-hops" value="no-long-hops" />\n' +
-        '      <label for="path-no-long-hops" title="No key trick needed">No</label><br/>\n' +
-        '      <br/>\n' +
-        '      <label for="optimisation-type">Optimisation Type: </label><br/>\n' +
-        '      <input type="radio" id="opt-none" name="optimisation-type" value="none" checked />\n' +
-        '      <label for="opt-none" title="No path optimisation. Recommended when you\'re still exploring which portals can be reached">None (fastest)</label>\n' +
-        '      <input type="radio" id="opt-greedy" name="optimisation-type" value="greedy" />\n' +
-        '      <label for="opt-greedy" title="Aims straight for the target portal. Might add more long links than it should.">Greedy</label>\n' +
-        '      <input type="radio" id="opt-balanced" name="optimisation-type" value="balanced" />\n' +
-        '      <label for="opt-balanced" title="Tries to quickly find a good path, but won\'t 100% always find the absolute best">Almost Perfect</label>\n' +
-        '      <input type="radio" id="opt-perfect" name="optimisation-type" value="perfect" />\n' +
-        '      <label for="opt-perfect" title="Slow and thorough, is guaranteed to find a path with minimum cost - if you\'re patient!">Perfect (slowest)</label>\n' +
-        '      <div id="long-hop-length-container">\n' +
-        '        <label for="long-hop-length">Long Hop Length: </label>\n' +
-        '        <input type="number" id="long-hop-length" min="450" max="750" value="550" step="10">\n' +
+        '      <label>Search Algorithm:</label><br/>\n' +
+        '      <input type="radio" id="opt-none" name="optimisation-type" value="none" /> <label for="opt-none" title="Fastest">None</label>\n' +
+        '      <input type="radio" id="opt-greedy" name="optimisation-type" value="greedy" /> <label for="opt-greedy">Greedy</label>\n' +
+        '      <input type="radio" id="opt-balanced" name="optimisation-type" value="balanced" /> <label for="opt-balanced">Balanced</label>\n' +
+        '      <input type="radio" id="opt-perfect" name="optimisation-type" value="perfect" /> <label for="opt-perfect" title="Slowest, best result">Perfect</label>\n' +
+        '    </fieldset>\n' +
+        '    <fieldset style="margin: 2px;">\n' +
+        '      <legend>Mechanics & Constraints</legend>\n' +
+        '      <input type="checkbox" id="use-s2-logic" /> <label for="use-s2-logic" title="Use accurate S2 Cell visibility logic">Use S2 Mechanics</label>\n' +
+        '      <select id="s2-level" style="margin-left:10px;"><option value="16">L16 (Standard)</option><option value="17">L17 (Strict)</option></select><br/>\n' +
+        '      <div style="margin-top:5px;">\n' +
+        '        <label for="view-radius" title="The detection radius of your scanner">Scanner View Radius (m): </label>\n' +
+        '        <input type="number" id="view-radius" min="400" max="1000" step="10" style="width:60px;">\n' +
+        '      </div>\n' +
+        '      <div style="margin-top:5px;">\n' +
+        '        <input type="checkbox" id="show-one-way" /> <label for="show-one-way">Show One-Way Warnings</label>\n' +
+        '        <input type="checkbox" id="display-active-grid" style="margin-left:10px;" /> <label for="display-active-grid">Display Active Grid</label>\n' +
+        '      </div>\n' +
+        '      <div style="margin-top:5px;">\n' +
+        '        <input type="radio" id="path-yes-long-hops" name="allow-long-hops" value="yes-long-hops" /> <label for="path-yes-long-hops">Allow Keys (<1.25km)</label>\n' +
+        '        <input type="radio" id="path-no-long-hops" name="allow-long-hops" value="no-long-hops" /> <label for="path-no-long-hops">No Keys</label>\n' +
         '      </div>\n' +
         '    </fieldset>\n' +
         '    <div id="hcf-buttons-container" style="margin: 3px;">\n' +
@@ -917,10 +1416,10 @@ function wrapper(plugin_info) {
         '      <button id="export-plan-btn" style="cursor: pointer">Export Plan</button>' +
         '      <button id="import-plan-btn" style="cursor: pointer">Import Plan</button>' +
         '      <button id="swap-ends-btn" style="cursor: pointer">Switch End to Start</button>' + '      <button id="hcf-simulator-btn" style="cursor: pointer" hidden>Simulate</button>' +
-        '      <button id="hcf-clear-start-btn" style="cursor: pointer">Clear Start Portal</button>' +
-        '      <button id="hcf-clear-some-btn" style="cursor: pointer">Clear Unused Portals</button>' +
-        '      <button id="hcf-clear-most-btn" style="cursor: pointer">Clear Most Portals</button>' +
-        '      <button id="hcf-clear-btn" style="cursor: pointer">Clear All Portals</button>' +
+        '      <button id="hcf-clear-start-btn" style="cursor: pointer">Clear Start</button>' +
+        '      <button id="hcf-clear-some-btn" style="cursor: pointer">Clear Unused</button>' +
+        '      <button id="hcf-clear-most-btn" style="cursor: pointer">Clear Most</button>' +
+        '      <button id="hcf-clear-btn" style="cursor: pointer">Clear All</button>' +
         '      <button id="more-info" style="cursor: pointer" style="margin: 2px;">More Info</button>' +
         '    </div>\n' +
         '    <textarea readonly id="hcf-plan-text" style="height:inherit;min-height:150px;width: auto;margin:2px;resize:none"></textarea>\n' +
@@ -1014,6 +1513,7 @@ function wrapper(plugin_info) {
         // Update self.allPortals and self.graph with the filtered results
         self.allPortals = newAllPortals;
         self.graph = newGraph;
+        self.clearS2Caches();
         self.updatePlan();
     };
 
@@ -1069,6 +1569,7 @@ function wrapper(plugin_info) {
             self.plan = null;
             self.allPortals = [];
             self.graph = {};
+            self.clearS2Caches();
             $("#hcf-to-dt-btn").hide();
             document.body.removeChild(dialog);
             alert("All portals have been cleared from the cache.");
@@ -1079,51 +1580,107 @@ function wrapper(plugin_info) {
         };
     }
 
+    self.updateUIFromSettings = function() {
+        if (!self.dialogIsOpen()) return;
+        
+        // Colors
+        $('#short-hop-colorPicker').val(self.settings.shortHopColor);
+        $('#long-hop-colorPicker').val(self.settings.longHopColor);
+        $('#full-tree-colorPicker').val(self.settings.fullTreeColor);
+        
+        // Radios
+        $(`input[name="path-type"][value="${self.settings.pathType}"]`).prop('checked', true);
+        $(`input[name="allow-long-hops"][value="${self.settings.allowLongHops}"]`).prop('checked', true);
+        $(`input[name="optimisation-type"][value="${self.settings.optimisationType}"]`).prop('checked', true);
+        
+        // S2 Settings
+        $('#use-s2-logic').prop('checked', self.settings.useS2);
+        $('#s2-level').val(self.settings.s2Level);
+        $('#view-radius').val(self.settings.viewRadius);
+        $('#show-one-way').prop('checked', self.settings.showOneWayWarning);
+        $('#display-active-grid').prop('checked', self.settings.displayActiveGrid);
+    };
+
     self.attachEventHandler = function () {
-        $("#export-plan-btn").click(function () {
-            self.exportPlanAsJson();
-        });
+        self.updateUIFromSettings();
 
-        $("#import-plan-btn").click(function () {
-            self.importPlanFromJson();
-        });
-
-        $("#hcf-to-dt-btn").click(function () {
-            self.exportToDrawtools(self.plan);
-        });
-
-        $("#swap-ends-btn").click(function () {
-            self.switchEndToStart();
-        });
-
+        // --- Settings Bindings ---
+        
+        // Colors
         $("#short-hop-colorPicker").change(function () {
+            self.settings.shortHopColor = this.value;
+            self.saveSettings();
             self.drawLayer();
         });
-
         $("#long-hop-colorPicker").change(function () {
+            self.settings.longHopColor = this.value;
+            self.saveSettings();
             self.drawLayer();
         });
-
         $("#full-tree-colorPicker").change(function () {
+            self.settings.fullTreeColor = this.value;
+            self.saveSettings();
             self.drawLayer();
         });
 
-        $("#hcf-clear-some-btn").click(function () {
-            self.clearPortalsOffTrack(false);
+        // Path Options
+        $('input[name="path-type"]').change(function () {
+            self.settings.pathType = this.value;
+            self.saveSettings();
+            self.updatePlan();
+        });
+        $('input[name="allow-long-hops"]').change(function () {
+            self.settings.allowLongHops = this.value;
+            self.saveSettings();
+            self.updatePlan();
+        });
+        $('input[name="optimisation-type"]').change(function () {
+            self.settings.optimisationType = this.value;
+            self.saveSettings();
+            self.updatePlan();
         });
 
-        $("#hcf-clear-most-btn").click(function () {
-            self.clearPortalsOffTrack(true);
+        // S2 Mechanics
+        $('#use-s2-logic').change(function() {
+            self.settings.useS2 = this.checked;
+            self.saveSettings();
+            self.clearS2Caches();
+            self.updatePlan();
+        });
+        $('#s2-level').change(function() {
+            self.settings.s2Level = parseInt(this.value);
+            self.saveSettings();
+            self.clearS2Caches();
+            self.updatePlan();
+        });
+        $('#view-radius').change(function() {
+            self.settings.viewRadius = parseInt(this.value);
+            self.saveSettings();
+            self.clearS2Caches();
+            self.updatePlan();
+        });
+        $('#show-one-way').change(function() {
+            self.settings.showOneWayWarning = this.checked;
+            self.saveSettings();
+            self.updateLayer();
+        });
+        $('#display-active-grid').change(function() {
+            self.settings.displayActiveGrid = this.checked;
+            self.saveSettings();
+            self.updateLayer();
         });
 
+        // --- Action Buttons ---
+
+        $("#export-plan-btn").click(function () { self.exportPlanAsJson(); });
+        $("#import-plan-btn").click(function () { self.importPlanFromJson(); });
+        $("#hcf-to-dt-btn").click(function () { self.exportToDrawtools(self.plan); });
+        $("#swap-ends-btn").click(function () { self.switchEndToStart(); });
+        $("#hcf-clear-some-btn").click(function () { self.clearPortalsOffTrack(false); });
+        $("#hcf-clear-most-btn").click(function () { self.clearPortalsOffTrack(true); });
+        
         $("#hcf-clear-btn").click(function () {
             self.showClearConfirmationDialog();
-            //            self.clearLayers();
-            //            self.startPortal = null;
-            //            self.plan = null;
-            //            self.allPortals = [];
-            //            self.graph = {};
-            //            $("#hcf-to-dt-btn").hide();
         });
 
         $("#hcf-clear-start-btn").click(function () {
@@ -1140,23 +1697,6 @@ function wrapper(plugin_info) {
         $("#more-info").click(function () {
             self.open_info_dialog();
         });
-
-        // Attach change event handlers to path optimization radio buttons
-        $('input[name="path-type"]').change(function () {
-            self.updatePlan();
-        });
-
-        // Attach change event handlers to whether long hops are permitted
-        $('input[name="allow-long-hops"]').change(function () {
-            self.updatePlan();
-        });
-
-
-        // Attach change event handlers to optimization type radio buttons
-        $('input[name="optimisation-type"]').change(function () {
-            self.updatePlan();
-        });
-
 
     } // end of attachEventHandler
 

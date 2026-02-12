@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-drone-planner@cloverjune
 // @name           IITC Plugin: cloverjune's Drone Flight Planner
-// @version        0.1.1
+// @version        0.2.0.20260211
 // @description    Plugin for planning drone flights in IITC
 // @author         cloverjune
 // @category       Layer
