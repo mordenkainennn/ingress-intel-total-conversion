@@ -2,7 +2,7 @@
 // @id             iitc-plugin-player-activity-log
 // @name           IITC plugin: Player Activity Log
 // @category       Info
-// @version        0.8.0
+// @version        0.8.1
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/player-activity-log/player-activity-log.meta.js
 // @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/player-activity-log/player-activity-log.user.js
@@ -22,6 +22,12 @@ function wrapper(plugin_info) {
     window.plugin.playerActivityLog = function () { };
 
     var changelog = [
+        {
+            version: '0.8.1',
+            changes: [
+                'NEW: Added import preview/confirmation prompt before writing data to localStorage.',
+            ],
+        },
         {
             version: '0.8.0',
             changes: [
@@ -504,7 +510,7 @@ function wrapper(plugin_info) {
         };
     };
 
-    window.plugin.playerActivityLog.importFromText = function (fileName, text) {
+    window.plugin.playerActivityLog.prepareImportFromText = function (fileName, text) {
         var plugin = window.plugin.playerActivityLog;
         var rawText = String(text || '');
         var trimmedText = rawText.trim();
@@ -536,8 +542,10 @@ function wrapper(plugin_info) {
             }
         }
 
-        var merged = plugin.mergeLogData(plugin.loadLogData(), parsedData);
-        localStorage.setItem(plugin.STORAGE_KEY, JSON.stringify(merged.logData));
+        var existingLogData = plugin.loadLogData();
+        var existingCount = plugin.countActivities(existingLogData);
+        var merged = plugin.mergeLogData(existingLogData, parsedData);
+        var finalCount = plugin.countActivities(merged.logData);
 
         return {
             format: sourceFormat,
@@ -546,7 +554,17 @@ function wrapper(plugin_info) {
             skippedCount: merged.skippedCount,
             parsedRows: parseMeta.parsedRows || merged.importedCount,
             parseSkippedRows: parseMeta.skippedRows || 0,
+            existingCount: existingCount,
+            finalCount: finalCount,
+            logData: merged.logData,
         };
+    };
+
+    window.plugin.playerActivityLog.importFromText = function (fileName, text) {
+        var plugin = window.plugin.playerActivityLog;
+        var result = plugin.prepareImportFromText(fileName, text);
+        localStorage.setItem(plugin.STORAGE_KEY, JSON.stringify(result.logData));
+        return result;
     };
 
     window.plugin.playerActivityLog.handleImportFileSelection = function (event) {
@@ -557,12 +575,28 @@ function wrapper(plugin_info) {
         var reader = new FileReader();
         reader.onload = function (loadEvent) {
             try {
-                var result = window.plugin.playerActivityLog.importFromText(file.name, String(loadEvent.target && loadEvent.target.result || ''));
+                var plugin = window.plugin.playerActivityLog;
+                var result = plugin.prepareImportFromText(file.name, String(loadEvent.target && loadEvent.target.result || ''));
+                var confirmMessage =
+                    `Import preview (${result.format.toUpperCase()})\n` +
+                    `Rows parsed: ${result.parsedRows}\n` +
+                    `Current entries: ${result.existingCount}\n` +
+                    `Will add: ${result.addedCount}\n` +
+                    `Will skip duplicates: ${result.skippedCount}\n` +
+                    `Invalid/skipped rows: ${result.parseSkippedRows}\n` +
+                    `Final entries after import: ${result.finalCount}\n\n` +
+                    `Proceed with import?`;
+                if (!confirm(confirmMessage)) {
+                    alert('Import canceled.');
+                    return;
+                }
+                localStorage.setItem(plugin.STORAGE_KEY, JSON.stringify(result.logData));
                 alert(
                     `Import completed (${result.format.toUpperCase()}).\n` +
                     `Rows parsed: ${result.parsedRows}\n` +
                     `Added: ${result.addedCount}\n` +
-                    `Skipped as duplicates/invalid: ${result.skippedCount + result.parseSkippedRows}`
+                    `Skipped duplicates/invalid: ${result.skippedCount + result.parseSkippedRows}\n` +
+                    `Total entries now: ${result.finalCount}`
                 );
                 if ($('.activity-log-modal-backdrop').length) {
                     window.plugin.playerActivityLog.displayLog();
