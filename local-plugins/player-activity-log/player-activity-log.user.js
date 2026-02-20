@@ -2,7 +2,7 @@
 // @id             iitc-plugin-player-activity-log
 // @name           IITC plugin: Player Activity Log
 // @category       Info
-// @version        0.7.5
+// @version        0.7.10
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/player-activity-log/player-activity-log.meta.js
 // @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/player-activity-log/player-activity-log.user.js
@@ -22,6 +22,37 @@ function wrapper(plugin_info) {
     window.plugin.playerActivityLog = function () { };
 
     var changelog = [
+        {
+            version: '0.7.10',
+            changes: [
+                'FIX: Restored dashed trail rendering to match player-activity-tracker style.',
+            ],
+        },
+        {
+            version: '0.7.9',
+            changes: [
+                'UPD: Removed the 3-day cutoff and now records all activity messages provided by Intel COMM.',
+            ],
+        },
+        {
+            version: '0.7.8',
+            changes: [
+                'UPD: Draw player trails by connecting all loaded portal events in chronological order.',
+                'UPD: Disabled marker age-based fading; trail markers now stay fully visible.',
+            ],
+        },
+        {
+            version: '0.7.7',
+            changes: [
+                'FIX: Added backward-compatible log data normalization so legacy stored player logs are visible again.',
+            ],
+        },
+        {
+            version: '0.7.6',
+            changes: [
+                'FIX: Repaired player ID filter by normalizing filter values as strings and handling input events reliably.',
+            ],
+        },
         {
             version: '0.7.5',
             changes: [
@@ -85,6 +116,90 @@ function wrapper(plugin_info) {
         var seconds = pad(d.getSeconds());
         return `${year}${month}${day} ${hours}${minutes}${seconds}`;
     }
+
+    window.plugin.playerActivityLog.normalizeTeam = function (team) {
+        if (team === 'RESISTANCE' || team === 'RES' || team === 1 || team === '1') return 'RESISTANCE';
+        if (team === 'ENLIGHTENED' || team === 'ENL' || team === 2 || team === '2') return 'ENLIGHTENED';
+        return '';
+    };
+
+    window.plugin.playerActivityLog.normalizeActivity = function (act) {
+        if (!act || typeof act !== 'object' || !act.portal || typeof act.portal !== 'object') return null;
+        var lat = Number(act.portal.lat);
+        var lng = Number(act.portal.lng);
+        var time = Number(act.time);
+        if (!isFinite(lat) || !isFinite(lng) || !isFinite(time)) return null;
+
+        return {
+            activity: String(act.activity || ''),
+            portal: {
+                name: String(act.portal.name || '(unknown portal)'),
+                address: String(act.portal.address || ''),
+                lat: lat,
+                lng: lng,
+            },
+            time: time,
+            guid: act.guid,
+        };
+    };
+
+    window.plugin.playerActivityLog.normalizeLogData = function (rawLogData) {
+        var changed = false;
+        var normalizedLogData = {};
+
+        if (!rawLogData || typeof rawLogData !== 'object' || Array.isArray(rawLogData)) {
+            return { logData: normalizedLogData, changed: true };
+        }
+
+        Object.keys(rawLogData).forEach(function (playerName) {
+            var rawRecord = rawLogData[playerName];
+            var team = '';
+            var rawActivities = [];
+
+            if (Array.isArray(rawRecord)) {
+                // legacy format: { playerName: [activities...] }
+                rawActivities = rawRecord;
+                changed = true;
+            } else if (rawRecord && typeof rawRecord === 'object') {
+                var normalizedTeam = window.plugin.playerActivityLog.normalizeTeam(rawRecord.team);
+                if (normalizedTeam !== rawRecord.team) changed = true;
+                team = normalizedTeam;
+
+                if (Array.isArray(rawRecord.activities)) {
+                    rawActivities = rawRecord.activities;
+                } else if (Array.isArray(rawRecord.events)) {
+                    // fallback if events were stored under another key
+                    rawActivities = rawRecord.events;
+                    changed = true;
+                } else {
+                    rawActivities = [];
+                    if (rawRecord.activities !== undefined || rawRecord.events !== undefined) changed = true;
+                }
+            } else {
+                changed = true;
+                return;
+            }
+
+            var activities = rawActivities
+                .map(window.plugin.playerActivityLog.normalizeActivity)
+                .filter(Boolean)
+                .sort((a, b) => b.time - a.time);
+
+            if (activities.length !== rawActivities.length) changed = true;
+            normalizedLogData[playerName] = { team: team, activities: activities };
+        });
+
+        return { logData: normalizedLogData, changed: changed };
+    };
+
+    window.plugin.playerActivityLog.loadLogData = function () {
+        var rawLogData = JSON.parse(localStorage.getItem(window.plugin.playerActivityLog.STORAGE_KEY) || '{}');
+        var normalized = window.plugin.playerActivityLog.normalizeLogData(rawLogData);
+        if (normalized.changed) {
+            localStorage.setItem(window.plugin.playerActivityLog.STORAGE_KEY, JSON.stringify(normalized.logData));
+        }
+        return normalized.logData;
+    };
 
     window.plugin.playerActivityLog.setup = function () {
         window.plugin.playerActivityLog.addCss();
@@ -192,7 +307,7 @@ function wrapper(plugin_info) {
                         </div>
                         <div class="activity-log-modal-body">
                             <div class="activity-log-player-list-container">
-                                <input type="text" id="player-list-search" placeholder="Search players..." autocomplete="off">
+                                <input type="text" id="player-list-search" placeholder="Search player ID/name..." autocomplete="off">
                                 <div class="activity-log-player-list"></div>
                             </div>
                             <div class="activity-log-details">
@@ -213,17 +328,20 @@ function wrapper(plugin_info) {
 
         window.plugin.playerActivityLog.updateToggleLoggingButton();
 
-        var logData = JSON.parse(localStorage.getItem(window.plugin.playerActivityLog.STORAGE_KEY) || '{}');
+        var logData = window.plugin.playerActivityLog.loadLogData();
         var playerListContainer = $('.activity-log-player-list');
         var playerNames = Object.keys(logData).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
         playerNames.forEach(function (name) {
             var player = logData[name];
-            if (!player || !player.team) return;
+            if (!player || !Array.isArray(player.activities)) return;
 
-            var teamClass = (player.team && player.team.toUpperCase() === 'RESISTANCE') ? 'res' : 'enl';
+            var team = window.plugin.playerActivityLog.normalizeTeam(player.team);
+            var teamClass = team === 'RESISTANCE' ? 'res' : (team === 'ENLIGHTENED' ? 'enl' : '');
             var itemCount = player.activities ? player.activities.length : 0;
-            var playerDiv = $(`<div class="activity-log-player-item" data-player="${name}"></div>`);
+            var playerDiv = $('<div class="activity-log-player-item"></div>');
+            playerDiv.attr('data-player', name);
+            playerDiv.data('player', name);
 
             var checkbox = $(`<input type="checkbox" class="trail-checkbox" title="Track this player on map">`);
             checkbox.prop('checked', window.plugin.playerActivityLog.playersToTrack.includes(name));
@@ -246,7 +364,10 @@ function wrapper(plugin_info) {
                 }
             });
 
-            var nameSpan = $(`<span class="player-name-container"><span class="${teamClass}">${name}</span> (${itemCount})</span>`);
+            var nameSpan = $('<span class="player-name-container"></span>');
+            var playerNameText = $('<span></span>').text(name);
+            if (teamClass) playerNameText.addClass(teamClass);
+            nameSpan.append(playerNameText).append(` (${itemCount})`);
             var removeIcon = $('<span class="remove-player-icon" title="Delete this player\'s logs">&times;</span>');
 
             removeIcon.on('click', function (e) {
@@ -288,15 +409,11 @@ function wrapper(plugin_info) {
         });
 
         // search filter
-        $('#player-list-search').on('keyup', function () {
-            var searchTerm = $(this).val().toLowerCase();
+        $('#player-list-search').on('input', function () {
+            var searchTerm = String($(this).val() || '').trim().toLowerCase();
             $('.activity-log-player-list .activity-log-player-item').each(function () {
-                var playerName = $(this).data('player').toLowerCase();
-                if (playerName.includes(searchTerm)) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
+                var playerName = String($(this).data('player') || $(this).attr('data-player') || '').toLowerCase();
+                $(this).toggle(playerName.includes(searchTerm));
             });
         });
     };
@@ -318,7 +435,7 @@ function wrapper(plugin_info) {
 
     window.plugin.playerActivityLog.removePlayerData = function (playerName) {
         if (confirm(`Are you sure you want to delete all logs for player "${playerName}"?`)) {
-            var logData = JSON.parse(localStorage.getItem(window.plugin.playerActivityLog.STORAGE_KEY) || '{}');
+            var logData = window.plugin.playerActivityLog.loadLogData();
             delete logData[playerName];
             localStorage.setItem(window.plugin.playerActivityLog.STORAGE_KEY, JSON.stringify(logData));
             if ($('.activity-log-modal-backdrop').length) {
@@ -328,13 +445,13 @@ function wrapper(plugin_info) {
     };
 
     window.plugin.playerActivityLog.exportToCsv = function () {
-        var logData = JSON.parse(localStorage.getItem(window.plugin.playerActivityLog.STORAGE_KEY) || '{}');
+        var logData = window.plugin.playerActivityLog.loadLogData();
         var allActivities = [];
         for (var playerName in logData) {
             var player = logData[playerName];
             if (player.activities) {
                 player.activities.forEach(function (act) {
-                    allActivities.push({ player: playerName, faction: player.team, ...act });
+                    allActivities.push({ player: playerName, faction: window.plugin.playerActivityLog.normalizeTeam(player.team), ...act });
                 });
             }
         }
@@ -426,10 +543,8 @@ function wrapper(plugin_info) {
 
     window.plugin.playerActivityLog.handleCommData = function (data) {
         if (!window.plugin.playerActivityLog.isLoggingEnabled) return;
-        var limit = Date.now() - 3 * 24 * 60 * 60 * 1000;
         data.result.forEach(function (msg) {
             var guid = msg[0], timestamp = msg[1], plext = msg[2].plext;
-            if (timestamp < limit) return;
             var playerName, playerTeam, portalName, portalAddress, portalLat, portalLng, activityType;
             plext.markup.forEach(function (markup) {
                 switch (markup[0]) {
@@ -461,12 +576,11 @@ function wrapper(plugin_info) {
     };
 
     window.plugin.playerActivityLog.storePlayerActivity = function (playerName, playerTeam, activity, guid) {
-        var storedData = localStorage.getItem(window.plugin.playerActivityLog.STORAGE_KEY);
-        var log = storedData ? JSON.parse(storedData) : {};
+        var log = window.plugin.playerActivityLog.loadLogData();
         if (!log[playerName] || Array.isArray(log[playerName])) {
             log[playerName] = { team: playerTeam, activities: [] };
         }
-        log[playerName].team = playerTeam;
+        log[playerName].team = window.plugin.playerActivityLog.normalizeTeam(playerTeam);
         var activities = log[playerName].activities;
         if (activities.some(act => act.guid === guid)) return;
         activity.guid = guid;
@@ -481,7 +595,8 @@ function wrapper(plugin_info) {
     };
 
     window.plugin.playerActivityLog.getDrawnTracesByTeam = function (team) {
-        return team.toUpperCase() === 'RESISTANCE' ? window.plugin.playerActivityLog.drawnTracesRes : window.plugin.playerActivityLog.drawnTracesEnl;
+        var normalizedTeam = window.plugin.playerActivityLog.normalizeTeam(team);
+        return normalizedTeam === 'RESISTANCE' ? window.plugin.playerActivityLog.drawnTracesRes : window.plugin.playerActivityLog.drawnTracesEnl;
     };
 
     window.plugin.playerActivityLog.getPortalLinkFromActivity = function (act) {
@@ -510,7 +625,7 @@ function wrapper(plugin_info) {
             return;
         }
 
-        var logData = JSON.parse(localStorage.getItem(plugin.STORAGE_KEY) || '{}');
+        var logData = plugin.loadLogData();
         var now = Date.now();
         var isTouchDev = window.isTouchDevice();
 
@@ -519,38 +634,29 @@ function wrapper(plugin_info) {
             if (!playerData || !playerData.activities || playerData.activities.length === 0) {
                 return; // No data for this player
             }
+            var team = plugin.normalizeTeam(playerData.team);
 
-            // IMPORTANT: `player-activity-tracker` expects events sorted oldest to newest to draw lines.
-            // Our stored activities are sorted newest to oldest. So we reverse a copy.
+            // Our stored activities are sorted newest to oldest. Reverse to chronological order.
             var playerEvents = [...playerData.activities].reverse();
 
-            // --- Adapted Polyline Logic ---
-            var polyLineByAge = [[], [], [], []];
-            var split = plugin.PLAYER_TRAIL_MAX_TIME / 4;
+            // Draw a single chronological path including all loaded activity portals.
+            var pathPoints = playerEvents
+                .map(function (ev) {
+                    return ev && ev.portal ? [Number(ev.portal.lat), Number(ev.portal.lng)] : null;
+                })
+                .filter(function (point) {
+                    return point && isFinite(point[0]) && isFinite(point[1]);
+                });
 
-            for (let i = 1; i < playerEvents.length; i++) {
-                var p = playerEvents[i];
-                // We could also filter by time here if we want to respect MAX_TIME strictly
-                var ageBucket = Math.min(Math.trunc((now - p.time) / split), 4 - 1);
-                var line = [
-                    [p.portal.lat, p.portal.lng],
-                    [playerEvents[i - 1].portal.lat, playerEvents[i - 1].portal.lng]
-                ];
-                polyLineByAge[ageBucket].push(line);
-            }
-
-            // --- Draw Polylines ---
-            polyLineByAge.forEach((polyLine, i) => {
-                if (polyLine.length === 0) return;
-                var opts = {
-                    weight: 2 - 0.25 * i,
+            if (pathPoints.length >= 2) {
+                L.polyline(pathPoints, {
+                    weight: 2,
                     color: plugin.PLAYER_TRAIL_LINE_COLOUR,
                     interactive: false,
-                    opacity: 1 - 0.2 * i,
+                    opacity: 1,
                     dashArray: '5,8',
-                };
-                L.polyline(polyLine, opts).addTo(plugin.getDrawnTracesByTeam(playerData.team));
-            });
+                }).addTo(plugin.getDrawnTracesByTeam(team));
+            }
 
             // --- Adapted Marker Logic ---
             var lastEvent = playerEvents[playerEvents.length - 1];
@@ -561,8 +667,9 @@ function wrapper(plugin_info) {
 
             // Popup
             var popup = $('<div>').addClass('plugin-player-tracker-popup'); // Consider reusing CSS from player-tracker
+            var popupNickClass = team === 'RESISTANCE' ? 'res' : (team === 'ENLIGHTENED' ? 'enl' : '');
             $('<span>')
-                .addClass('nickname ' + (playerData.team.toUpperCase() === 'RESISTANCE' ? 'res' : 'enl'))
+                .addClass('nickname' + (popupNickClass ? ' ' + popupNickClass : ''))
                 .css('font-weight', 'bold')
                 .text(playerName)
                 .appendTo(popup);
@@ -584,16 +691,10 @@ function wrapper(plugin_info) {
                 }
             }
 
-            // Marker Opacity
-            var relOpacity = 1 - (now - lastEvent.time) / plugin.PLAYER_TRAIL_MAX_TIME;
-            var absOpacity = plugin.PLAYER_TRAIL_MIN_OPACITY + (1 - plugin.PLAYER_TRAIL_MIN_OPACITY) * relOpacity;
-            if (absOpacity < plugin.PLAYER_TRAIL_MIN_OPACITY) absOpacity = plugin.PLAYER_TRAIL_MIN_OPACITY;
-
-
             // Marker
-            var icon = playerData.team.toUpperCase() === 'RESISTANCE' ? new plugin.iconRes() : new plugin.iconEnl();
+            var icon = team === 'RESISTANCE' ? new plugin.iconRes() : new plugin.iconEnl();
             var markerPos = [lastEvent.portal.lat, lastEvent.portal.lng];
-            var m = new L.Marker(markerPos, { icon: icon, opacity: absOpacity, title: tooltip });
+            var m = new L.Marker(markerPos, { icon: icon, opacity: 1, title: tooltip });
 
             // OMS-friendly popup handling
             m.options.desc = popup[0];
@@ -611,7 +712,7 @@ function wrapper(plugin_info) {
                 m.on('mouseout', function () { $(this._icon).tooltip('close'); });
             }
 
-            m.addTo(plugin.getDrawnTracesByTeam(playerData.team));
+            m.addTo(plugin.getDrawnTracesByTeam(team));
             window.registerMarkerForOMS(m);
             if (!isTouchDev) {
                 window.setupTooltips($(m._icon));
