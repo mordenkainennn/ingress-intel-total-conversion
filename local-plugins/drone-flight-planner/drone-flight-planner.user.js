@@ -1,9 +1,9 @@
 // ==UserScript==
 // @id             iitc-plugin-drone-planner@cloverjune
 // @name           IITC Plugin: cloverjune's Drone Flight Planner
-// @version        0.2.0.20260211
+// @version        0.2.1.20260220
 // @description    Plugin for planning drone flights in IITC
-// @author         cloverjune
+// @author         57Cell, Cloverjune
 // @category       Layer
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/drone-flight-planner/drone-flight-planner.meta.js
@@ -23,9 +23,16 @@
 // @grant        none
 // ==/UserScript==
 
-pluginName = "mordenkainennn's Drone Planner";
-version = "0.2.0.20260211";
+pluginName = "Cloverjune's Drone Planner";
+version = "0.2.1.20260220";
 changeLog = [
+    {
+        version: '0.2.1.20260220',
+        changes: [
+            'NEW: Added a More Info warning about localStorage exhaustion risk and recommended export/clear workflow.',
+            'UPD: Updated More Info credits to keep 57Cell attribution and add Cloverjune attribution.',
+        ],
+    },
     {
         version: '0.2.0.20260211',
         changes: [
@@ -81,7 +88,7 @@ changeLog = [
 function wrapper(plugin_info) {
     if (typeof window.plugin !== 'function') window.plugin = function () { };
     plugin_info.buildName = '';
-    plugin_info.dateTimeVersion = '20260211-120000';
+    plugin_info.dateTimeVersion = '20260220-120000';
     plugin_info.pluginId = 'mordenkainennnsDronePlanner';
 
     // PLUGIN START
@@ -256,18 +263,18 @@ function wrapper(plugin_info) {
 
     // Settings Management
     const KEY_SETTINGS = "plugin-drone-flight-planner-settings";
-    
+
     self.defaultSettings = {
         // Appearance
         shortHopColor: "#cc44ff",
         longHopColor: "#ff0000",
         fullTreeColor: "#ffcc44",
-        
+
         // Path Finding
         pathType: "min-long-hops", // min-hops, balanced, min-long-hops
         allowLongHops: "yes-long-hops", // yes-long-hops, no-long-hops
         optimisationType: "none", // none, greedy, balanced, perfect
-        
+
         // S2 Mechanics
         useS2: true, // Toggle S2 logic
         s2Level: 16, // 16 or 17
@@ -280,7 +287,7 @@ function wrapper(plugin_info) {
 
     self.planRunToken = 0;
 
-    self.loadSettings = function() {
+    self.loadSettings = function () {
         try {
             const saved = JSON.parse(localStorage.getItem(KEY_SETTINGS));
             if (saved) {
@@ -301,33 +308,33 @@ function wrapper(plugin_info) {
                     self.settings.viewRadius = self.defaultSettings.viewRadius;
                 }
             }
-        } catch(e) {
+        } catch (e) {
             console.warn("DronePlanner: Failed to load settings", e);
         }
     };
 
-    self.saveSettings = function() {
+    self.saveSettings = function () {
         localStorage.setItem(KEY_SETTINGS, JSON.stringify(self.settings));
     };
 
     // --- S2 Helper Functions & Cache ---
-    
+
     self.reachableCellsCache = {}; // Map<S2CellString, Set<S2CellString>>
     self.portalCellIdByGuid = {}; // Map<PortalGuid, S2CellString>
     self.portalCellByGuid = {}; // Map<PortalGuid, S2Cell>
 
-    self.clearReachabilityCache = function() {
+    self.clearReachabilityCache = function () {
         self.reachableCellsCache = {};
     }
 
-    self.clearS2Caches = function() {
+    self.clearS2Caches = function () {
         self.reachableCellsCache = {};
         self.portalCellIdByGuid = {};
         self.portalCellByGuid = {};
     }
 
     function haversine(lat1, lon1, lat2, lon2) {
-        const R = 6371e3; 
+        const R = 6371e3;
         const phi1 = lat1 * Math.PI / 180;
         const phi2 = lat2 * Math.PI / 180;
         const deltaPhi = (lat2 - lat1) * Math.PI / 180;
@@ -336,7 +343,7 @@ function wrapper(plugin_info) {
             Math.cos(phi1) * Math.cos(phi2) *
             Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c; 
+        return R * c;
     }
 
     function getCellFaceMidpointLatLngs(corners) {
@@ -364,12 +371,12 @@ function wrapper(plugin_info) {
         return false;
     }
 
-    self.getReachableCells = function(centerLatLng) {
+    self.getReachableCells = function (centerLatLng) {
         const gridLevel = self.settings.s2Level;
         const radius = self.settings.viewRadius;
         const centerCell = S2.S2Cell.FromLatLng(centerLatLng, gridLevel);
         const centerCellId = centerCell.toString();
-        
+
         // We use a combined key of CellID + Radius to allow radius adjustments
         const cacheKey = `${centerCellId}_${radius}`;
         if (self.reachableCellsCache[cacheKey]) return self.reachableCellsCache[cacheKey];
@@ -398,7 +405,7 @@ function wrapper(plugin_info) {
         return reachable;
     }
 
-    self.getCellFromId = function(cellId) {
+    self.getCellFromId = function (cellId) {
         if (!cellId) return null;
         const match = /^F(\d+)ij\[(\d+),(\d+)\]@(\d+)$/.exec(cellId);
         if (!match) return null;
@@ -409,7 +416,7 @@ function wrapper(plugin_info) {
         return S2.S2Cell.FromFaceIJ(face, [i, j], level);
     };
 
-    self.getPortalCell = function(guid, latLng) {
+    self.getPortalCell = function (guid, latLng) {
         if (self.portalCellByGuid[guid]) return self.portalCellByGuid[guid];
         const ll = latLng || self.getLatLng(guid);
         if (!ll) return null;
@@ -419,7 +426,7 @@ function wrapper(plugin_info) {
         return cell;
     };
 
-    self.getPortalCellId = function(guid, latLng) {
+    self.getPortalCellId = function (guid, latLng) {
         if (self.portalCellIdByGuid[guid]) return self.portalCellIdByGuid[guid];
         const cell = self.getPortalCell(guid, latLng);
         return cell ? cell.toString() : null;
@@ -695,11 +702,11 @@ function wrapper(plugin_info) {
 
         const distMetres = haversine(pA.lat, pA.lng, pB.lat, pB.lng);
         const viewRadius = self.settings.viewRadius;
-        
+
         // Estimate cost based on straight line distance
         // Minimum possible cost is distance / max_hop_distance
-        let minHops = Math.ceil(distMetres / 1250); 
-        
+        let minHops = Math.ceil(distMetres / 1250);
+
         // If we only used short hops
         let shortHopOnlyCost = Math.ceil(distMetres / viewRadius);
 
@@ -719,7 +726,7 @@ function wrapper(plugin_info) {
         while (openSet.length > 0) {
             openSet.sort((a, b) => fScore[a] - fScore[b]);
             let current = openSet.shift();
-            
+
             if (current === end) {
                 return self.reconstructPath(cameFrom, current);
             }
@@ -817,7 +824,7 @@ function wrapper(plugin_info) {
         while (cameFrom.hasOwnProperty(current)) {
             current = cameFrom[current];
             totalPath.unshift(current);
-            if (totalPath.length > 2000) break; 
+            if (totalPath.length > 2000) break;
         }
         return totalPath;
     };
@@ -843,7 +850,7 @@ function wrapper(plugin_info) {
     };
 
     self.exportPlanAsText = function () {
-        let totalHops = self.plan.furthestPath.length - 1; 
+        let totalHops = self.plan.furthestPath.length - 1;
         let longHops = 0;
 
         let totalDistance = self.getDistance(self.plan.furthestPath[0], self.plan.furthestPath.slice(-1)[0]);
@@ -923,9 +930,9 @@ function wrapper(plugin_info) {
             name: "Drone Flight Plan",
             version: "1.0",
             startPortalGuid: self.startPortal.guid,
-            path: self.plan.furthestPath, 
-            graph: prunedGraph, 
-            portals: portalsToKeepDetails 
+            path: self.plan.furthestPath,
+            graph: prunedGraph,
+            portals: portalsToKeepDetails
         };
         return planJson;
     };
@@ -959,11 +966,11 @@ function wrapper(plugin_info) {
 
             self.clearLayers();
             self.plan = null;
-            self.graph = {}; 
+            self.graph = {};
             self.clearS2Caches();
 
             for (const guid in planJson.portals) {
-                if (!window.portals[guid] && !self.allPortals[guid]) { 
+                if (!window.portals[guid] && !self.allPortals[guid]) {
                     const portalData = planJson.portals[guid];
                     self.allPortals[guid] = {
                         options: {
@@ -991,7 +998,7 @@ function wrapper(plugin_info) {
                 window.map.addLayer(self.fieldsLayerGroup);
             }
 
-            self.drawLayer(); 
+            self.drawLayer();
             console.log('Drone Planner: Loaded plan from storage.');
 
         } catch (err) {
@@ -1075,7 +1082,7 @@ function wrapper(plugin_info) {
         let shortHopColor = self.settings.shortHopColor;
         let longHopColor = self.settings.longHopColor;
         let fullTreeColor = self.settings.fullTreeColor;
-        
+
         function getStyleForHop(fromGuid, toGuid, isTree) {
             const hopInfo = self.getHopInfo(fromGuid, toGuid);
             return {
@@ -1182,7 +1189,7 @@ function wrapper(plugin_info) {
 
         self.fieldsLayerGroup = new L.LayerGroup();
         window.addLayerGroup('Longest Drone Path', self.fieldsLayerGroup, false);
-        
+
         self.activeGridLayerGroup = new L.LayerGroup();
         window.addLayerGroup('Drone Active Grid (S2)', self.activeGridLayerGroup, true);
 
@@ -1359,18 +1366,65 @@ function wrapper(plugin_info) {
         }
     }
 
+    self.getStorageBytes = function (key) {
+        try {
+            const value = localStorage.getItem(key);
+            if (!value) return 0;
+            return (key.length + value.length) * 2;
+        } catch (e) {
+            return 0;
+        }
+    };
+
+    self.getTotalLocalStorageBytes = function () {
+        try {
+            let bytes = 0;
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key) || '';
+                bytes += (key.length + value.length) * 2;
+            }
+            return bytes;
+        } catch (e) {
+            return 0;
+        }
+    };
+
+    self.formatStorageMiB = function (bytes) {
+        return (bytes / (1024 * 1024)).toFixed(2);
+    };
+
+    self.updateInfoStorageWarning = function () {
+        const plannerBytes = self.getStorageBytes('drone-flight-plan-autosave') + self.getStorageBytes(KEY_SETTINGS);
+        const totalBytes = self.getTotalLocalStorageBytes();
+
+        const plannerMiB = self.formatStorageMiB(plannerBytes);
+        const totalMiB = self.formatStorageMiB(totalBytes);
+
+        $('#hcf-storage-warning').html(
+            '<b>Storage warning:</b> Drone Planner currently uses about <b>' + plannerMiB + ' MiB</b>. ' +
+            'Estimated total localStorage usage is <b>' + totalMiB + ' MiB</b>. ' +
+            'Please export your plan and use <b>Clear All</b> regularly. If localStorage is exhausted, other plugins may fail to save data.'
+        );
+    };
+
     self.info_dialog_html = '<div id="more-info-container" ' +
         '                    style="height: inherit; display: flex; flex-direction: column; align-items: stretch;">\n' +
-        '   <div style="display: flex;justify-content: space-between;align-items: center;">\n' +
-        '      <span>This is ' + pluginName + ' version ' + version + '. Follow the links below if you would like to:\n' +
+        '   <div style="display: flex;justify-content: space-between;align-items: flex-start;">\n' +
+        '      <span>This is ' + pluginName + ' version ' + version + '.\n' +
         '        <ul>\n' +
-        '          <li> <a href="https://youtu.be/5M1IrA_6EoY" target="_blank">Learn how to use this plugin</a></li>\n' +
-        '        </ul>\n' +
-        '      Contributing authors:\n' +
-        '        <ul>\n' +
-        '          <li> <a href="https://www.youtube.com/@57Cell" target="_blank">@57Cell</a></li>\n' +
+        '          <li><a href="https://youtu.be/5M1IrA_6EoY" target="_blank">Learn how to use this plugin</a></li>\n' +
         '        </ul>\n' +
         '      </span>\n' +
+        '   </div>\n' +
+        '   <div id="hcf-storage-warning" style="margin: 6px 0; padding: 6px; border: 1px solid #a33; color: #f4b6b6; background: rgba(120,20,20,0.25);"></div>\n' +
+        '   <div>\n' +
+        '      <b>Credits</b>\n' +
+        '      <ul>\n' +
+        '        <li>Original author: <a href="https://www.youtube.com/@57Cell" target="_blank">57Cell (YouTube)</a></li>\n' +
+        '        <li>Improved by: <a href="https://gongjupal.com/ingress/" target="_blank">Cloverjune</a> (introduced S2 mechanics to significantly reduce computation cost)</li>\n' +
+        '      </ul>\n' +
+        '   </div>\n' +
         '</div></div>';
 
     // ATTENTION! DO NOT EVER TOUCH THE STYLES WITHOUT INTENSE TESTING!
@@ -1454,10 +1508,11 @@ function wrapper(plugin_info) {
                 id: 'hcf-info-view',
                 html: self.info_dialog_html,
                 width: '30%',
-                minHeight: 120,
+                minHeight: 180,
             });
             self.attachEventHandler();
-            $('#dialog-hcf-info-view').css("height", "220px");
+            self.updateInfoStorageWarning();
+            $('#dialog-hcf-info-view').css("height", "260px");
         }
     };
 
@@ -1570,9 +1625,10 @@ function wrapper(plugin_info) {
             self.allPortals = [];
             self.graph = {};
             self.clearS2Caches();
+            localStorage.removeItem('drone-flight-plan-autosave');
             $("#hcf-to-dt-btn").hide();
             document.body.removeChild(dialog);
-            alert("All portals have been cleared from the cache.");
+            alert("All portals have been cleared from the cache, and autosaved plan data was removed.");
         };
 
         cancelButton.onclick = function () {
@@ -1580,19 +1636,19 @@ function wrapper(plugin_info) {
         };
     }
 
-    self.updateUIFromSettings = function() {
+    self.updateUIFromSettings = function () {
         if (!self.dialogIsOpen()) return;
-        
+
         // Colors
         $('#short-hop-colorPicker').val(self.settings.shortHopColor);
         $('#long-hop-colorPicker').val(self.settings.longHopColor);
         $('#full-tree-colorPicker').val(self.settings.fullTreeColor);
-        
+
         // Radios
         $(`input[name="path-type"][value="${self.settings.pathType}"]`).prop('checked', true);
         $(`input[name="allow-long-hops"][value="${self.settings.allowLongHops}"]`).prop('checked', true);
         $(`input[name="optimisation-type"][value="${self.settings.optimisationType}"]`).prop('checked', true);
-        
+
         // S2 Settings
         $('#use-s2-logic').prop('checked', self.settings.useS2);
         $('#s2-level').val(self.settings.s2Level);
@@ -1605,7 +1661,7 @@ function wrapper(plugin_info) {
         self.updateUIFromSettings();
 
         // --- Settings Bindings ---
-        
+
         // Colors
         $("#short-hop-colorPicker").change(function () {
             self.settings.shortHopColor = this.value;
@@ -1641,30 +1697,30 @@ function wrapper(plugin_info) {
         });
 
         // S2 Mechanics
-        $('#use-s2-logic').change(function() {
+        $('#use-s2-logic').change(function () {
             self.settings.useS2 = this.checked;
             self.saveSettings();
             self.clearS2Caches();
             self.updatePlan();
         });
-        $('#s2-level').change(function() {
+        $('#s2-level').change(function () {
             self.settings.s2Level = parseInt(this.value);
             self.saveSettings();
             self.clearS2Caches();
             self.updatePlan();
         });
-        $('#view-radius').change(function() {
+        $('#view-radius').change(function () {
             self.settings.viewRadius = parseInt(this.value);
             self.saveSettings();
             self.clearS2Caches();
             self.updatePlan();
         });
-        $('#show-one-way').change(function() {
+        $('#show-one-way').change(function () {
             self.settings.showOneWayWarning = this.checked;
             self.saveSettings();
             self.updateLayer();
         });
-        $('#display-active-grid').change(function() {
+        $('#display-active-grid').change(function () {
             self.settings.displayActiveGrid = this.checked;
             self.saveSettings();
             self.updateLayer();
@@ -1678,7 +1734,7 @@ function wrapper(plugin_info) {
         $("#swap-ends-btn").click(function () { self.switchEndToStart(); });
         $("#hcf-clear-some-btn").click(function () { self.clearPortalsOffTrack(false); });
         $("#hcf-clear-most-btn").click(function () { self.clearPortalsOffTrack(true); });
-        
+
         $("#hcf-clear-btn").click(function () {
             self.showClearConfirmationDialog();
         });
