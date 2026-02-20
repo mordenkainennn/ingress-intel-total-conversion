@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC Plugin: 57Cell's Field Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Coda', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+             font-size: 1.2em;
+             color: #ffce00;
+        }
+        p, li {
+            color: #ccc;
+        }
+        strong {
+            color: #ffce00;
+        }
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .note strong {
+            color: #ffce00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index_zh-cn.html">中文</a> | <a href="index_ja.html">日本語</a>
+    </div>
+
+    <div class="container">
+        <h1>57Cell's Field Planner</h1>
+
+        <p>This plugin is an advanced tool for designing and executing complex fielding operations. Originally created by <strong>57Cell</strong>, it has been significantly enhanced by contributors like <strong>Heistergand</strong> and <strong>mordenkainennn</strong> to become a powerful asset for strategic agents.</p>
+        <p>It allows for the automatic calculation of linking and fielding plans based on selected anchor portals, saving hours of manual planning.</p>
+
+        <h2>Features</h2>
+        <ul>
+            <li>
+                <h3>Multiple Fielding Strategies</h3>
+                <p>Choose between three distinct fielding algorithms to match your strategic goals:</p>
+                <ul>
+                    <li><code>Homogeneous Fields (HCF)</code>: Creates a perfectly layered field with a specified number of layers.</li>
+                    <li><code>General Maximum Fielding</code>: Aims to create the maximum number of fields from a given set of portals.</li>
+                    <li><code>Cobweb Plan</code>: Generates a spiderweb-like field pattern, excellent for area denial.</li>
+                </ul>
+            </li>
+            <li>
+                <h3>Interactive Planning UI</h3>
+                <p>A comprehensive dialog, launched from the toolbox, serves as the command center. From here you can select corner portals, see their image previews, lock them in, and fine-tune your plan.</p>
+            </li>
+            <li>
+                <h3>Portal Management</h3>
+                <p>After selecting three corner portals, the plugin automatically populates a list of all portals inside the main triangle. You can easily move portals between an "Included" and "Excluded" list to control which ones are used in the final plan.</p>
+            </li>
+            <li>
+                <h3>Visual Feedback &amp; Customization</h3>
+                <p>The generated plan is drawn directly onto the map, showing all required links and fields. You can change the color of the plan's overlay in real-time. Selected corner portals get animated highlights for easy identification.</p>
+            </li>
+            <li>
+                <h3>Detailed Step-by-Step Output</h3>
+                <p>The plugin generates a detailed text-based plan that can be copied and shared. The plan includes:</p>
+                 <ul>
+                    <li>The optimal portal visitation order.</li>
+                    <li>A numbered list of links to throw from each portal.</li>
+                    <li>The number of SoftBanks required for each anchor.</li>
+                    <li>A summary of keys needed for each portal.</li>
+                    <li>Total travel distance between portals.</li>
+                </ul>
+            </li>
+            <li>
+                <h3>Integration with Other Plugins</h3>
+                <p>For even greater efficiency, you can export the generated link plan directly to the <strong>DrawTools</strong> and <strong>Arc</strong> plugins with a single click.</p>
+            </li>
+        </ul>
+
+        <h2>How to Use</h2>
+        <ol style="padding-left: 30px;">
+            <li>Click the <strong>"Plan Fields"</strong> button in the IITC toolbox to get started.</li>
+            <li>Select three portals on the map to serve as your main anchors/corners.</li>
+            <li>The planning dialog will open. Here you can:
+                <ul>
+                    <li>Lock your selected corners.</li>
+                    <li>Choose your desired <strong>Field type</strong> (HCF, General, Cobweb).</li>
+                    <li>Set the number of <strong>Layers</strong> for an HCF plan.</li>
+                    <li>Choose the plan <strong>Geometry</strong> (Random or Perfect).</li>
+                </ul>
+            </li>
+            <li>(Optional) In the right-hand panel, move any portals you don't want to use from the "Included" list to the "Excluded" list.</li>
+            <li>Click the <strong>"Find Fielding Plan"</strong> button.</li>
+            <li>The plugin will calculate the optimal plan and display the visual overlay on the map and the text steps in the dialog.</li>
+        </ol>
+
+        <div class="note">
+            <p><strong>Origin:</strong> This plugin is an improved version based on the original script by <strong>57Cell</strong>. It is now maintained and enhanced by <strong>mordenkainennn</strong> within this IITC-CE plugin collection.</p>
+        </div>
+
+        <h2>Changelog</h2>
+        <div class="changelog-entry">
+            <h3>Version 2.1.14</h3>
+            <ul>
+                <li>FIX: Refactored dialog layout to use Flexbox, resolving multiple rendering and resizing issues.</li>
+                <li>UPD: The "Included Portals" and "Excluded Portals" lists now correctly use available vertical space in a 2:1 ratio.</li>
+                <li>UPD: Increased default dialog height for a better initial view.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 2.1.2 &ndash; 2.1.7</h3>
+            <ul>
+                <li>NEW: Changelog now visible in IITC's plugin list.</li>
+                <li>NEW: Added portal image previews and animated corners for selected portals.</li>
+                <li>NEW: Added a "Clear" button to the dialog.</li>
+                <li>FIX: Major UI improvements and API compatibility fixes.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 2.0.0 &ndash; 2.1.0</h3>
+            <ul>
+                <li>NEW: Added option for "General Maximum Fielding" and "Cobweb" fielding plans.</li>
+                <li>NEW: Added statistics output (portal/link/field count, distance).</li>
+                <li>NEW: The created control fields are now mentioned in the plan.</li>
+                <li>NEW: Added a field drawing layer to the map.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 1.1.0 &ndash; 1.2.1</h3>
+            <ul>
+                <li>NEW: Added plugin layer and link drawings.</li>
+                <li>NEW: Added numbers to the task list.</li>
+                <li>NEW: Export to DrawTools functionality added by Heistergand.</li>
+                <li>NEW: User can choose to generate a geometrically perfectly balanced plan.</li>
+                <li>FIX: Code refactoring and UI improvements.</li>
+            </ul>
+        </div>
+         <div class="changelog-entry">
+            <h3>Version 1.0.0</h3>
+            <ul>
+                <li>NEW: Initial Release by 57Cell.</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC 插件: Portal DB</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', 'Noto Sans SC', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Coda', 'Noto Sans SC', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+             font-size: 1.2em;
+             color: #ffce00;
+             margin-top: 20px;
+        }
+        h4 {
+             color: #ccc;
+             margin-bottom: 5px;
+        }
+        p, li {
+            color: #ccc;
+        }
+        strong {
+            color: #ffce00;
+        }
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        pre {
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        pre code {
+            background-color: transparent;
+            border: none;
+            padding: 0;
+            color: #aaddff;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 8px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .note strong {
+            color: #ffce00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index.html">English</a> | <a href="index_ja.html">日本語</a>
+    </div>
+
+    <div class="container">
+        <h1>Portal DB</h1>
+
+        <p><strong>Portal DB</strong> 是 IITC 生态系统的一个基础架构插件。它的设计目的是在您的浏览器中构建一个<strong>本地化、持久化的 Portal 基础信息数据库</strong>。</p>
+        <p>通过在您浏览地图时自动收集数据，它能够为其他需要屏幕外 Portal 坐标和阵营信息的插件提供可靠的“单一事实来源 (Single Source of Truth)”。</p>
+
+        <h2>功能特性</h2>
+        <ul>
+            <li>
+                <h3>持久化本地存储</h3>
+                <p>使用 <strong>IndexedDB</strong> 永久存储 Portal 数据（GUID、经纬度、阵营、最后可见时间）。这些数据在不同会话和浏览器重启后依然保留。</p>
+            </li>
+            <li>
+                <h3>被动数据采集</h3>
+                <p>在您浏览地图时自动捕获 Portal 信息。它直接拦截原始游戏实体数据，确保高性能和广泛的数据覆盖，无需任何手动操作。</p>
+            </li>
+            <li>
+                <h3>Portal 移动检测 🛡️</h3>
+                <p>自动检测 Portal 的坐标变动。如果某个 Portal 的移动距离超过 <strong>3 米</strong>，插件会记录其原始位置、新位置以及发现时间。这对于防御通过申请移动 Portal 来破坏 Block Link 的战术非常有效。</p>
+            </li>
+            <li>
+                <h3>视觉预警提醒</h3>
+                <p>当检测到新的 Portal 移动时，侧边栏工具箱中的 <strong>"Portal DB"</strong> 链接会变为橙红色并显示警告数量（例如：<code>⚠️ Portal Moved (3)</code>）。</p>
+            </li>
+            <li>
+                <h3>更新统计 (Debug)</h3>
+                <p>内置详细的小时桶统计系统，记录数据的更新原因（新增、变更、刷新、跳过）。支持实时查看过滤效率。</p>
+            </li>
+        </ul>
+
+        <h2>API 参考</h2>
+        <p>此插件通过全局对象 <code>window.plugin.portalDB</code> 暴露其功能。所有数据访问方法均为异步并返回 <strong>Promise</strong>。</p>
+        
+        <h3><code>getPortal(guid)</code></h3>
+        <p>通过 GUID 获取单个 Portal 记录。</p>
+        <pre><code>// 示例：检查 Portal 是否存在并打印其坐标
+window.plugin.portalDB.getPortal('your-portal-guid')
+  .then(portal => {
+    if (portal) {
+      console.log(`找到: ${portal.latE6}, ${portal.lngE6}`);
+    } else {
+      console.log('本地数据库中未找到该 Portal');
+    }
+  });</code></pre>
+
+        <h3><code>getPortalsInBounds(bounds)</code></h3>
+        <p>获取指定地理范围内的所有 Portal。用于查找特定区域（例如当前地图视图）内的所有 Portal。</p>
+        <pre><code>// 示例：查找当前地图视图内的所有已存储 Portal
+const bounds = map.getBounds(); // Leaflet LatLngBounds 对象
+window.plugin.portalDB.getPortalsInBounds(bounds)
+  .then(results => {
+    console.log(`在此区域找到 ${results.length} 个 Portal。`);
+    results.forEach(p => console.log(p.guid, p.team));
+  });</code></pre>
+
+        <h3>返回值对象结构</h3>
+        <p>所有方法均返回符合以下标准格式的 Portal 对象：</p>
+        <pre><code>{
+  "guid": "...",           // 字符串: Portal 的 GUID
+  "latE6": 35689500,       // 数字: 纬度 * 1,000,000
+  "lngE6": 139691700,      // 数字: 经度 * 1,000,000
+  "team": "E",             // 字符串: 'E' (启), 'R' (蓝), 'N' (白), 'M' (红)
+  "lastSeen": 1707000000   // 数字: 最后更新的时间戳 (毫秒)
+}</code></pre>
+
+        <h2>如何使用</h2>
+        <ol style="padding-left: 30px;">
+            <li>只需浏览 Intel 地图！插件会在后台静默运行，收集 Portal 数据并检测其移动。</li>
+            <li>如果侧边栏链接变红，说明有 Portal 被移动了。点击 <strong>"Portal DB"</strong> 查看详情。</li>
+            <li>在弹出的对话框中，<strong>"Moved Portals"</strong> 列表会展示所有移动记录。点击列表项可直接在地图上跳转到该 Portal。</li>
+            <li>使用 <strong>Export</strong> (导出) 和 <strong>Import</strong> (导入) 按钮来备份或迁移您的数据。</li>
+        </ol>
+
+        <div class="note">
+            <p><strong>开发者须知:</strong> 此插件主要作为后端服务使用。如果您正在开发一个插件，需要知道某个当前未渲染 GUID 的“位置在哪里？”，Portal DB 就是解决方案。</p>
+        </div>
+
+        <h2>更新日志</h2>
+        <div class="changelog-entry">
+            <h3>版本 0.3.0</h3>
+            <ul>
+                <li>新增: Portal 移动检测功能。自动追踪移动超过 3 米的 Portal。</li>
+                <li>新增: 工具箱视觉提醒。当检测到移动时，侧边栏链接变色并显示数量。</li>
+                <li>新增: 移动记录仪表盘。支持查看历史、一键跳转及名称自动解析。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>版本 0.2.0</h3>
+            <ul>
+                <li>新增: 基于小时桶的数据更新统计系统。</li>
+                <li>新增: 使用 localStorage 持久化统计数据。</li>
+                <li>新增: 管理界面实时统计仪表盘。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>版本 0.1.2</h3>
+            <ul>
+                <li>更新: 引入更新阈值机制。仅在数据变更或超过 24 小时后写入，极大减轻 I/O 压力。</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>

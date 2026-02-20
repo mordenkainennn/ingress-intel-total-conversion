@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC Plugin: Player Activity Log</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+            margin: 0 4px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Coda', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.4em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.6em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 28px;
+        }
+        h3 {
+             font-size: 1.1em;
+             color: #ffce00;
+             margin-bottom: 8px;
+        }
+        p, li {
+            color: #ccc;
+        }
+        strong {
+            color: #ffce00;
+        }
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 6px;
+            padding-left: 24px;
+            margin-bottom: 10px;
+        }
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .note-danger {
+            border-color: #f88;
+            background-color: rgba(255, 80, 80, 0.08);
+        }
+        .note-danger strong {
+            color: #f88;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index_zh-cn.html">简体中文</a> | <a href="index_ja.html">日本語</a>
+    </div>
+
+    <div class="container">
+        <h1>Player Activity Log</h1>
+
+        <p>This plugin monitors public COMM messages and stores parsed player activities in your browser.</p>
+        <p>Use it to review actions over time, visualize movement paths, and exchange merged data between users.</p>
+
+        <h2>What's New in 0.8.1</h2>
+        <ul>
+            <li>Added <strong>JSON export</strong> and <strong>JSON import</strong>.</li>
+            <li>Kept <strong>CSV export</strong> (import is JSON-only).</li>
+            <li>Import now supports <strong>merge with de-duplication</strong>:
+                GUID first, then fallback fingerprint (<code>player + time + activity + lat + lng</code>).</li>
+            <li>Import now shows a <strong>preview summary</strong> and asks for <strong>confirmation</strong> before writing data.</li>
+        </ul>
+
+        <h2>Features</h2>
+        <ul>
+            <li>
+                <h3>Automatic Logging from COMM</h3>
+                <p>Passively listens to public COMM events and records supported actions (capture, deploy, link, field, etc.). MACHINA is ignored.</p>
+            </li>
+            <li>
+                <h3>No 3-Day Cutoff</h3>
+                <p>The plugin now records all activity messages returned by Intel COMM (subject to what Intel returns in each fetch).</p>
+            </li>
+            <li>
+                <h3>Interactive Activity Viewer</h3>
+                <p>Open from toolbox and browse players on the left with detailed activity entries on the right. Search supports player ID/name filtering.</p>
+            </li>
+            <li>
+                <h3>Trail Rendering</h3>
+                <p>Select up to 3 players and draw map trails. Lines connect all loaded portals in chronological order and use dashed style. Markers stay fully visible.</p>
+            </li>
+            <li>
+                <h3>Import and Export</h3>
+                <p>Available buttons in the dialog header:</p>
+                <ul>
+                    <li><strong>Import</strong>: Import <code>.json</code>, review preview stats, then confirm to merge.</li>
+                    <li><strong>Export JSON</strong>: Recommended exchange format for complete structured data.</li>
+                    <li><strong>Export CSV</strong>: Spreadsheet-friendly export.</li>
+                </ul>
+            </li>
+            <li>
+                <h3>Local Storage</h3>
+                <p>All data is stored locally in browser <code>localStorage</code>.</p>
+            </li>
+        </ul>
+
+        <h2>How to Use</h2>
+        <ol style="padding-left: 30px;">
+            <li>Open <strong>Activity Log</strong> from IITC toolbox.</li>
+            <li>Use search box to filter players by ID/name.</li>
+            <li>Select players and click <strong>Draw Trails</strong> / <strong>Clear Trails</strong>.</li>
+            <li>Use <strong>Import</strong> to load JSON, review preview counts, and confirm merge.</li>
+            <li>Use <strong>Export JSON</strong> for sharing, or <strong>Export CSV</strong> for spreadsheet analysis.</li>
+            <li>Use <strong>Clear All</strong> or per-player delete (<code>&times;</code>) if needed.</li>
+        </ol>
+
+        <div class="note">
+            <p><strong>Important:</strong> Data is local only and not synced across devices/accounts. Back up regularly using export features.</p>
+        </div>
+
+        <div class="note note-danger">
+            <p><strong>Compatibility Note:</strong> Trail drawing overlaps with the official <strong>Player activity tracker</strong> layer. Disable one of them if needed.</p>
+        </div>
+
+        <h2>Recent Changelog</h2>
+        <div class="changelog-entry">
+            <h3>Version 0.8.1</h3>
+            <ul>
+                <li>NEW: Added import preview/confirmation prompt before local write.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 0.8.0</h3>
+            <ul>
+                <li>NEW: JSON import/export.</li>
+                <li>UPD: CSV export retained.</li>
+                <li>NEW: Import merge de-duplication by GUID + fingerprint fallback.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 0.7.10</h3>
+            <ul>
+                <li>FIX: Restored dashed trail rendering.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 0.7.9</h3>
+            <ul>
+                <li>UPD: Removed 3-day cutoff for COMM-based recording.</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>Version 0.7.8</h3>
+            <ul>
+                <li>UPD: Trails connect all loaded activity portals in chronological order.</li>
+                <li>UPD: Marker fading disabled (always visible).</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IITC 插件: Player Activity Log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body { background:#0e1111; color:#eee; font-family:'Roboto','Noto Sans SC',sans-serif; margin:0; padding:20px; line-height:1.6; }
+    .lang-switch { position:fixed; top:20px; right:30px; background:rgba(0,0,0,.5); border:1px solid #0ff; padding:10px; border-radius:5px; }
+    .lang-switch a { color:#ffce00; text-decoration:none; margin:0 4px; }
+    .container { max-width:900px; margin:0 auto; background:rgba(10,25,30,.85); border:1px solid #0ff; box-shadow:0 0 20px rgba(0,255,255,.5); padding:24px 36px; border-radius:6px; }
+    h1,h2,h3 { color:#0ff; text-shadow:0 0 5px #0ff; }
+    h1 { text-align:center; }
+    h3 { color:#ffce00; }
+    code { background:#000; border:1px solid #333; border-radius:3px; padding:2px 5px; color:#fada5e; }
+    .note { background:rgba(255,206,0,.1); border:1px solid #ffce00; padding:12px; border-radius:4px; margin-top:16px; }
+  </style>
+</head>
+<body>
+  <div class="lang-switch">
+    <a href="index.html">English</a> | <a href="index_ja.html">日本語</a>
+  </div>
+
+  <div class="container">
+    <h1>玩家活动日志 (Player Activity Log)</h1>
+    <p>该插件会监听公开 COMM，并将解析后的玩家活动记录在浏览器本地。</p>
+
+    <h2>0.8.1 更新</h2>
+    <ul>
+      <li>导入前会显示<strong>预览统计</strong>，并在<strong>确认后</strong>才写入本地。</li>
+      <li>支持 JSON 导入/导出。</li>
+      <li>CSV 仅支持导出（导入仅支持 JSON）。</li>
+      <li>去重策略：优先 GUID；若无 GUID，使用指纹（player/time/activity/lat/lng）。</li>
+    </ul>
+
+    <h2>使用方法</h2>
+    <ol>
+      <li>在工具箱打开 <strong>Activity Log</strong>。</li>
+      <li>点击 <strong>Import</strong> 并选择 <code>.json</code> 文件。</li>
+      <li>先查看预览信息（新增数、重复数等）。</li>
+      <li>确认后执行合并并写入本地。</li>
+      <li>交换数据推荐 <strong>Export JSON</strong>；表格分析使用 <strong>Export CSV</strong>。</li>
+    </ol>
+
+    <div class="note">
+      数据仅保存在本地，不会跨设备自动同步。请定期导出备份。
+    </div>
+
+    <h2>Changelog</h2>
+    <h3>Version 0.8.1</h3>
+    <ul>
+      <li>新增：导入前预览与确认提示功能。</li>
+    </ul>
+    <h3>Version 0.8.0</h3>
+    <ul>
+      <li>新增：JSON 导入/导出。</li>
+      <li>更新：保留 CSV 导出。</li>
+      <li>新增：GUID + 指纹兜底的去重合并逻辑。</li>
+    </ul>
+  </div>
+</body>
+</html>

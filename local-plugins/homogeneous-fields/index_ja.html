@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC プラグイン: 57Cell's Field Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', 'Noto Sans JP', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+            margin: 0 5px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Coda', 'Noto Sans JP', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+             font-size: 1.2em;
+             color: #ffce00;
+        }
+        p, li {
+            color: #ccc;
+        }
+        strong {
+            color: #ffce00;
+        }
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 8px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .note strong {
+            color: #ffce00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index.html">English</a> | <a href="index_zh-cn.html">中文</a>
+    </div>
+
+    <div class="container">
+        <h1>57Cell's Field Planner</h1>
+
+        <p>このプラグインは、複雑なフィールド作戦を設計・実行するための高度なツールです。元々は <strong>57Cell</strong> によって作成されましたが、<strong>Heistergand</strong> や <strong>mordenkainennn</strong> といった貢献者によって大幅に強化され、戦略的なエージェントにとって強力な資産となりました。</p>
+        <p>選択したアンカーポータルに基づいてリンクおよびフィールド計画を自動計算し、手作業での計画にかかる時間を節約します。</p>
+
+        <h2>機能</h2>
+        <ul>
+            <li>
+                <h3>複数のフィールド戦略</h3>
+                <p>戦略目標に合わせて、3つの異なるフィールドアルゴリズムから選択できます：</p>
+                <ul>
+                    <li><code>Homogeneous Fields (HCF)</code>: 指定されたレイヤー数で完全に階層化されたフィールドを作成します。</li>
+                    <li><code>General Maximum Fielding</code>: 与えられたポータルのセットから最大数のフィールドを作成することを目指します。</li>
+                    <li><code>Cobweb Plan</code>: クモの巣のようなフィールドパターンを生成し、エリア拒否に優れています。</li>
+                </ul>
+            </li>
+            <li>
+                <h3>インタラクティブな計画UI</h3>
+                <p>ツールボックスから起動する包括的なダイアログがコマンドセンターとして機能します。ここからコーナーポータルを選択し、その画像プレビューを確認し、ロックして計画を微調整できます。</p>
+            </li>
+            <li>
+                <h3>ポータル管理</h3>
+                <p>3つのコーナーポータルを選択すると、プラグインは主三角形内のすべてのポータルリストを自動的に作成します。最終的な計画で使用するポータルを制御するために、「含まれる」リストと「除外される」リストの間でポータルを簡単に移動できます。</p>
+            </li>
+            <li>
+                <h3>視覚的なフィードバックとカスタマイズ</h3>
+                <p>生成された計画は、必要なすべてのリンクとフィールドを表示して、マップ上に直接描画されます。計画のオーバーレイの色をリアルタイムで変更できます。選択されたコーナーポータルは、簡単に識別できるようにアニメーションでハイライトされます。</p>
+            </li>
+            <li>
+                <h3>詳細なステップバイステップの出力</h3>
+                <p>プラグインは、コピーして共有できる詳細なテキストベースの計画を生成します。計画には以下が含まれます：</p>
+                 <ul>
+                    <li>最適なポータル訪問順序。</li>
+                    <li>各ポータルから投げるリンクの番号付きリスト。</li>
+                    <li>各アンカーに必要なSoftBankの数。</li>
+                    <li>各ポータルに必要なキーの数の概要。</li>
+                    <li>ポータル間の総移動距離。</li>
+                </ul>
+            </li>
+            <li>
+                <h3>他のプラグインとの統合</h3>
+                <p>さらに効率を高めるために、生成されたリンク計画をワンクリックで <strong>DrawTools</strong> および <strong>Arc</strong> プラグインに直接エクスポートできます。</p>
+            </li>
+        </ul>
+
+        <h2>使用方法</h2>
+        <ol style="padding-left: 30px;">
+            <li>IITCツールボックスの<strong>「Plan Fields」</strong>ボタンをクリックして開始します。</li>
+            <li>マップ上で3つのポータルを主要なアンカー/コーナーとして選択します。</li>
+            <li>計画ダイアログが開きます。ここで、以下の操作ができます：
+                <ul>
+                    <li>選択したコーナーをロックします。</li>
+                    <li>希望する<strong>フィールドタイプ</strong>（HCF、General、Cobweb）を選択します。</li>
+                    <li>HCF計画の<strong>レイヤー数</strong>を設定します。</li>
+                    <li>計画の<strong>ジオメトリ</strong>（RandomまたはPerfect）を選択します。</li>
+                </ul>
+            </li>
+            <li>(任意) 右側のパネルで、使用したくないポータルを「含まれる」リストから「除外される」リストに移動します。</li>
+            <li><strong>「Find Fielding Plan」</strong>ボタンをクリックします。</li>
+            <li>プラグインが最適な計画を計算し、マップ上に視覚的なオーバーレイとダイアログにテキスト手順を表示します。</li>
+        </ol>
+
+        <div class="note">
+            <p><strong>由来:</strong> このプラグインは、<strong>57Cell</strong> のオリジナルスクリプトを基に改良されたバージョンです。現在、このIITC-CEプラグインコレクション内で <strong>mordenkainennn</strong> によって維持・強化されています。</p>
+        </div>
+
+        <h2>変更履歴</h2>
+        <div class="changelog-entry">
+            <h3>バージョン 2.1.14</h3>
+            <ul>
+                <li>修正: ダイアログのレイアウトをFlexboxを使用するようにリファクタリングし、複数のレンダリングおよびリサイズの問題を解決しました。</li>
+                <li>更新: 「含まれるポータル」と「除外されるポータル」リストが、利用可能な垂直スペースを2:1の比率で正しく使用するようになりました。</li>
+                <li>更新: より良い初期ビューのために、デフォルトのダイアログの高さを増やしました。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>バージョン 2.1.2 &ndash; 2.1.7</h3>
+            <ul>
+                <li>新規: 変更履歴がIITCのプラグインリストで表示されるようになりました。</li>
+                <li>新規: 選択したポータルのポータル画像プレビューとアニメーション付きコーナーを追加しました。</li>
+                <li>新規: ダイアログに「クリア」ボタンを追加しました。</li>
+                <li>修正: 主要なUI改善とAPI互換性の修正。</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>

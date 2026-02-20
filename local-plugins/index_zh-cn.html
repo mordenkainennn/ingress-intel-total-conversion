@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC 插件目录</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', 'Noto Sans SC', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+            z-index: 1000;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+            margin: 0 5px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1 {
+            font-family: 'Coda', 'Noto Sans SC', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+        .plugin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .plugin-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #333;
+            padding: 20px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+        }
+        .plugin-card:hover {
+            border-color: #0ff;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
+        }
+        .plugin-card h3 {
+            font-family: 'Coda', 'Noto Sans SC', cursive;
+            color: #ffce00;
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+        }
+        .plugin-card p {
+            color: #ccc;
+            font-size: 0.9em;
+            margin: 0;
+            flex-grow: 1;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.8em;
+            color: #666;
+            border-top: 1px dashed #333;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index.html">English</a> | <a href="index_ja.html">日本語</a>
+    </div>
+
+    <div class="container">
+        <h1>IITC 插件目录</h1>
+        
+        <p style="text-align: center; color: #888; margin-bottom: 40px;">
+            专为 Ingress 特工设计的自定义及增强插件集合。
+        </p>
+
+        <div class="plugin-grid">
+            <a href="portal-db/index_zh-cn.html" class="plugin-card">
+                <h3>Portal DB</h3>
+                <p>核心基础架构。提供持久化数据库、移动检测和更新原因统计。</p>
+            </a>
+            <a href="portal-afterimage/index_zh-cn.html" class="plugin-card">
+                <h3>Portal Afterimage</h3>
+                <p>在地图缩小导致官方标记消失时，绘制已见 Portal 的“残影”记忆层。</p>
+            </a>
+            <a href="player-activity-log/index_zh-cn.html" class="plugin-card">
+                <h3>玩家活动日志</h3>
+                <p>记录 COMM 信息中的玩家行为，并在地图上可视化展示移动轨迹。</p>
+            </a>
+            <a href="recharge-monitor/index_zh-cn.html" class="plugin-card">
+                <h3>充电监控器</h3>
+                <p>实时监控 Portal 健康度，提供智能的能量衰减预测和预警。</p>
+            </a>
+            <a href="uniques-tools/index_zh-cn.html" class="plugin-card">
+                <h3>Uniques Tools</h3>
+                <p>增强的 Unique 追踪，支持无人机位置记录和官方历史数据导入。</p>
+            </a>
+            <a href="homogeneous-fields/index_zh-cn.html" class="plugin-card">
+                <h3>Homogeneous Fields</h3>
+                <p>用于规划和可视化同质控制场（Homogeneous Field）的高级工具。</p>
+            </a>
+        </div>
+
+        <div class="footer">
+            注：这些插件仅基于本地接收的数据，不与服务器额外交互，不违反 Niantic 的服务条款。
+        </div>
+    </div>
+
+</body>
+</html>

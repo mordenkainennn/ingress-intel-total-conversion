@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC プラグイン: Portal DB</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', 'Noto Sans JP', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+            margin: 0 5px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Coda', 'Noto Sans JP', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+             font-size: 1.2em;
+             color: #ffce00;
+             margin-top: 20px;
+        }
+        h4 {
+             color: #ccc;
+             margin-bottom: 5px;
+        }
+        p, li {
+            color: #ccc;
+        }
+        strong {
+            color: #ffce00;
+        }
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        pre {
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        pre code {
+            background-color: transparent;
+            border: none;
+            padding: 0;
+            color: #aaddff;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 8px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .note strong {
+            color: #ffce00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index.html">English</a> | <a href="index_zh-cn.html">中文</a>
+    </div>
+
+    <div class="container">
+        <h1>Portal DB</h1>
+
+        <p><strong>Portal DB</strong> は、IITCエコシステムの基盤となるインフラストラクチャプラグインです。ブラウザ内に<strong>ポータルの基本情報を記録するローカルな永続データベース</strong>を構築するように設計されています。</p>
+        <p>マップを閲覧するだけで自動的にデータを収集し、画面外にあるポータルの座標や陣営情報を必要とする他のプラグインにとって、信頼できる「信頼できる唯一の情報源 (Single Source of Truth)」として機能します。</p>
+
+        <h2>主な機能</h2>
+        <ul>
+            <li>
+                <h3>永続的なローカルストレージ</h3>
+                <p><strong>IndexedDB</strong> を使用して、ポータルデータ（GUID、緯度、経度、陣営、最終確認日時）を永続的に保存します。このデータは、セッションやブラウザの再起動を超えて保持されます。</p>
+            </li>
+            <li>
+                <h3>受動的なデータ収集</h3>
+                <p>マップを閲覧するだけで、ポータル情報が自動的にキャプチャされます。生のゲームエンティティデータを直接傍受することで、手動操作を必要とせず、高いパフォーマンスと広範囲なデータ収集を実現します。</p>
+            </li>
+            <li>
+                <h3>ポータル移動検知 🛡️</h3>
+                <p>ポータルの座標変動を自動的に検知します。ポータルが <strong>3メートル</strong> 以上移動した場合、元の位置、新しい位置、および検知時刻を記録します。これは、ポータル移動を申請してブロックリンクを破壊する戦術への対策として非常に有効です。</p>
+            </li>
+            <li>
+                <h3>視覚的なアラート通知</h3>
+                <p>新しいポータルの移動が検知されると、ツールボックスの <strong>"Portal DB"</strong> リンクがオレンジ色に変わり、警告数（例：<code>⚠️ Portal Moved (3)</code>）が表示されます。</p>
+            </li>
+            <li>
+                <h3>更新統計 (Debug)</h3>
+                <p>時間別の統計システムを内蔵し、データの更新理由（新規、変更、リフレッシュ、スキップ）を記録します。フィルタリング効率の確認に役立ちます。</p>
+            </li>
+        </ul>
+
+        <h2>API リファレンス</h2>
+        <p>このプラグインはグローバルオブジェクト <code>window.plugin.portalDB</code> を介して機能を提供します。すべてのデータアクセス用メソッドは非同期であり、<strong>Promise</strong> を返します。</p>
+        
+        <h3><code>getPortal(guid)</code></h3>
+        <p>指定した GUID のポータルレコードを取得します。</p>
+        <pre><code>// 例: ポータルが存在するか確認し、座標をログ出力する
+window.plugin.portalDB.getPortal('your-portal-guid')
+  .then(portal => {
+    if (portal) {
+      console.log(`発見: ${portal.latE6}, ${portal.lngE6}`);
+    } else {
+      console.log('ローカルDBにポータルが見つかりません');
+    }
+  });</code></pre>
+
+        <h3><code>getPortalsInBounds(bounds)</code></h3>
+        <p>指定した地理的境界（Bounds）内のすべてのポータルを取得します。特定のエリア（例：現在のマップ表示範囲）内のポータルを探すのに便利です。</p>
+        <pre><code>// 例: 現在のマップ表示範囲内の保存済みポータルを検索する
+const bounds = map.getBounds(); // Leaflet LatLngBounds オブジェクト
+window.plugin.portalDB.getPortalsInBounds(bounds)
+  .then(results => {
+    console.log(`このエリアで ${results.length} 個のポータルを発見しました。`);
+    results.forEach(p => console.log(p.guid, p.team));
+  });</code></pre>
+
+        <h3>戻り値のオブジェクト構造</h3>
+        <p>各メソッドは、以下の標準化された形式のポータルオブジェクトを返します：</p>
+        <pre><code>{
+  "guid": "...",           // String: ポータルの GUID
+  "latE6": 35689500,       // Number: 緯度 * 1,000,000
+  "lngE6": 139691700,      // Number: 経度 * 1,000,000
+  "team": "E",             // String: 'E' (緑), 'R' (青), 'N' (白), 'M' (赤)
+  "lastSeen": 1707000000   // Number: 最終更新のタイムスタンプ (ミリ秒)
+}</code></pre>
+
+        <h2>使用方法</h2>
+        <ol style="padding-left: 30px;">
+            <li>Intelマップを閲覧するだけです！バックグラウンドでポータルデータの収集と移動検知が行われます。</li>
+            <li>サイドバーのリンクが赤くなったら、ポータルが移動した合図です。<strong>"Portal DB"</strong> をクリックして詳細を確認してください。</li>
+            <li>管理ダイアログの <strong>"Moved Portals"</strong> リストに記録が表示されます。項目をクリックすると、地図上でそのポータルにジャンプできます。</li>
+            <li><strong>Export</strong> (エクスポート) および <strong>Import</strong> (インポート) ボタンを使用して、データのバックアップや移行を行ってください。</li>
+        </ol>
+
+        <div class="note">
+            <p><strong>開発者向けメモ:</strong> このプラグインは主にバックエンドサービスとして意図されています。現在描画されていないGUIDについて「このポータルはどこにあるか？」を知る必要があるプラグインを開発している場合、Portal DBがそのソリューションとなります。</p>
+        </div>
+
+        <h2>変更履歴</h2>
+        <div class="changelog-entry">
+            <h3>バージョン 0.3.0</h3>
+            <ul>
+                <li>新規: ポータル移動検知機能。3メートル以上の移動を自動追跡。</li>
+                <li>新規: ツールボックス視覚アラート。検知時にリンクの色が変わり、件数を表示。</li>
+                <li>新規: 移動履歴ダッシュボード。履歴表示、一クリックジャンプ、名称解決をサポート。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>バージョン 0.2.0</h3>
+            <ul>
+                <li>新規: 時間別のデータ更新統計システム。</li>
+                <li>新規: localStorage を使用した統計データの永続化。</li>
+                <li>新規: 管理画面へのリアルタイム統計ダッシュボードの追加。</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>

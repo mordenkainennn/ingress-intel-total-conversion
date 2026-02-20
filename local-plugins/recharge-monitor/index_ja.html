@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC プラグイン: リチャージモニターと減衰予測 (Recharge Monitor)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', 'Noto Sans JP', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+            margin: 0 5px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Coda', 'Noto Sans JP', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+             font-size: 1.2em;
+             color: #ffce00;
+        }
+        p, li {
+            color: #ccc;
+        }
+        strong {
+            color: #ffce00;
+        }
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 8px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .note strong {
+            color: #ffce00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index.html">English</a> | <a href="index_zh-cn.html">中文</a>
+    </div>
+
+    <div class="container">
+        <h1>リチャージモニターと減衰予測 (Recharge Monitor)</h1>
+
+        <p>このプラグインは、複数の地域のポータルを管理するエージェントのための不可欠なユーティリティです。ポータルの健康状態をリアルタイムで監視し、現在のマップ表示範囲外にあるポータルであっても、いつ完全にエネルギーが枯渇（減衰）するかをインテリジェントに予測します。</p>
+        <p>COMMデータや他のログプラグインと統合することで、リチャージの期限を二度と逃さないようにします。</p>
+
+        <h2>主な機能</h2>
+        <ul>
+            <li>
+                <h3>エネルギー監視ウォッチリスト</h3>
+                <p>ポータルの詳細パネルから、特定のポータルを個人用のウォッチリストに追加できます。現在の健康状態、最後に確認されたステータス、デプロイ時刻を統合ダッシュボードで一元管理します。</p>
+            </li>
+            <li>
+                <h3>インテリジェントな減衰予測</h3>
+                <p>現在マップ上に表示されていないポータルについて、1日あたり15%の標準的なエネルギー損失に基づいた <code>予測減衰 (Est. Decay)</code> 日時を計算します。ポータルが中立化するまでの信頼できる「カウントダウン」を提供します。</p>
+            </li>
+            <li>
+                <h3>マルチソース履歴同期</h3>
+                <p>以下の2つの強力な方法を使用して、正確なデプロイ時刻を自動的に復元します：</p>
+                <ul>
+                    <li><code>COMM バックフィリング</code>: IITC内部のチャットキャッシュをスキャンし、キャプチャおよびデプロイイベントを探します。</li>
+                    <li><code>ログ統合</code>: <strong>Player Activity Log</strong> プラグインの履歴データと同期し、GUIDと座標による精密なマッチングを行います。</li>
+                </ul>
+            </li>
+            <li>
+                <h3>視覚的なリチャージアラート</h3>
+                <p>監視中のポータルの健康状態が30%を下回ると、IITCツールボックス内の「Recharge Mon」ボタンが動的に色を変え、警告数（例：<code>⚠️ Recharge (3)</code>）を表示します。</p>
+            </li>
+            <li>
+                <h3>ローカライズと使いやすさ</h3>
+                <p>すべてのタイムスタンプを<strong>ローカルタイムゾーン</strong>で表示します。必要に応じてデプロイ時刻を手動で修正できるユーザーフレンドリーなインターフェースを備えています。</p>
+            </li>
+        </ul>
+
+        <h2>使用方法</h2>
+        <ol style="padding-left: 30px;">
+            <li>マップ上の任意のポータルを選択して詳細パネルを開きます。</li>
+            <li><strong>"🛡️ Add to Watchlist"</strong> (監視リストに追加) をクリックして監視を開始します。</li>
+            <li>ツールボックスの <strong>"Recharge Mon"</strong> ボタンをクリックしてメインダッシュボードを起動します。</li>
+            <li>ダッシュボード内で <strong>"🔄 Sync History"</strong> ボタンを使用し、COMMやログから履歴データを取得して時刻の精度を向上させます。</li>
+            <li>ツールボックスのボタンが<strong>オレンジ色や赤色</strong>に変わったら、リチャージの準備をしましょう！</li>
+        </ol>
+
+        <div class="note">
+            <p><strong>ヒント:</strong> このプラグインを <strong>Player Activity Log</strong> と併用することを強くお勧めします。新しいポータルを追加するたびに、アクティビティ履歴から自動的にデプロイ時刻を「収集」します。</p>
+        </div>
+
+        <h2>変更履歴</h2>
+        <div class="changelog-entry">
+            <h3>バージョン 0.3.1</h3>
+            <ul>
+                <li>更新: 用語を公式のIngress標準に合わせて "Decay" に統一しました。</li>
+                <li>修正: データの誤上書きを防ぐため、健康状態の計算ロジックの堅牢性を向上させました。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>バージョン 0.3.0</h3>
+            <ul>
+                <li>新規: リアルタイムのCOMM監視と履歴遡及同期機能を追加しました。</li>
+                <li>新規: Player Activity Log プラグインからの履歴復元を統合しました。</li>
+                <li>新規: ウォッチリストに「予測減衰」列を追加しました。</li>
+                <li>更新: すべての時刻表示をローカルタイム形式に切り替えました。</li>
+                <li>更新: UIとコメントを完全に英語に翻訳しました（グローバル対応）。</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>
