@@ -2,7 +2,7 @@
 // @id             iitc-plugin-recharge-monitor
 // @name           IITC plugin: Recharge Monitor & Decay Predictor
 // @category       Info
-// @version        0.4.2
+// @version        0.4.3
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/recharge-monitor/recharge-monitor.meta.js
 // @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/recharge-monitor/recharge-monitor.user.js
@@ -18,10 +18,18 @@ function wrapper(plugin_info) {
     if (typeof window.plugin !== 'function') window.plugin = function () { };
 
     plugin_info.buildName = 'RechargeMonitor';
-    plugin_info.dateTimeVersion = '202402080003';
+    plugin_info.dateTimeVersion = '202602212340';
     plugin_info.pluginId = 'recharge-monitor';
 
     var changelog = [
+        {
+            version: '0.4.3',
+            changes: [
+                'NEW: Added total XM required to fully recharge all monitored portals.',
+                'NEW: Added total daily decay (15%) estimate for the watchlist.',
+                'FIX: Now estimates max XM using map data (Portal Level/Resonators) if detailed portal data is not yet loaded.',
+            ],
+        },
         {
             version: '0.4.2',
             changes: [
@@ -84,10 +92,23 @@ function wrapper(plugin_info) {
             if (data && data.title) {
                 pData.name = data.title;
             }
+            if (data && typeof data.level === 'number') {
+                pData.level = data.level;
+            }
+            if (data && typeof data.resCount === 'number') {
+                pData.resCount = data.resCount;
+            }
 
             const details = window.portalDetail.get(guid);
-            if (details && details.captured && details.captured.time) {
-                pData.captureTime = details.captured.time;
+            if (details) {
+                if (details.captured && details.captured.time) {
+                    pData.captureTime = details.captured.time;
+                }
+                if (details.resonators) {
+                    let max = 0;
+                    details.resonators.forEach(r => { if (r) max += r.energyTotal; });
+                    if (max > 0) pData.energyMax = max;
+                }
             }
 
             self.save();
@@ -144,6 +165,24 @@ function wrapper(plugin_info) {
         const daysLeft = currentHealth / 15;
         const depletionTime = lastSeenTime + (daysLeft * 24 * 3600 * 1000);
         return '~ ' + self.formatTime(depletionTime); // Prefix with ~ to indicate approximation
+    };
+
+    self.getEstimatedMaxEnergy = function (guid) {
+        const p = self.data[guid];
+        if (!p) return { value: 0, exact: false };
+
+        // Tier 1: Exact
+        if (p.energyMax) return { value: p.energyMax, exact: true };
+
+        // Tier 2: Map Summary
+        if (typeof p.level === 'number' && typeof p.resCount === 'number') {
+            const RESONATOR_CAPACITY = [0, 1000, 1500, 2000, 2500, 3000, 4000, 5000, 6000];
+            const cap = RESONATOR_CAPACITY[p.level] || 3000;
+            return { value: p.resCount * cap, exact: false };
+        }
+
+        // Tier 3: Fallback (Assume standard 8 Res L5 portal)
+        return { value: 24000, exact: false };
     };
 
     /* ---------------- History Integration ---------------- */
@@ -279,7 +318,14 @@ function wrapper(plugin_info) {
             const watched = self.data[guid] !== undefined;
             if (watched) {
                 const details = data.portalDetails;
-                if (details && details.captured && details.captured.time) self.data[guid].captureTime = details.captured.time;
+                if (details) {
+                    if (details.captured && details.captured.time) self.data[guid].captureTime = details.captured.time;
+                    if (details.resonators) {
+                        let max = 0;
+                        details.resonators.forEach(r => { if (r) max += r.energyTotal; });
+                        if (max > 0) self.data[guid].energyMax = max;
+                    }
+                }
                 self.calculateHealth(guid);
             }
             const $box = $('<div id="recharge-monitor-controls" style="padding:5px;border-top:1px solid #20A8B1;"></div>');
@@ -304,8 +350,16 @@ function wrapper(plugin_info) {
                 latlng: p.getLatLng(),
                 captureTime: Date.now(),
                 lastSeenHealth: p.options.data.health,
-                lastSeenTime: Date.now()
+                lastSeenTime: Date.now(),
+                level: p.options.data.level,
+                resCount: p.options.data.resCount
             };
+            const details = window.portalDetail.get(guid);
+            if (details && details.resonators) {
+                let max = 0;
+                details.resonators.forEach(r => { if (r) max += r.energyTotal; });
+                if (max > 0) self.data[guid].energyMax = max;
+            }
             self.scanActivityLog(guid);
         }
         self.save();
@@ -349,6 +403,7 @@ function wrapper(plugin_info) {
         if ($('#recharge-monitor-dialog').length === 0 && arguments.length === 0) return;
         try {
             let html = `<table class="recharge-table" style="width:100%"><tr><th>Portal</th><th>Health</th><th>Deploy Time</th><th>Est. Decay</th><th>Action</th></tr>`;
+            let totalMissingXM = 0, totalDailyDecay = 0, exactCount = 0, usedEstimates = false;
             for (const guid in self.data) {
                 const p = self.data[guid];
                 if (!p || !p.latlng) continue;
@@ -358,8 +413,28 @@ function wrapper(plugin_info) {
                 const lng = typeof p.latlng.lng !== 'undefined' ? p.latlng.lng : (Array.isArray(p.latlng) ? p.latlng[1] : 0);
                 const safeName = (p.name || 'Unknown').replace(/"/g, '&quot;');
                 html += `<tr><td><a onclick="window.zoomToAndShowPortal('${guid}',[${lat},${lng}]);">${safeName}</a></td><td style="color:${c};font-weight:bold">${(h || 0).toFixed(0)}%</td><td>${self.formatTime(p.captureTime)}</td><td>${self.estimateDecay(h, p.lastSeenTime, p.captureTime)}</td><td><a onclick="window.plugin.rechargeMonitor.toggleWatch('${guid}'); setTimeout(window.plugin.rechargeMonitor.showList, 100);">Del</a></td></tr>`;
+
+                const maxEng = self.getEstimatedMaxEnergy(guid);
+                if (maxEng.value > 0) {
+                    totalMissingXM += maxEng.value * (1 - h / 100);
+                    totalDailyDecay += maxEng.value * 0.15;
+                    if (maxEng.exact) exactCount++;
+                    else usedEstimates = true;
+                }
             }
             html += '</table>';
+
+            const countAll = Object.keys(self.data).length;
+            if (countAll > 0) {
+                const prefix = usedEstimates ? '~' : '';
+                html += `<div style="margin-top:10px; padding:8px; border:1px solid #20A8B1; background:rgba(32,168,177,0.1); border-radius:4px;">`;
+                html += `<div style="display:flex; justify-content:space-between;"><span>Total XM Needed:</span><strong style="color:#ffce00">${prefix}${Math.round(totalMissingXM).toLocaleString()}</strong></div>`;
+                html += `<div style="display:flex; justify-content:space-between;"><span>Total Daily Decay (15%):</span><strong style="color:#ffce00">${prefix}${Math.round(totalDailyDecay).toLocaleString()}</strong></div>`;
+                if (usedEstimates) {
+                    html += `<div style="font-size:10px; color:#aaa; margin-top:5px; text-align:right;">* Totals include estimated XM for portals without exact resonator data.</div>`;
+                }
+                html += `</div>`;
+            }
 
             window.dialog({
                 html: html,
