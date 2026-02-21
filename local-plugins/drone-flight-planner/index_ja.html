@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC Plugin: ドローンフライトプランナー (Drone Flight Planner)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', 'Noto Sans JP', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+            z-index: 1000;
+        }
+
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+        }
+
+        .lang-switch span {
+            color: #fff;
+            font-family: 'Coda', cursive;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Coda', 'Noto Sans JP', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.4em;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 1.7em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 32px;
+        }
+
+        h3 {
+            font-size: 1.1em;
+            color: #ffce00;
+            margin-top: 20px;
+        }
+
+        p,
+        li {
+            color: #ccc;
+        }
+
+        strong {
+            color: #ffce00;
+        }
+
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        pre {
+            background-color: #111;
+            border: 1px solid #333;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        pre code {
+            border: none;
+            padding: 0;
+            background: transparent;
+            color: #aaddff;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid #233;
+            padding: 8px 6px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            color: #ffce00;
+        }
+
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 14px;
+            border-radius: 4px;
+            margin: 16px 0;
+        }
+
+        .warn {
+            background-color: rgba(180, 40, 40, 0.2);
+            border: 1px solid #ff6666;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .panel {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid #244;
+            border-radius: 4px;
+            padding: 12px;
+        }
+
+        @media (max-width: 900px) {
+            .lang-switch {
+                position: static;
+                margin: 0 auto 12px auto;
+                width: fit-content;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="lang-switch">
+        <a href="index.html">English</a> | <a href="index_zh-cn.html">简体中文</a> | <span>日本語</span>
+    </div>
+
+    <div class="container">
+        <h1>ドローンフライトプランナー</h1>
+
+        <p>
+            <strong>Drone Flight Planner</strong> は、現在マップ上に読み込まれているポータルから長距離のドローン移動ルートを構築するためのIITC計画プラグインです。
+            古典的な距離ベースのルーティングと、S2セルベースの可視性モデルをサポートしているため、ホップ数の削減や長いキージャンプの削減、または実際のプレイアビリティに優れたバランスの取れた計画を作成できます。
+        </p>
+
+        <div class="note">
+            <p>
+                <strong>クレジット:</strong> オリジナルコンセプトおよびプラグインは <a href="https://www.youtube.com/@57Cell"
+                    target="_blank">57Cell</a> によって作成されました。
+                S2メカニクスのワークフローとパフォーマンス改善を含む拡張および維持は <a href="https://gongjupal.com/ingress/"
+                    target="_blank">Cloverjune</a> によって行われています。
+            </p>
+        </div>
+
+        <h2>機能概要 (What It Does)</h2>
+        <ul>
+            <li>現在のマップ表示領域内にあるポータルをスキャンし、到達可能性グラフを構築します。</li>
+            <li>開始ポータルを選択し、外に向かう長いルートを計算します。</li>
+            <li>プラグインのダイアログ内にルート線と概要テキストを直接描画します。</li>
+            <li>計画の転送やバックアップのために、JSONのエクスポートおよびインポートをサポートします。</li>
+            <li>最新の計算済み計画をブラウザのlocalStorageに自動保存し、リロード後も素早く復元できます。</li>
+            <li>S2のアクティブなグリッド表示や一方通行ジャンプの警告など、オプションの戦術的オーバーレイを表示します。</li>
+        </ul>
+
+        <h2>計画ワークフロー (Planning Workflow)</h2>
+        <ol style="padding-left: 28px;">
+            <li>ツールボックスからプラグインを開きます: <code>Plan Drone Flight</code>。</li>
+            <li>対象のエリアにマップを移動し、<code>Use Portals In View</code> をクリックします。</li>
+            <li>マップ上で開始ポータルを選択します（プラグインが開始候補をハイライトします）。</li>
+            <li>計画のオプションを選択します（目標、アルゴリズム、S2設定、キーポリシー）。</li>
+            <li>生成されたルートのテキストを読み、マップ上のレイヤーに描かれたリンクを確認します。</li>
+            <li>計画を保持するには <code>Export Plan</code> を使用し、必要に応じてキャッシュをクリアします。</li>
+        </ol>
+
+        <h2>オプションリファレンス (Option Reference)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>グループ</th>
+                    <th>オプション</th>
+                    <th>意味</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>最適化の目標<br>(Optimization Goal)</td>
+                    <td><code>Min Hops</code> / <code>Balanced</code> / <code>Min Keys</code></td>
+                    <td>合計ホップ数とコストの高い長いキージャンプの間の優先度を制御します。</td>
+                </tr>
+                <tr>
+                    <td>検索アルゴリズム<br>(Search Algorithm)</td>
+                    <td><code>None</code>, <code>Greedy</code>, <code>Balanced</code>, <code>Perfect</code></td>
+                    <td>速度と結果の質のバランスを取ります。<code>Perfect</code> は最も遅く、最も徹底的です。</td>
+                </tr>
+                <tr>
+                    <td>S2メカニクス<br>(S2 Mechanics)</td>
+                    <td><code>Use S2 Mechanics</code></td>
+                    <td>単純な半径チェックからS2セルベースの可視性ロジックに切り替えます。</td>
+                </tr>
+                <tr>
+                    <td>S2の詳細<br>(S2 Detail)</td>
+                    <td><code>S2 Level</code> (16 or 17)</td>
+                    <td>到達性の確認と警告に使用するアクティブなS2グリッドの粒度を設定します。</td>
+                </tr>
+                <tr>
+                    <td>スキャナー制約<br>(Scanner Constraint)</td>
+                    <td><code>Scanner View Radius (m)</code></td>
+                    <td>S2計算に使用するドローンの可視半径（デフォルトでは550m）を定義します。</td>
+                </tr>
+                <tr>
+                    <td>戦術的オーバーレイ<br>(Tactical Overlays)</td>
+                    <td><code>Show One-Way Warnings</code>, <code>Display Active Grid</code></td>
+                    <td>困難な逆向きジャンプの警告と、現在のアクティブなS2セルをマップに追加します。</td>
+                </tr>
+                <tr>
+                    <td>長いジャンプ<br>(Long Jumps)</td>
+                    <td><code>Allow Keys (&lt;1.25km)</code> / <code>No Keys</code></td>
+                    <td>スキャナーの範囲を超え、かつハードキャップ（1.25km）までのジャンプを有効または無効にします。</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>ボタンとアクション (Buttons and Actions)</h2>
+        <div class="two-col">
+            <div class="panel">
+                <h3>計画コントロール (Plan Controls)</h3>
+                <ul>
+                    <li><code>Use Portals In View</code>: 現在読み込まれているポータルを取り込みます。</li>
+                    <li><code>Switch End to Start</code>: 現在のルートの終点から計画を続行します。</li>
+                    <li><code>Export to DrawTools</code>: DrawToolsレイヤーにルートセグメントをエクスポートします。</li>
+                    <li><code>Export Plan</code>: <code>iitc-drone-plan.json</code> をダウンロードします。</li>
+                    <li><code>Import Plan</code>: 互換性のあるJSON計画データを読み込みます。</li>
+                </ul>
+            </div>
+            <div class="panel">
+                <h3>キャッシュコントロール (Cache Controls)</h3>
+                <ul>
+                    <li><code>Clear Start</code>: キャッシュを完全リセットせずに、選択した開始点をクリアします。</li>
+                    <li><code>Clear Unused</code>: メインパス上のポータルのみを保持します。</li>
+                    <li><code>Clear Most</code>: メインパスとその近くの隣接ポータルを保持します。</li>
+                    <li><code>Clear All</code>: ルートキャッシュをクリアし、自動保存された計画を削除します。</li>
+                    <li><code>More Info</code>: プラグインのクレジット、ストレージ使用量、および安全性に関する情報を表示します。</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2>データストレージと安全性 (Data Storage and Safety)</h2>
+        <p>
+            プラグインは設定や自動保存された計画データをlocalStorageに保存します:
+            <code>plugin-drone-flight-planner-settings</code> や <code>drone-flight-plan-autosave</code> です。
+            大規模な計画となると、時間の経過とともに多くのストレージ容量を消費する可能性があります。
+        </p>
+
+        <div class="note warn">
+            <p>
+                <strong>重要:</strong> localStorageの割り当てには各ブラウザごとの制限があり、IITCプラグイン間で共有されます。
+                もし容量がいっぱいになった場合、他のプラグインが状態を保存できなくなる可能性があります。そのため、必要がなければ
+                <code>Export Plan</code> を実行してから <code>Clear All</code> を行い、キャッシュを適宜削除する癖をつけることをおすすめします。
+            </p>
+        </div>
+
+        <h2>JSONプランフォーマット</h2>
+        <p>エクスポートされた計画には、ルート情報と最小限のポータルデータ構造が含まれています:</p>
+        <pre><code>{
+  "name": "Drone Flight Plan",
+  "version": "1.0",
+  "startPortalGuid": "....",
+  "path": ["guid1", "guid2", "guid3"],
+  "graph": { "guid1": ["guid2"] },
+  "portals": {
+    "guid1": { "name": "Portal A", "lat": 35.0, "lng": 139.0 }
+  }
+}</code></pre>
+        <p>
+            インポートされた計画ファイルは、ルート上のポータルが現在画面に読み込まれていない場合でも、必要なポータル情報を再構築します。
+            これにより、リロード後やデバイス間での転送後もルートの計画を引き継ぐことができます。
+        </p>
+
+        <h2>パフォーマンスに関する注意事項 (Performance Notes)</h2>
+        <ul>
+            <li>ルートの品質と実行時の動作速度は、現在の表示領域内のポータル密度に大きく依存します。</li>
+            <li><code>Perfect</code> モードは、UIのフリーズを減らすためにタイムスライス処理を使用していますが、密度が高いマップではそれでも重い処理となります。</li>
+            <li><code>Clear Unused</code> または <code>Clear Most</code> を反復的に使用して、グラフのサイズを減らすとパフォーマンスの改善に役立ちます。</li>
+            <li>マップの再描画が遅く感じる場合は、不要なオーバーレイ（<code>Display Active Grid</code> や警告レイヤーなど）を無効にしてみてください。</li>
+        </ul>
+
+        <h2>リンク</h2>
+        <ul>
+            <li>57Cell (オリジナル): <a href="https://www.youtube.com/@57Cell" target="_blank">YouTubeチャンネル</a></li>
+            <li>Cloverjune (現在のメンテナ): <a href="https://gongjupal.com/ingress/"
+                    target="_blank">https://gongjupal.com/ingress/</a></li>
+        </ul>
+    </div>
+</body>
+
+</html>

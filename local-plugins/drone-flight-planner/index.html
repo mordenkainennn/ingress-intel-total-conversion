@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC Plugin: Drone Flight Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+            z-index: 1000;
+        }
+
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+        }
+
+        .lang-switch span {
+            color: #fff;
+            font-family: 'Coda', cursive;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Coda', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.4em;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 1.7em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 32px;
+        }
+
+        h3 {
+            font-size: 1.1em;
+            color: #ffce00;
+            margin-top: 20px;
+        }
+
+        p,
+        li {
+            color: #ccc;
+        }
+
+        strong {
+            color: #ffce00;
+        }
+
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        pre {
+            background-color: #111;
+            border: 1px solid #333;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        pre code {
+            border: none;
+            padding: 0;
+            background: transparent;
+            color: #aaddff;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid #233;
+            padding: 8px 6px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            color: #ffce00;
+        }
+
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 14px;
+            border-radius: 4px;
+            margin: 16px 0;
+        }
+
+        .warn {
+            background-color: rgba(180, 40, 40, 0.2);
+            border: 1px solid #ff6666;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .panel {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid #244;
+            border-radius: 4px;
+            padding: 12px;
+        }
+
+        @media (max-width: 900px) {
+            .lang-switch {
+                position: static;
+                margin: 0 auto 12px auto;
+                width: fit-content;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="lang-switch">
+        <span>English</span> | <a href="index_zh-cn.html">简体中文</a> | <a href="index_ja.html">日本語</a>
+    </div>
+
+    <div class="container">
+        <h1>Drone Flight Planner</h1>
+
+        <p>
+            <strong>Drone Flight Planner</strong> is an IITC planning plugin for building long drone movement routes
+            from portals currently loaded on the map.
+            It supports classic distance based routing and an S2 based visibility model, so you can optimize for fewer
+            hops, fewer key jumps, or balanced plans with better practical playability.
+        </p>
+
+        <div class="note">
+            <p>
+                <strong>Credits:</strong> Original concept and plugin by
+                <a href="https://www.youtube.com/@57Cell" target="_blank">57Cell</a>.
+                Extended and maintained by
+                <a href="https://gongjupal.com/ingress/" target="_blank">Cloverjune</a>,
+                including the S2 mechanics workflow and performance focused improvements.
+            </p>
+        </div>
+
+        <h2>What It Does</h2>
+        <ul>
+            <li>Scans portals inside your current map viewport and builds a reachability graph.</li>
+            <li>Lets you choose a start portal and computes a long outbound route.</li>
+            <li>Draws route lines and summary text directly inside the plugin dialog.</li>
+            <li>Supports JSON export/import for plan transfer and backup.</li>
+            <li>Autosaves your latest computed plan to browser localStorage for fast restore after refresh.</li>
+            <li>Shows optional tactical overlays, including S2 active grid and one way jump warnings.</li>
+        </ul>
+
+        <h2>Planning Workflow</h2>
+        <ol style="padding-left: 28px;">
+            <li>Open the plugin from toolbox: <code>Plan Drone Flight</code>.</li>
+            <li>Move map to your target area and click <code>Use Portals In View</code>.</li>
+            <li>Select a start portal on map (the plugin highlights start choices).</li>
+            <li>Choose planning options (goal, algorithm, S2 settings, key policy).</li>
+            <li>Read the generated route text and inspect drawn links on map layers.</li>
+            <li>Use <code>Export Plan</code> to keep a copy, then clear cache if needed.</li>
+        </ol>
+
+        <h2>Option Reference</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Group</th>
+                    <th>Option</th>
+                    <th>Meaning</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Optimization Goal</td>
+                    <td><code>Min Hops</code> / <code>Balanced</code> / <code>Min Keys</code></td>
+                    <td>Controls preference between total hop count and expensive long key jumps.</td>
+                </tr>
+                <tr>
+                    <td>Search Algorithm</td>
+                    <td><code>None</code>, <code>Greedy</code>, <code>Balanced</code>, <code>Perfect</code></td>
+                    <td>Trade off speed and result quality. <code>Perfect</code> is slowest and most exhaustive.</td>
+                </tr>
+                <tr>
+                    <td>S2 Mechanics</td>
+                    <td><code>Use S2 Mechanics</code></td>
+                    <td>Switches from simple radius checks to S2 cell based visibility logic.</td>
+                </tr>
+                <tr>
+                    <td>S2 Detail</td>
+                    <td><code>S2 Level</code> (16 or 17)</td>
+                    <td>Sets active S2 grid granularity used for reachability and warnings.</td>
+                </tr>
+                <tr>
+                    <td>Scanner Constraint</td>
+                    <td><code>Scanner View Radius (m)</code></td>
+                    <td>Defines drone visibility radius for S2 calculations (default 550m).</td>
+                </tr>
+                <tr>
+                    <td>Tactical Overlays</td>
+                    <td><code>Show One-Way Warnings</code>, <code>Display Active Grid</code></td>
+                    <td>Adds map feedback for difficult reverse jumps and current active S2 cell.</td>
+                </tr>
+                <tr>
+                    <td>Long Jumps</td>
+                    <td><code>Allow Keys (&lt;1.25km)</code> / <code>No Keys</code></td>
+                    <td>Enables or disables jumps longer than scanner range and up to hard cap 1.25km.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Buttons and Actions</h2>
+        <div class="two-col">
+            <div class="panel">
+                <h3>Plan Controls</h3>
+                <ul>
+                    <li><code>Use Portals In View</code>: ingest currently loaded portals.</li>
+                    <li><code>Switch End to Start</code>: continue planning from current route end.</li>
+                    <li><code>Export to DrawTools</code>: sends route segments to DrawTools layer.</li>
+                    <li><code>Export Plan</code>: downloads <code>iitc-drone-plan.json</code>.</li>
+                    <li><code>Import Plan</code>: loads compatible JSON plan data.</li>
+                </ul>
+            </div>
+            <div class="panel">
+                <h3>Cache Controls</h3>
+                <ul>
+                    <li><code>Clear Start</code>: clears chosen start without full cache reset.</li>
+                    <li><code>Clear Unused</code>: keep only main path portals.</li>
+                    <li><code>Clear Most</code>: keep main path plus nearby neighbors.</li>
+                    <li><code>Clear All</code>: clear route cache and remove autosaved plan key.</li>
+                    <li><code>More Info</code>: plugin credits, storage usage, and safety tips.</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2>Data Storage and Safety</h2>
+        <p>
+            The plugin stores settings and autosaved plan data in localStorage:
+            <code>plugin-drone-flight-planner-settings</code> and <code>drone-flight-plan-autosave</code>.
+            Large plans can consume significant storage space over time.
+        </p>
+
+        <div class="note warn">
+            <p>
+                <strong>Important:</strong> localStorage quota is shared across IITC plugins in your browser.
+                If quota is exhausted, other plugins may fail to save state. Use a regular maintenance cycle:
+                <code>Export Plan</code> then <code>Clear All</code>.
+            </p>
+        </div>
+
+        <h2>JSON Plan Format</h2>
+        <p>Exported plans include a compact structure with path and minimal portal dictionary:</p>
+        <pre><code>{
+  "name": "Drone Flight Plan",
+  "version": "1.0",
+  "startPortalGuid": "....",
+  "path": ["guid1", "guid2", "guid3"],
+  "graph": { "guid1": ["guid2"] },
+  "portals": {
+    "guid1": { "name": "Portal A", "lat": 35.0, "lng": 139.0 }
+  }
+}</code></pre>
+        <p>
+            Imported plans reconstruct required portal entries even if those portals are not currently loaded on screen.
+            This allows route continuation after reload and device transfer.
+        </p>
+
+        <h2>Performance Notes</h2>
+        <ul>
+            <li>Route quality and runtime depend heavily on portal density in current viewport.</li>
+            <li><code>Perfect</code> mode uses time sliced processing to reduce UI freezing, but remains heavy on dense
+                maps.</li>
+            <li>Use <code>Clear Unused</code> or <code>Clear Most</code> during iterative planning to reduce graph size.
+            </li>
+            <li>If map redraw feels slow, disable overlays you do not need (<code>Display Active Grid</code>, warning
+                layers).</li>
+        </ul>
+
+        <h2>Author Links</h2>
+        <ul>
+            <li>57Cell (original): <a href="https://www.youtube.com/@57Cell" target="_blank">YouTube channel</a></li>
+            <li>Cloverjune (current maintainer): <a href="https://gongjupal.com/ingress/"
+                    target="_blank">https://gongjupal.com/ingress/</a></li>
+        </ul>
+    </div>
+</body>
+
+</html>

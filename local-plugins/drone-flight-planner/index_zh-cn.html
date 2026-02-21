@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC 插件: 无人机飞行规划器 (Drone Flight Planner)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', 'Noto Sans SC', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+            z-index: 1000;
+        }
+
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+        }
+
+        .lang-switch span {
+            color: #fff;
+            font-family: 'Coda', cursive;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Coda', 'Noto Sans SC', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.4em;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 1.7em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 32px;
+        }
+
+        h3 {
+            font-size: 1.1em;
+            color: #ffce00;
+            margin-top: 20px;
+        }
+
+        p,
+        li {
+            color: #ccc;
+        }
+
+        strong {
+            color: #ffce00;
+        }
+
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        pre {
+            background-color: #111;
+            border: 1px solid #333;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        pre code {
+            border: none;
+            padding: 0;
+            background: transparent;
+            color: #aaddff;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid #233;
+            padding: 8px 6px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            color: #ffce00;
+        }
+
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 14px;
+            border-radius: 4px;
+            margin: 16px 0;
+        }
+
+        .warn {
+            background-color: rgba(180, 40, 40, 0.2);
+            border: 1px solid #ff6666;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .panel {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid #244;
+            border-radius: 4px;
+            padding: 12px;
+        }
+
+        @media (max-width: 900px) {
+            .lang-switch {
+                position: static;
+                margin: 0 auto 12px auto;
+                width: fit-content;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="lang-switch">
+        <a href="index.html">English</a> | <span>简体中文</span> | <a href="index_ja.html">日本語</a>
+    </div>
+
+    <div class="container">
+        <h1>无人机飞行规划器</h1>
+
+        <p>
+            <strong>Drone Flight Planner</strong> 是一个 IITC 规划插件，用于从当前地图上加载的 Portal 构建长距离的无人机移动路线。
+            它支持经典的基于距离的路由以及基于 S2 的可见性模型，通过此插件，您可以优化更少的跳数、更少的长距离跳跃（需要钥匙），或者制定更具实际可玩性的平衡计划。
+        </p>
+
+        <div class="note">
+            <p>
+                <strong>鸣谢:</strong> 最初概念和插件代码由 <a href="https://www.youtube.com/@57Cell" target="_blank">57Cell</a> 创作。
+                由 <a href="https://gongjupal.com/ingress/" target="_blank">Cloverjune</a> 扩展和维护，包含 S2 机制工作流以及专注于性能的改进。
+            </p>
+        </div>
+
+        <h2>功能特性</h2>
+        <ul>
+            <li>扫描当前地图视口内的 Portal 并建立可达性图（reachability graph）。</li>
+            <li>让您选择一个起点 Portal，并计算出一条向外延伸的路线。</li>
+            <li>直接在插件的对话框内绘制路线线条并显示摘要文本。</li>
+            <li>支持 JSON 导出导入功能，以便用于路线转存和备份。</li>
+            <li>将最新计算的路线随时保存到浏览器的 localStorage 中，刷新后可快速恢复。</li>
+            <li>在地图上提供可选的战术叠加层，包括实时 S2 网格和单向跳跃警告。</li>
+        </ul>
+
+        <h2>规划工作流</h2>
+        <ol style="padding-left: 28px;">
+            <li>从侧边栏（toolbox）中打开插件: <code>Plan Drone Flight</code>。</li>
+            <li>移动地图到目标区域，然后点击 <code>Use Portals In View</code>（使用视口内 Portal）。</li>
+            <li>在地图上选定起飞 Portal (插件会高亮可供选择的起点)。</li>
+            <li>选择路线规划选项（包括目标偏好、算法、S2 设置以及 Key 使用策略）。</li>
+            <li>阅读生成的路线文本并检查地图图层上绘制的链接线。</li>
+            <li>如果您需要保存结果，使用 <code>Export Plan</code> 导出一份副本，完成操作后请根据需要清空缓存。</li>
+        </ol>
+
+        <h2>选项参考</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>分组</th>
+                    <th>选项</th>
+                    <th>含义</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>优化目标<br>(Optimization Goal)</td>
+                    <td><code>Min Hops</code> / <code>Balanced</code> / <code>Min Keys</code></td>
+                    <td>控制在较少的跳数与较少的耗费钥匙的长跳之间的偏好。</td>
+                </tr>
+                <tr>
+                    <td>搜索算法<br>(Search Algorithm)</td>
+                    <td><code>None</code>, <code>Greedy</code>, <code>Balanced</code>, <code>Perfect</code></td>
+                    <td>在计算速度和结果质量之间进行权衡。<code>Perfect</code> 是最缓慢但也是最详尽耗时的。</td>
+                </tr>
+                <tr>
+                    <td>S2 机制<br>(S2 Mechanics)</td>
+                    <td><code>Use S2 Mechanics</code></td>
+                    <td>开启后，从简单的范围半径检查切换为基于 S2 单元的能见度逻辑。</td>
+                </tr>
+                <tr>
+                    <td>S2 细节<br>(S2 Detail)</td>
+                    <td><code>S2 Level</code> (16 or 17)</td>
+                    <td>设置当前用于可达性判断与警报显示的激活 S2 网格大小（通常设为 16）。</td>
+                </tr>
+                <tr>
+                    <td>Scanner 限制<br>(Scanner Constraint)</td>
+                    <td><code>Scanner View Radius (m)</code></td>
+                    <td>指定无人机用于 S2 计算时的可视半径，默认设为 550m。</td>
+                </tr>
+                <tr>
+                    <td>战术叠加层<br>(Tactical Overlays)</td>
+                    <td><code>Show One-Way Warnings</code>, <code>Display Active Grid</code></td>
+                    <td>在地图上为有去无回的跳跃添加相应的视觉提醒，并展示当前生效的 S2 单元网格。</td>
+                </tr>
+                <tr>
+                    <td>长距离跳跃<br>(Long Jumps)</td>
+                    <td><code>Allow Keys (&lt;1.25km)</code> / <code>No Keys</code></td>
+                    <td>允许或禁止超过扫描仪范围并高达强制硬上限(1.25km)以内的长跳动作。</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>按钮与操作</h2>
+        <div class="two-col">
+            <div class="panel">
+                <h3>计划控制 (Plan Controls)</h3>
+                <ul>
+                    <li><code>Use Portals In View</code>: 获取当前屏幕上所有已加载的 Portal。</li>
+                    <li><code>Switch End to Start</code>: 将当前的路线终点倒转为起点以继续规划路线。</li>
+                    <li><code>Export to DrawTools</code>: 将生成的路线线段发送到 DrawTools 图层。</li>
+                    <li><code>Export Plan</code>: 下载 <code>iitc-drone-plan.json</code>。</li>
+                    <li><code>Import Plan</code>: 导入适配的 JSON 路线计划数据文件。</li>
+                </ul>
+            </div>
+            <div class="panel">
+                <h3>缓存控制 (Cache Controls)</h3>
+                <ul>
+                    <li><code>Clear Start</code>: 清除刚才选定的起点而不用完全重置状态缓存。</li>
+                    <li><code>Clear Unused</code>: 将计算图缩减至仅保留主要路线经过的 Portal。</li>
+                    <li><code>Clear Most</code>: 清除除主干路线外加上附近邻近 Portal 之后的所有点。</li>
+                    <li><code>Clear All</code>: 全部清空规划缓存并移除对应自动保存的项。</li>
+                    <li><code>More Info</code>: 查看原作者页面，包括存储使用提示与防患警告。</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2>数据存储与安全性</h2>
+        <p>
+            插件在浏览器本地 localStorage 存储配置和状态:
+            <code>plugin-drone-flight-planner-settings</code> 和 <code>drone-flight-plan-autosave</code>。
+            随着时间推移，生成的庞大路线计划占用可能不小。
+        </p>
+
+        <div class="note warn">
+            <p>
+                <strong>⚠️警告:</strong> localStorage 额度是在浏览器内与其他所有 IITC 插件共享使用的。
+                如果存储额度耗尽了，系统环境内的别的插件可能会遭遇无法正常存放配置的异常。保持一个常规的习惯操作：如果用完了进行路线分享：<code>Export Plan</code> ，然后手动点击
+                <code>Clear All</code> 清除释放所占用的内容以策完全！
+            </p>
+        </div>
+
+        <h2>JSON 计划格式</h2>
+        <p>导出的计划文件包含了路线信息以及一个十分小巧的 Portal 数据字典表:</p>
+        <pre><code>{
+  "name": "Drone Flight Plan",
+  "version": "1.0",
+  "startPortalGuid": "....",
+  "path": ["guid1", "guid2", "guid3"],
+  "graph": { "guid1": ["guid2"] },
+  "portals": {
+    "guid1": { "name": "Portal A", "lat": 35.0, "lng": 139.0 }
+  }
+}</code></pre>
+        <p>
+            就算原计划路线上的 Portal 都不在视野可视区域（或者没加载等），导入这个结构之后也能完完全全将被隐去部分复原并在地图重新构建显示出来。
+            支持借此恢复之前的计算记录甚至将计划档案直接在多台移动设备之间互相分享操作。
+        </p>
+
+        <h2>性能说明(Performance Notes)</h2>
+        <ul>
+            <li>最终获得规划路线与算力运行表现完全取决于当前屏幕展示地图视差内的基站密集度状况（范围同理）。</li>
+            <li><code>Perfect</code> 算法模式为了防止堵塞 UI 主线程，使用时间片分片切割策略跑后台任务执行。即便如此密集基站群也由于量大势必极其漫长等待导致地图发闷假死。</li>
+            <li>反复来回调教寻找适合落点并多发尝试生成线路迭代的情况下，适时依靠点击 <code>Clear Unused</code> 或者 <code>Clear Most</code>
+                清内存按钮可以明显减轻由于大量点构筑运算耗费卡顿的副作用。</li>
+            <li>假如你明显感受地图加载卡卡的时候（拉扯刷新有停滞撕裂错觉等），可以进入选项界面把用不到的指示网格和一些预警提示（像 <code>Display Active Grid</code>
+                ）给先按黑即可立竿见影缓解症状。</li>
+        </ul>
+
+        <h2>作者链接</h2>
+        <ul>
+            <li>57Cell (初代作者): <a href="https://www.youtube.com/@57Cell" target="_blank">YouTube 频道</a></li>
+            <li>Cloverjune (现在接管者与维护人): <a href="https://gongjupal.com/ingress/"
+                    target="_blank">https://gongjupal.com/ingress/</a></li>
+        </ul>
+    </div>
+</body>
+
+</html>
