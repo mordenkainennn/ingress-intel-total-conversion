@@ -2,7 +2,7 @@
 // @id             iitc-plugin-player-activity-log
 // @name           IITC plugin: Player Activity Log
 // @category       Info
-// @version        0.8.1
+// @version        0.8.2
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/player-activity-log/player-activity-log.meta.js
 // @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/player-activity-log/player-activity-log.user.js
@@ -11,6 +11,8 @@
 // @match          https://intel.ingress.com/*
 // @grant          none
 // ==/UserScript==
+
+const { version } = require("react");
 
 function wrapper(plugin_info) {
     // Ensure plugin framework is there, even if iitc is not yet loaded
@@ -22,6 +24,13 @@ function wrapper(plugin_info) {
     window.plugin.playerActivityLog = function () { };
 
     var changelog = [
+        {
+            version: '0.8.2',
+            changes: [
+                'FIX: missing API',
+            ],
+        },
+
         {
             version: '0.8.1',
             changes: [
@@ -237,6 +246,20 @@ function wrapper(plugin_info) {
             localStorage.setItem(window.plugin.playerActivityLog.STORAGE_KEY, JSON.stringify(normalized.logData));
         }
         return normalized.logData;
+    };
+
+    // 暴露给其他插件（如 recharge-monitor）使用的异步 API
+    window.plugin.playerActivityLog.getAllActivities = async function () {
+        var logData = window.plugin.playerActivityLog.loadLogData();
+        var allActivities = [];
+        Object.keys(logData).forEach(function (playerName) {
+            var player = logData[playerName];
+            if (player && Array.isArray(player.activities)) {
+                // 将所有玩家的活动记录合并到一个数组中
+                allActivities = allActivities.concat(player.activities);
+            }
+        });
+        return allActivities;
     };
 
     window.plugin.playerActivityLog.countActivities = function (logData) {
