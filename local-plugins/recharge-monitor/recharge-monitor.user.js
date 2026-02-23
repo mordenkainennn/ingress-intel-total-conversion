@@ -2,7 +2,7 @@
 // @id             iitc-plugin-recharge-monitor
 // @name           IITC plugin: Recharge Monitor & Decay Predictor
 // @category       Info
-// @version        0.4.3
+// @version        0.4.4
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/recharge-monitor/recharge-monitor.meta.js
 // @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/recharge-monitor/recharge-monitor.user.js
@@ -13,6 +13,8 @@
 // @grant          none
 // ==/UserScript==
 
+const { version } = require("react");
+
 function wrapper(plugin_info) {
 
     if (typeof window.plugin !== 'function') window.plugin = function () { };
@@ -22,6 +24,12 @@ function wrapper(plugin_info) {
     plugin_info.pluginId = 'recharge-monitor';
 
     var changelog = [
+        {
+            version: '0.4.4',
+            changes: [
+                'UPD: Improved user feedback during the sync process, including a summary of how many portals were updated.',
+            ],
+        },
         {
             version: '0.4.3',
             changes: [
@@ -263,7 +271,7 @@ function wrapper(plugin_info) {
         const activities = await logPlugin.getAllActivities();
 
         if (!activities || activities.length === 0) {
-            return targetGuid ? null : alert('Sync Complete. (No records found in Activity Log)');
+            return targetGuid ? null : alert('Sync Complete.\nNo records found in Activity Log.');
         }
 
         const events = activities.map(act => ({
@@ -276,8 +284,9 @@ function wrapper(plugin_info) {
 
         events.sort((a, b) => a.time - b.time);
 
+        // Modified to return true if the capture time was updated
         const processPortal = (guid, pData) => {
-            if (!pData || !pData.latlng) return;
+            if (!pData || !pData.latlng) return false;
             const pLat = typeof pData.latlng.lat !== 'undefined' ? pData.latlng.lat : pData.latlng[0];
             const pLng = typeof pData.latlng.lng !== 'undefined' ? pData.latlng.lng : pData.latlng[1];
             let bestCaptureTime = 0, lastActivityTime = 0, foundMatch = false;
@@ -295,16 +304,33 @@ function wrapper(plugin_info) {
                 let newTime = bestCaptureTime > 0 ? bestCaptureTime : lastActivityTime;
                 if (newTime > 0 && (newTime !== pData.captureTime)) {
                     pData.captureTime = newTime;
+                    return true; // Successfully updated
                 }
             }
+            return false; // No update needed or found
         };
 
+        let updatedCount = 0;
+
         if (targetGuid) {
-            processPortal(targetGuid, self.data[targetGuid]);
+            if (processPortal(targetGuid, self.data[targetGuid])) {
+                updatedCount++;
+            }
         } else {
-            for (const guid in self.data) processPortal(guid, self.data[guid]);
-            alert('Sync Complete.');
+            for (const guid in self.data) {
+                if (processPortal(guid, self.data[guid])) {
+                    updatedCount++;
+                }
+            }
+
+            // Display the summary report to the user
+            if (updatedCount > 0) {
+                alert(`Sync Complete.\nSuccessfully corrected the capture time for ${updatedCount} portal(s).`);
+            } else {
+                alert(`Sync Complete.\nNo new capture times were found or updated for the portals in your watchlist.`);
+            }
         }
+
         self.save();
         self.showList();
     };
