@@ -3,7 +3,7 @@
 // @author         3ch01c, cloverjune
 // @name           Uniques Tools
 // @category       Misc
-// @version        1.6.9
+// @version        1.6.14
 // @description    Modified version of the stock Uniques plugin to add support for Drone view, manual entry, and import of portal history.
 // @id             uniques-tools
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -23,13 +23,48 @@ function wrapper(plugin_info) {
     //PLUGIN AUTHORS: writing a plugin outside of the IITC build environment? if so, delete these lines!!
     //(leaving them in place might break the 'About IITC' page or break update checks)
     plugin_info.buildName = 'local';
-    plugin_info.dateTimeVersion = '20260220.120000'; // Updated date
+    plugin_info.dateTimeVersion = '20260226.170000'; // Updated date
     plugin_info.pluginId = 'uniques-tools';
     //END PLUGIN AUTHORS NOTE
 
     /* exported setup, changelog --eslint */
 
     var changelog = [
+        {
+            version: '1.6.14',
+            changes: [
+                'UPD: Added startup log for "Find Last Location" to confirm click path execution.',
+                'UPD: Unified loaded/off-screen navigation through zoomToAndShowPortal.',
+            ],
+        },
+        {
+            version: '1.6.13',
+            changes: [
+                'FIX: Added timeout guard for Portal DB lookup to prevent silent hangs.',
+                'UPD: "Find Last Location" now uses zoomToAndShowPortal for more reliable off-screen navigation.',
+            ],
+        },
+        {
+            version: '1.6.12',
+            changes: [
+                'FIX: "Find Last Location" now queries Portal DB first (when available), then falls back to portalDetail.',
+                'FIX: Added timeout guard for portalDetail lookup to prevent silent hangs.',
+            ],
+        },
+        {
+            version: '1.6.11',
+            changes: [
+                'FIX: "Find Last Location" now falls back to Portal DB when portalDetail.request() is rejected (previously failed silently).',
+                'UPD: Added warning logs for failed detail/Portal DB lookups to aid troubleshooting.',
+            ],
+        },
+        {
+            version: '1.6.10',
+            changes: [
+                'NEW: Integrated with Portal DB plugin to reliably retrieve missing portal coordinates for the "Find Last Location" feature.',
+                'NEW: Added a tip in the settings dialog suggesting the installation of Portal DB.',
+            ],
+        },
         {
             version: '1.6.9',
             changes: [
@@ -142,27 +177,82 @@ function wrapper(plugin_info) {
         self.loadLocal('uniques');
         self.loadDroneHistoryFromUniques();
         self.updateDroneMarkers();
+        console.info('[uniques-tools] Find Last Location triggered. History size =', self.droneLocationHistory.length, 'Latest GUID =', self.droneLocationHistory[0] || null);
 
         if (self.droneLocationHistory.length > 0) {
             var guid = self.droneLocationHistory[0];
             var portal = window.portals[guid];
+            var zoomToPortalCoords = function (latE6, lngE6) {
+                var lat = latE6 / 1E6;
+                var lng = lngE6 / 1E6;
+                window.zoomToAndShowPortal(guid, [lat, lng]);
+            };
+            var lookupByPortalDetail = function (reason) {
+                var settled = false;
+                var timeoutId = setTimeout(function () {
+                    if (settled) return;
+                    settled = true;
+                    console.warn('[uniques-tools] portalDetail.request timed out for last drone location', guid, reason || '');
+                    alert('Could not fetch details for the last drone location (request timed out).');
+                }, 8000);
+
+                window.portalDetail.request(guid).then(function (details) {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timeoutId);
+
+                    if (details && details.latE6 !== undefined && details.lngE6 !== undefined) {
+                        zoomToPortalCoords(details.latE6, details.lngE6);
+                    } else {
+                        console.warn('[uniques-tools] portalDetail returned empty coordinates for last drone location', guid, reason || '');
+                        alert('Could not fetch details for the last drone location.');
+                    }
+                }, function (err) {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timeoutId);
+                    console.warn('[uniques-tools] portalDetail.request failed for last drone location', guid, err, reason || '');
+                    alert('Could not fetch details for the last drone location.');
+                });
+            };
 
             if (portal) {
                 // Portal is loaded
-                window.map.setView(portal.getLatLng(), 17);
-                if (window.selectedPortal !== guid) window.selectPortal(guid);
+                var loadedLatLng = portal.getLatLng();
+                window.zoomToAndShowPortal(guid, [loadedLatLng.lat, loadedLatLng.lng]);
             } else {
-                // Portal is NOT loaded, fetch detail
-                window.portalDetail.request(guid).then(function (details) {
-                    if (details) {
-                        var lat = details.latE6 / 1E6;
-                        var lng = details.lngE6 / 1E6;
-                        window.map.setView([lat, lng], 17);
-                        if (window.selectedPortal !== guid) window.selectPortal(guid);
-                    } else {
-                        alert('Could not fetch details for the last drone location.');
-                    }
-                });
+                // Portal is NOT loaded:
+                // 1) Prefer Portal DB (fast local lookup, avoids network/request-queue stalls)
+                // 2) Fallback to portalDetail request if DB has no coordinates
+                if (window.plugin.portalDB && typeof window.plugin.portalDB.getPortal === 'function') {
+                    var dbSettled = false;
+                    var dbTimeoutId = setTimeout(function () {
+                        if (dbSettled) return;
+                        dbSettled = true;
+                        console.warn('[uniques-tools] Portal DB lookup timed out for last drone location', guid);
+                        lookupByPortalDetail('Portal DB lookup timed out');
+                    }, 4000);
+
+                    window.plugin.portalDB.getPortal(guid).then(function (dbPortal) {
+                        if (dbSettled) return;
+                        dbSettled = true;
+                        clearTimeout(dbTimeoutId);
+
+                        if (dbPortal && dbPortal.latE6 !== undefined && dbPortal.lngE6 !== undefined) {
+                            zoomToPortalCoords(dbPortal.latE6, dbPortal.lngE6);
+                        } else {
+                            lookupByPortalDetail('Portal DB had no coordinates');
+                        }
+                    }).catch(function (err) {
+                        if (dbSettled) return;
+                        dbSettled = true;
+                        clearTimeout(dbTimeoutId);
+                        console.warn('[uniques-tools] Portal DB lookup failed for last drone location', guid, err);
+                        lookupByPortalDetail('Portal DB lookup failed');
+                    });
+                } else {
+                    lookupByPortalDetail('Portal DB unavailable');
+                }
             }
         } else {
             alert('No drone history found.');
@@ -198,6 +288,16 @@ function wrapper(plugin_info) {
                     if (details) {
                         var latlng = L.latLng(details.latE6 / 1E6, details.lngE6 / 1E6);
                         drawCircleForGuid(latlng, details.title);
+                    } else {
+                        // fallback for marker/range rendering too
+                        if (window.plugin.portalDB && typeof window.plugin.portalDB.getPortal === 'function') {
+                            window.plugin.portalDB.getPortal(guid).then(function (dbPortal) {
+                                if (dbPortal && dbPortal.latE6 !== undefined && dbPortal.lngE6 !== undefined) {
+                                    var dbLatLng = L.latLng(dbPortal.latE6 / 1E6, dbPortal.lngE6 / 1E6);
+                                    drawCircleForGuid(dbLatLng, dbPortal.title || guid);
+                                }
+                            });
+                        }
                     }
                 });
             }
@@ -629,8 +729,13 @@ function wrapper(plugin_info) {
     self.openUniquesToolsDialog = function () {
         var warningHTML = '';
         if (window.plugin.uniques) {
-            warningHTML = '<div style="color: red; margin-bottom: 10px;">'
+            warningHTML += '<div style="color: red; margin-bottom: 10px;">'
                 + '<b>Warning:</b> Conflicting "Uniques" plugin active.<br>Disable it to prevent issues.'
+                + '</div>';
+        }
+        if (!window.plugin.portalDB) {
+            warningHTML += '<div style="color: #ff9900; margin-bottom: 10px;">'
+                + '<b>Tip:</b> Portal DB plugin is not installed. Installing it can improve "Find Last Location" reliability.'
                 + '</div>';
         }
 
