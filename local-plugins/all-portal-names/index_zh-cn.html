@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC 插件: All Portal Names</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', 'Noto Sans SC', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+            z-index: 1000;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Coda', 'Noto Sans SC', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+             font-size: 1.2em;
+             color: #ffce00;
+             margin-top: 20px;
+        }
+        p, li {
+            color: #ccc;
+        }
+        strong {
+            color: #ffce00;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 8px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+        .zoom-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .zoom-table th, .zoom-table td {
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: left;
+        }
+        .zoom-table th {
+            color: #ffce00;
+            background: rgba(255, 206, 0, 0.1);
+        }
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index.html">English</a> | <a href="index_ja.html">日本語</a>
+    </div>
+
+    <div class="container">
+        <h1>All Portal Names</h1>
+
+        <p><strong>All Portal Names</strong> 是对原始 "Portal Names" 插件的增强款。它允许用户在地图上强制显示所有 Portal 名称，绕过默认的碰撞检测机制（该机制在大范围 Portal 密集分布时会自动隐藏重叠的标签）。</p>
+        
+        <h2>功能特性</h2>
+        <ul>
+            <li><strong>碰撞检测绕过：</strong> 开启后，无论区域内 Portal 有多密集，都会显示每一个名称。</li>
+            <li><strong>缩放等级门槛：</strong> 设置特定的缩放等级来触发“显示全部”行为，防止在远距离视角下地图被文字淹没。</li>
+            <li><strong>设置持久化：</strong> 您的偏好设置将自动保存到浏览器的 <code>localStorage</code> 中。</li>
+            <li><strong>快速开关：</strong> 直接在 IITC 侧边栏（Toolbox）中访问设置对话框。</li>
+        </ul>
+
+        <h2>理解缩放等级 (Zoom Levels)</h2>
+        <p>Ingress Intel (及 IITC) 的缩放等级代表了地图的放大倍率。数字越大，表示您距离地面越近。</p>
+        
+        <table class="zoom-table">
+            <thead>
+                <tr>
+                    <th>缩放等级</th>
+                    <th>Intel 数据详情</th>
+                    <th>视觉语境描述</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>13 - 14</td>
+                    <td>主要的 Link/Field</td>
+                    <td>城市视图。远距离。</td>
+                </tr>
+                <tr>
+                    <td>15</td>
+                    <td>L4+ Portal</td>
+                    <td>社区/邻里级别。</td>
+                </tr>
+                <tr>
+                    <td>16</td>
+                    <td>所有 Portal</td>
+                    <td>街道视图。<strong>默认</strong>推荐的门槛等级。</td>
+                </tr>
+                <tr>
+                    <td>17 - 18</td>
+                    <td>详细数据</td>
+                    <td>街区视图。极其拥挤的区域。</td>
+                </tr>
+                <tr>
+                    <td>20+</td>
+                    <td>微观数据</td>
+                    <td>单个 Portal 的精确位置。</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="note">
+            <p><strong>为什么要设置门槛？</strong> 在缩放等级为 13 或 14 时，地图上可能出现数以千计的 Portal。如果强制显示全部名称，不仅会导致地图被文字完全覆盖，还可能显著拖慢您的浏览器性能。建议将门槛设置为 <strong>16 或更高</strong>。</p>
+        </div>
+
+        <h2>如何使用</h2>
+        <ol>
+            <li>在 IITC 侧边栏（Toolbox）中找到 <strong>"All Portal Names"</strong> 链接并点击。</li>
+            <li>勾选 <strong>"Enable showing ALL portal names"</strong> (显示所有 Portal 名称)。</li>
+            <li>设置 <strong>Minimum Zoom Level</strong> (最小缩放等级，例如：16)。</li>
+            <li>点击 <strong>Save</strong> (保存)。地图会立即刷新并按照新规则显示标签。</li>
+        </ol>
+
+        <h2>更新日志</h2>
+        <h3>版本 0.5.0</h3>
+        <ul>
+            <li>首个独立发布版本。</li>
+            <li>新增设置对话框（包含启用/禁用开关）。</li>
+            <li>新增缩放等级门槛控制。</li>
+            <li>优化了不同缩放行为下的碰撞逻辑处理。</li>
+        </ul>
+    </div>
+</body>
+</html>

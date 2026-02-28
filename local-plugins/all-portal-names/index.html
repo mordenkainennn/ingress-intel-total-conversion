@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC Plugin: All Portal Names</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+            z-index: 1000;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Coda', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+             font-size: 1.2em;
+             color: #ffce00;
+             margin-top: 20px;
+        }
+        p, li {
+            color: #ccc;
+        }
+        strong {
+            color: #ffce00;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 8px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+        .zoom-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .zoom-table th, .zoom-table td {
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: left;
+        }
+        .zoom-table th {
+            color: #ffce00;
+            background: rgba(255, 206, 0, 0.1);
+        }
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index_zh-cn.html">简体中文</a> | <a href="index_ja.html">日本語</a>
+    </div>
+
+    <div class="container">
+        <h1>All Portal Names</h1>
+
+        <p><strong>All Portal Names</strong> is an enhancement for the original "Portal Names" plugin. It allows users to force display all portal names on the map, bypassing the default collision detection that hides overlapping labels.</p>
+        
+        <h2>Features</h2>
+        <ul>
+            <li><strong>Anti-Collision Bypass:</strong> When enabled, shows every portal name regardless of how crowded the area is.</li>
+            <li><strong>Zoom-Level Threshold:</strong> Set a specific zoom level to trigger the "Show All" behavior, preventing map clutter at far distances.</li>
+            <li><strong>Persistent Settings:</strong> Your preferences are saved in your browser's <code>localStorage</code>.</li>
+            <li><strong>Quick Toggle:</strong> Access settings directly from the IITC sidebar (Toolbox).</li>
+        </ul>
+
+        <h2>Understanding Zoom Levels</h2>
+        <p>Zoom levels in Ingress Intel (and IITC) represent the magnification of the map. Higher numbers mean you are zoomed in closer to the ground.</p>
+        
+        <table class="zoom-table">
+            <thead>
+                <tr>
+                    <th>Zoom Level</th>
+                    <th>Intel Data Detail</th>
+                    <th>Visibility Context</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>13 - 14</td>
+                    <td>Major Link/Fields</td>
+                    <td>City view. Far distance.</td>
+                </tr>
+                <tr>
+                    <td>15</td>
+                    <td>L4+ Portals</td>
+                    <td>Neighborhood view.</td>
+                </tr>
+                <tr>
+                    <td>16</td>
+                    <td>All Portals</td>
+                    <td>Street view. This is the <strong>default</strong> recommended threshold.</td>
+                </tr>
+                <tr>
+                    <td>17 - 18</td>
+                    <td>High Detail</td>
+                    <td>Block view. Extremely crowded areas.</td>
+                </tr>
+                <tr>
+                    <td>20+</td>
+                    <td>Micro Detail</td>
+                    <td>Individual portal precision.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="note">
+            <p><strong>Why use a threshold?</strong> At zoom levels like 13 or 14, thousands of portals may be visible. Showing all names would cover the entire map in text and potentially slow down your browser. We recommend setting the threshold to <strong>16 or higher</strong>.</p>
+        </div>
+
+        <h2>How to Use</h2>
+        <ol>
+            <li>Find the <strong>"All Portal Names"</strong> link in the sidebar (Toolbox) and click it.</li>
+            <li>Check <strong>"Enable showing ALL portal names"</strong>.</li>
+            <li>Set the <strong>Minimum Zoom Level</strong> (e.g., 16).</li>
+            <li>Click <strong>Save</strong>. The map will refresh and labels will appear according to your rules.</li>
+        </ol>
+
+        <h2>Changelog</h2>
+        <h3>Version 0.5.0</h3>
+        <ul>
+            <li>Initial standalone release.</li>
+            <li>Added Settings dialog with enable/disable toggle.</li>
+            <li>Added Zoom Level threshold control.</li>
+            <li>Fixed collision logic for various zoom behaviors.</li>
+        </ul>
+    </div>
+</body>
+</html>

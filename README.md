@@ -23,6 +23,7 @@ All custom-built and enhanced plugins are located in the `local-plugins/` direct
 | **Player Activity Log** | **Intel Tracking.** Logs player activities from COMM and visualizes movement trails on the map with time-based color coding. | [CN](./local-plugins/player-activity-log/index_zh-cn.html) / [EN](./local-plugins/player-activity-log/index.html) / [JA](./local-plugins/player-activity-log/index_ja.html) |
 | **Recharge Monitor** | **Strategic Defense.** Real-time health monitoring and decay prediction. Syncs with Activity Log to "vacuum" deployment times. | [CN](./local-plugins/recharge-monitor/index_zh-cn.html) / [EN](./local-plugins/recharge-monitor/index.html) / [JA](./local-plugins/recharge-monitor/index_ja.html) |
 | **Uniques Tools** | **History Tracking.** Enhanced version of "Uniques" with full Drone support, Scout Controller tracking, and official history import. | [CN](./local-plugins/uniques-tools/index_zh-cn.html) / [EN](./local-plugins/uniques-tools/index.html) / [JA](./local-plugins/uniques-tools/index_ja.html) |
+| **All Portal Names** | **Visual Clarity.** Forces display of all portal names regardless of overlap at a user-defined zoom level threshold. | [CN](./local-plugins/all-portal-name/index_zh-cn.html) / [EN](./local-plugins/all-portal-name/index.html) / [JA](./local-plugins/all-portal-name/index_ja.html) |
 
 ---
 

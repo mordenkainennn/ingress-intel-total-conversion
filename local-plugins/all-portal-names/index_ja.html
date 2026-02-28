@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC プラグイン: All Portal Names</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', 'Noto Sans JP', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+            z-index: 1000;
+        }
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Coda', 'Noto Sans JP', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+             font-size: 1.2em;
+             color: #ffce00;
+             margin-top: 20px;
+        }
+        p, li {
+            color: #ccc;
+        }
+        strong {
+            color: #ffce00;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 8px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+        .zoom-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .zoom-table th, .zoom-table td {
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: left;
+        }
+        .zoom-table th {
+            color: #ffce00;
+            background: rgba(255, 206, 0, 0.1);
+        }
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="index.html">English</a> | <a href="index_zh-cn.html">简体中文</a>
+    </div>
+
+    <div class="container">
+        <h1>All Portal Names</h1>
+
+        <p><strong>All Portal Names</strong> は、オリジナルの "Portal Names" プラグインを強化したものです。重なり合うポータル名を非表示にするデフォルトの衝突判定機能をバイパスし、マップ上のすべてのポータルを常に表示できるようにします。</p>
+        
+        <h2>主な機能</h2>
+        <ul>
+            <li><strong>衝突判定バイパス：</strong> 有効化すると、ポータルが密集しているエリアでもすべての名称が表示されます。</li>
+            <li><strong>ズームレベル閾値の設定：</strong> 特定のズームレベル以上で「全表示」をトリガーし、広範囲、遠距離表示時のマップ混乱を防ぎます。</li>
+            <li><strong>設定の永続化：</strong> 設定はブラウザの <code>localStorage</code> に自動的に保存されます。</li>
+            <li><strong>クイック接続：</strong> IITC サイドバー（Toolbox）から直接設定ダイヤログを開けます。</li>
+        </ul>
+
+        <h2>ズームレベルについて</h2>
+        <p>Ingress Intel (および IITC) のズームレベルは、地図の拡大倍率を表します。数字が大きいほど、地上に近くなります。</p>
+        
+        <table class="zoom-table">
+            <thead>
+                <tr>
+                    <th>レベル</th>
+                    <th>Intel データの詳細</th>
+                    <th>表示状況の説明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>13 - 14</td>
+                    <td>主要な Link/Field</td>
+                    <td>都市全体。遠距離。</td>
+                </tr>
+                <tr>
+                    <td>15</td>
+                    <td>L4+ ポータル</td>
+                    <td>周辺。</td>
+                </tr>
+                <tr>
+                    <td>16</td>
+                    <td>全ポータル</td>
+                    <td>市。<strong>推奨されるデフォルトの閾値レベル。</strong></td>
+                </tr>
+                <tr>
+                    <td>17 - 18</td>
+                    <td>詳細情報</td>
+                    <td>区、町。非常に密集したエリア。</td>
+                </tr>
+                <tr>
+                    <td>20+</td>
+                    <td>マイクロデータ</td>
+                    <td>個々のポータルの正確な位置。</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="note">
+            <p><strong>なぜ閾値を設定するのですか？</strong> ズームレベルが 13 や 14 の場合、数千ものポータルが表示される可能性があります。すべての名称を強制的に表示すると、マップ全体がテキストで覆われ、ブラウザのパフォーマンスが著しく低下する恐れがあります。閾値を <strong>16 以上</strong> に設定することをお勧めします。</p>
+        </div>
+
+        <h2>使いかた</h2>
+        <ol>
+            <li>IITC サイドバー（Toolbox）の <strong>"All Portal Names"</strong> リンクをクリックします。</li>
+            <li><strong>"Enable showing ALL portal names"</strong> にチェックを入れます。</li>
+            <li><strong>Minimum Zoom Level</strong> (例えば 16) を設定します。</li>
+            <li><strong>Save</strong> をクリックします。マップが更新され、設定に従ってラベルが表示されます。</li>
+        </ol>
+
+        <h2>更新履歴</h2>
+        <h3>Version 0.5.0</h3>
+        <ul>
+            <li>スタンドアロンバージョンとして新規リリース。</li>
+            <li>設定ダイヤログの追加。</li>
+            <li>ズームレベル閾値コントロールの追加。</li>
+            <li>ズーム挙動に応じた衝突ロジックの最適化。</li>
+        </ul>
+    </div>
+</body>
+</html>
