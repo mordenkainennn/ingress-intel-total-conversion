@@ -26,40 +26,29 @@
 
   <div class="container">
     <h1>Player Activity Log</h1>
-    <p>このプラグインは公開 COMM を監視し、プレイヤー行動ログをブラウザに保存します。</p>
+    <p>このプラグインは公開 COMM を監視し、解析したプレイヤー行動ログをブラウザに保存します。</p>
 
-    <h2>0.8.1 の更新</h2>
+    <h2>0.8.3 の更新</h2>
     <ul>
-      <li>インポート前に<strong>プレビュー統計</strong>を表示し、<strong>確認後</strong>に保存するようになりました。</li>
-      <li>JSON インポート/エクスポートをサポート。</li>
-      <li>CSV はエクスポートのみ対応（インポートは JSON のみ）。</li>
-      <li>重複除去は GUID 優先、GUID がない場合は指紋（player/time/activity/lat/lng）で判定。</li>
+      <li>NEW: 選択中 Portal の保持日数を toolbox に表示（<code>Activity Log（xxD）</code>）。</li>
+      <li>FIX: Portal 切替時の表示更新を改善し、中立 Portal では保持日数を非表示化。</li>
+      <li>NEW: プラグイン画面と紹介ページに免責事項を追加。</li>
     </ul>
 
-    <h2>使い方</h2>
-    <ol>
-      <li>ツールボックスの <strong>Activity Log</strong> を開く。</li>
-      <li><strong>Import</strong> で <code>.json</code> を選択。</li>
-      <li>表示されるプレビュー（追加件数・重複件数など）を確認。</li>
-      <li>確認後にマージして保存。</li>
-      <li>共有は <strong>Export JSON</strong>、表計算用途は <strong>Export CSV</strong> を使用。</li>
-    </ol>
+    <h2>Portal Held Time（保持日数表示）</h2>
+    <ul>
+      <li>現在占領中の Portal を選択すると、toolbox のリンクは <code>Activity Log（xxD）</code> と表示されます。</li>
+      <li><code>xxD</code> は、その Portal の最新 capture 記録から経過した日数（切り捨て）です。</li>
+      <li>ローカルに capture 記録がない場合、または中立 Portal の場合は <code>Activity Log</code> のままです。</li>
+    </ul>
 
     <div class="note">
       データはローカル保存です。端末間同期はありません。定期的にエクスポートしてバックアップしてください。
     </div>
 
-    <h2>Changelog</h2>
-    <h3>Version 0.8.1</h3>
-    <ul>
-      <li>NEW: インポート前プレビュー/確認ダイアログを追加。</li>
-    </ul>
-    <h3>Version 0.8.0</h3>
-    <ul>
-      <li>NEW: JSON import/export。</li>
-      <li>UPD: CSV export 継続。</li>
-      <li>NEW: GUID + 指紋ベースの重複除去マージ。</li>
-    </ul>
+    <div class="note">
+      <strong>免責事項：</strong>この表示はローカル記録データに基づく推定であり、完全性や正確性は保証されません。
+    </div>
   </div>
 </body>
 </html>

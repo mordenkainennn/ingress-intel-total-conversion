@@ -2,7 +2,7 @@
 // @id             iitc-plugin-player-activity-log
 // @name           IITC plugin: Player Activity Log
 // @category       Info
-// @version        0.8.2
+// @version        0.8.3
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/player-activity-log/player-activity-log.meta.js
 // @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/player-activity-log/player-activity-log.user.js
@@ -11,8 +11,6 @@
 // @match          https://intel.ingress.com/*
 // @grant          none
 // ==/UserScript==
-
-const { version } = require("react");
 
 function wrapper(plugin_info) {
     // Ensure plugin framework is there, even if iitc is not yet loaded
@@ -24,6 +22,13 @@ function wrapper(plugin_info) {
     window.plugin.playerActivityLog = function () { };
 
     var changelog = [
+        {
+            version: '0.8.3',
+            changes: [
+                `NEW: Added portal held time`,
+                'NEW: Added a disclaimer in the Activity Log window that data comes from local records and may be inaccurate.',
+            ],
+        },
         {
             version: '0.8.2',
             changes: [
@@ -246,6 +251,133 @@ function wrapper(plugin_info) {
             localStorage.setItem(window.plugin.playerActivityLog.STORAGE_KEY, JSON.stringify(normalized.logData));
         }
         return normalized.logData;
+    };
+
+    window.plugin.playerActivityLog.getPortalLatLngByGuid = function (guid) {
+        if (!guid || !window.portals || !window.portals[guid]) return null;
+        var portal = window.portals[guid];
+        if (portal && typeof portal.getLatLng === 'function') {
+            var latLng = portal.getLatLng();
+            if (latLng && isFinite(latLng.lat) && isFinite(latLng.lng)) {
+                return { lat: Number(latLng.lat), lng: Number(latLng.lng) };
+            }
+        }
+
+        var data = portal.options && portal.options.data;
+        if (!data) return null;
+        var lat = data.latE6 !== undefined ? data.latE6 / 1e6 : Number(data.lat);
+        var lng = data.lngE6 !== undefined ? data.lngE6 / 1e6 : Number(data.lng);
+        if (!isFinite(lat) || !isFinite(lng)) return null;
+
+        return { lat: lat, lng: lng };
+    };
+
+    window.plugin.playerActivityLog.getPortalTeamByGuid = function (guid) {
+        if (!guid || !window.portals || !window.portals[guid]) return null;
+        var portal = window.portals[guid];
+        if (portal.options && portal.options.team !== undefined && portal.options.team !== null) {
+            var team = Number(portal.options.team);
+            if (isFinite(team)) return team;
+        }
+        var data = portal.options && portal.options.data;
+        if (data && data.team !== undefined && data.team !== null) {
+            if (window.IITC && IITC.utils && typeof IITC.utils.getTeamId === 'function') {
+                return IITC.utils.getTeamId(data.team);
+            }
+            if (typeof window.teamStringToId === 'function') {
+                return window.teamStringToId(data.team);
+            }
+        }
+        return null;
+    };
+
+    window.plugin.playerActivityLog.isOwnedPortalTeam = function (teamId) {
+        return teamId === window.TEAM_ENL || teamId === window.TEAM_RES;
+    };
+
+    window.plugin.playerActivityLog.getPortalKey = function (lat, lng) {
+        if (!isFinite(lat) || !isFinite(lng)) return '';
+        return Number(lat).toFixed(6) + ',' + Number(lng).toFixed(6);
+    };
+
+    window.plugin.playerActivityLog.isCaptureActivity = function (activityText) {
+        var text = String(activityText || '').toLowerCase();
+        return text.indexOf('captur') !== -1;
+    };
+
+    window.plugin.playerActivityLog.findLatestCaptureTimeForPortal = function (logData, lat, lng) {
+        var targetKey = window.plugin.playerActivityLog.getPortalKey(lat, lng);
+        if (!targetKey) return null;
+
+        var latestTime = null;
+        Object.keys(logData || {}).forEach(function (playerName) {
+            var player = logData[playerName];
+            if (!player || !Array.isArray(player.activities)) return;
+
+            player.activities.forEach(function (act) {
+                if (!act || !window.plugin.playerActivityLog.isCaptureActivity(act.activity) || !act.portal) return;
+                var actKey = window.plugin.playerActivityLog.getPortalKey(Number(act.portal.lat), Number(act.portal.lng));
+                if (actKey !== targetKey) return;
+
+                var t = Number(act.time);
+                if (!isFinite(t)) return;
+                if (latestTime === null || t > latestTime) latestTime = t;
+            });
+        });
+
+        return latestTime;
+    };
+
+    window.plugin.playerActivityLog.updateToolboxCaptureAge = function (eventData) {
+        var link = document.getElementById('player-activity-log-btn') || window.plugin.playerActivityLog.toolboxLink;
+        if (!link) return;
+
+        try {
+            var guid = window.selectedPortal;
+            if (eventData && typeof eventData === 'object') {
+                if (Object.prototype.hasOwnProperty.call(eventData, 'selectedPortalGuid')) {
+                    guid = eventData.selectedPortalGuid;
+                } else if (eventData.guid && eventData.guid === window.selectedPortal) {
+                    guid = eventData.guid;
+                }
+            }
+            if (!guid) {
+                link.textContent = 'Activity Log';
+                link.removeAttribute('data-capture-age');
+                return;
+            }
+
+            var teamId = window.plugin.playerActivityLog.getPortalTeamByGuid(guid);
+            if (!window.plugin.playerActivityLog.isOwnedPortalTeam(teamId)) {
+                link.textContent = 'Activity Log';
+                link.removeAttribute('data-capture-age');
+                return;
+            }
+
+            var coords = window.plugin.playerActivityLog.getPortalLatLngByGuid(guid);
+            if (!coords) {
+                link.textContent = 'Activity Log';
+                link.removeAttribute('data-capture-age');
+                return;
+            }
+
+            var logData = window.plugin.playerActivityLog.loadLogData();
+            var latestCaptureTime = window.plugin.playerActivityLog.findLatestCaptureTimeForPortal(logData, coords.lat, coords.lng);
+            if (!latestCaptureTime) {
+                link.textContent = 'Activity Log';
+                link.removeAttribute('data-capture-age');
+                return;
+            }
+
+            var days = Math.floor((Date.now() - latestCaptureTime) / 86400000);
+            if (!isFinite(days) || days < 0) days = 0;
+            link.textContent = 'Activity Log';
+            link.setAttribute('data-capture-age', '\uFF08' + days + 'D' + '\uFF09');
+        } catch (e) {
+            link.textContent = 'Activity Log';
+            link.removeAttribute('data-capture-age');
+            console.warn('IITC Player Activity Log: failed to update toolbox capture age', e);
+        }
     };
 
     // 暴露给其他插件（如 recharge-monitor）使用的异步 API
@@ -673,19 +805,43 @@ function wrapper(plugin_info) {
 
         // Setup the hook for chat data
         window.addHook('publicChatDataAvailable', window.plugin.playerActivityLog.handleCommData);
+        window.addHook('portalSelected', window.plugin.playerActivityLog.updateToolboxCaptureAge);
+        window.addHook('portalDetailsUpdated', function (data) {
+            if (data && data.guid === window.selectedPortal) {
+                window.plugin.playerActivityLog.updateToolboxCaptureAge(data);
+            }
+        });
     };
 
     window.plugin.playerActivityLog.addControl = function () {
+        if (window.IITC && IITC.toolbox && IITC.toolbox.addButton) {
+            if (!document.getElementById('player-activity-log-btn')) {
+                IITC.toolbox.addButton({
+                    id: 'player-activity-log-btn',
+                    label: 'Activity Log',
+                    title: 'Display player activity log.',
+                    action: function () { window.plugin.playerActivityLog.displayLog(); },
+                });
+            }
+            window.plugin.playerActivityLog.toolboxLink = document.getElementById('player-activity-log-btn');
+            window.plugin.playerActivityLog.updateToolboxCaptureAge();
+            return;
+        }
+
         var link = document.createElement('a');
+        link.id = 'player-activity-log-btn';
+        link.className = 'player-activity-log-link';
         link.textContent = 'Activity Log';
         link.onclick = function () { window.plugin.playerActivityLog.displayLog(); return false; };
         link.title = 'Display player activity log.';
+        window.plugin.playerActivityLog.toolboxLink = link;
         var toolbox = document.getElementById('toolbox');
-        if (toolbox) {
-            toolbox.appendChild(link);
-        } else {
+        if (!toolbox) {
             console.warn('IITC Player Activity Log: Toolbox not found');
+            return;
         }
+        toolbox.appendChild(link);
+        window.plugin.playerActivityLog.updateToolboxCaptureAge();
     };
 
     window.plugin.playerActivityLog.addCss = function () {
@@ -718,6 +874,7 @@ function wrapper(plugin_info) {
             .activity-log-entry .portal-link { font-weight: bold; }
             .activity-log-entry .time { font-size: 0.9em; color: #ccc; }
             .activity-log-entry .activity-type { text-transform: uppercase; font-weight: bold; }
+            #player-activity-log-btn[data-capture-age]::after { content: attr(data-capture-age); }
             .load-more-button { background-color: #4CAF50; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; display: block; margin: 10px auto; }
             .load-more-button:hover { background-color: #45a049; }
             .res { color: #0088ff; }
@@ -754,6 +911,10 @@ function wrapper(plugin_info) {
                                 <p>Select a player to view their activity.</p>
                                 <br>
                                 <p style="color:#ffce00;">Note: Data is volatile. Please export it regularly!</p>
+                                <br>
+                                <p style="color:#ffd27f;">
+                                    Disclaimer: This data is sourced from local recorded history and cannot be guaranteed to be accurate.
+                                </p>
                                 <br>
                                 <p style="color:#F88; font-style:italic;">
                                     Reminder: The 'Draw Trails' feature may conflict with the official 'Player activity tracker' plugin.
@@ -1037,6 +1198,7 @@ function wrapper(plugin_info) {
         activities.push(activity);
         activities.sort((a, b) => b.time - a.time);
         localStorage.setItem(window.plugin.playerActivityLog.STORAGE_KEY, JSON.stringify(log));
+        window.plugin.playerActivityLog.updateToolboxCaptureAge();
     };
 
     window.plugin.playerActivityLog.clearAllTrails = function () {
