@@ -59,8 +59,8 @@
             margin-top: 30px;
         }
         h3 {
-             font-size: 1.2em;
-             color: #ffce00;
+            font-size: 1.2em;
+            color: #ffce00;
         }
         p, li {
             color: #ccc;
@@ -105,14 +105,14 @@
     <div class="container">
         <h1>57Cell's Field Planner</h1>
 
-        <p>このプラグインは、複雑なフィールド作戦を設計・実行するための高度なツールです。元々は <strong>57Cell</strong> によって作成されましたが、<strong>Heistergand</strong> や <strong>mordenkainennn</strong> といった貢献者によって大幅に強化され、戦略的なエージェントにとって強力な資産となりました。</p>
+        <p>このプラグインは、複雑なフィールド作戦を設計・実行するための高度なツールです。元々は <strong>57Cell</strong> によって作成されましたが、<strong>Heistergand</strong> や <strong>cloverjune</strong> といった貢献者によって大幅に強化され、戦略的なエージェントにとって強力な資産となりました。</p>
         <p>選択したアンカーポータルに基づいてリンクおよびフィールド計画を自動計算し、手作業での計画にかかる時間を節約します。</p>
 
         <h2>機能</h2>
         <ul>
             <li>
                 <h3>複数のフィールド戦略</h3>
-                <p>戦略目標に合わせて、3つの異なるフィールドアルゴリズムから選択できます：</p>
+                <p>戦略目標に合わせて、3つの異なるフィールドアルゴリズムから選択できます:</p>
                 <ul>
                     <li><code>Homogeneous Fields (HCF)</code>: 指定されたレイヤー数で完全に階層化されたフィールドを作成します。</li>
                     <li><code>General Maximum Fielding</code>: 与えられたポータルのセットから最大数のフィールドを作成することを目指します。</li>
@@ -133,8 +133,8 @@
             </li>
             <li>
                 <h3>詳細なステップバイステップの出力</h3>
-                <p>プラグインは、コピーして共有できる詳細なテキストベースの計画を生成します。計画には以下が含まれます：</p>
-                 <ul>
+                <p>プラグインは、コピーして共有できる詳細なテキストベースの計画を生成します。計画には以下が含まれます:</p>
+                <ul>
                     <li>最適なポータル訪問順序。</li>
                     <li>各ポータルから投げるリンクの番号付きリスト。</li>
                     <li>各アンカーに必要なSoftBankの数。</li>
@@ -150,18 +150,18 @@
 
         <h2>使用方法</h2>
         <ol style="padding-left: 30px;">
-            <li>IITCツールボックスの<strong>「Plan Fields」</strong>ボタンをクリックして開始します。</li>
+            <li>IITCツールボックスの <strong>"Plan Fields"</strong> ボタンをクリックして開始します。</li>
             <li>マップ上で3つのポータルを主要なアンカー/コーナーとして選択します。</li>
-            <li>計画ダイアログが開きます。ここで、以下の操作ができます：
+            <li>計画ダイアログが開きます。ここで、以下の操作ができます:
                 <ul>
                     <li>選択したコーナーをロックします。</li>
-                    <li>希望する<strong>フィールドタイプ</strong>（HCF、General、Cobweb）を選択します。</li>
-                    <li>HCF計画の<strong>レイヤー数</strong>を設定します。</li>
-                    <li>計画の<strong>ジオメトリ</strong>（RandomまたはPerfect）を選択します。</li>
+                    <li>希望する <strong>Field type</strong> (HCF, General, Cobweb) を選択します。</li>
+                    <li>HCF計画の <strong>Layers</strong> を設定します。</li>
+                    <li>計画の <strong>Geometry</strong> (Random または Perfect) を選択します。</li>
                 </ul>
             </li>
             <li>(任意) 右側のパネルで、使用したくないポータルを「含まれる」リストから「除外される」リストに移動します。</li>
-            <li><strong>「Find Fielding Plan」</strong>ボタンをクリックします。</li>
+            <li><strong>"Find Fielding Plan"</strong> ボタンをクリックします。</li>
             <li>プラグインが最適な計画を計算し、マップ上に視覚的なオーバーレイとダイアログにテキスト手順を表示します。</li>
         </ol>
 
@@ -170,6 +170,13 @@
         </div>
 
         <h2>変更履歴</h2>
+        <div class="changelog-entry">
+            <h3>バージョン 2.1.15</h3>
+            <ul>
+                <li>修正: 計画対象のコーナー Portal と候補 Portal の座標・名称をキャッシュするようにし、地図を移動した後でも <code>Find Fielding Plan</code> が視野変化で失敗しないようにしました。</li>
+                <li>修正: コーナープレビューのタイトルと画像データを正規化し、Portal 名が <code>undefined</code> と表示されないようにしました。</li>
+            </ul>
+        </div>
         <div class="changelog-entry">
             <h3>バージョン 2.1.14</h3>
             <ul>
@@ -182,9 +189,34 @@
             <h3>バージョン 2.1.2 &ndash; 2.1.7</h3>
             <ul>
                 <li>新規: 変更履歴がIITCのプラグインリストで表示されるようになりました。</li>
-                <li>新規: 選択したポータルのポータル画像プレビューとアニメーション付きコーナーを追加しました。</li>
-                <li>新規: ダイアログに「クリア」ボタンを追加しました。</li>
-                <li>修正: 主要なUI改善とAPI互換性の修正。</li>
+                <li>新規: 選択したポータルの画像プレビューとアニメーション付きコーナーを追加しました。</li>
+                <li>新規: ダイアログに「Clear」ボタンを追加しました。</li>
+                <li>修正: 主なUI改善とAPI互換性の修正。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>バージョン 2.0.0 &ndash; 2.1.0</h3>
+            <ul>
+                <li>新規: "General Maximum Fielding" と "Cobweb" の計画オプションを追加しました。</li>
+                <li>新規: 統計出力 (Portal/Link/Field 数、移動距離) を追加しました。</li>
+                <li>新規: 作成されるコントロールフィールドが計画内で明示されるようになりました。</li>
+                <li>新規: マップ上のフィールド描画レイヤーを追加しました。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>バージョン 1.1.0 &ndash; 1.2.1</h3>
+            <ul>
+                <li>新規: プラグインレイヤーとリンク描画を追加しました。</li>
+                <li>新規: タスクリストに番号を追加しました。</li>
+                <li>新規: Heistergand による DrawTools へのエクスポート機能を追加しました。</li>
+                <li>新規: 幾何学的により均整の取れた計画を生成できるようになりました。</li>
+                <li>修正: コードのリファクタリングとUI改善。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
+            <h3>バージョン 1.0.0</h3>
+            <ul>
+                <li>新規: 57Cell による初回リリース。</li>
             </ul>
         </div>
     </div>

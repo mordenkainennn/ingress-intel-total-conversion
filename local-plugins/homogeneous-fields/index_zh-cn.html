@@ -58,8 +58,8 @@
             margin-top: 30px;
         }
         h3 {
-             font-size: 1.2em;
-             color: #ffce00;
+            font-size: 1.2em;
+            color: #ffce00;
         }
         p, li {
             color: #ccc;
@@ -104,111 +104,118 @@
     <div class="container">
         <h1>57Cell's Field Planner</h1>
 
-        <p>此插件是用于设计和执行复杂区域规划的进阶工具。它最初由 <strong>57Cell</strong> 创建，并经过 <strong>Heistergand</strong> 和 <strong>mordenkainennn</strong> 等贡献者的显著增强，成为战略性特工的强大资产。</p>
-        <p>它能够根据选定的锚点 Portal 自动计算链接和区域规划，节省了手动规划的数小时时间。</p>
+        <p>此插件是用于设计和执行复杂控场规划的进阶工具。它最初由 <strong>57Cell</strong> 创建，并经过 <strong>Heistergand</strong> 与 <strong>mordenkainennn</strong> 等贡献者持续增强，已经成为面向战略玩法的强力辅助工具。</p>
+        <p>它可以基于你选定的锚点 Portal 自动计算链接和控场计划，显著减少手动规划所需的时间。</p>
 
         <h2>功能特性</h2>
         <ul>
             <li>
-                <h3>多种区域规划策略</h3>
-                <p>根据您的战略目标选择三种不同的区域规划算法：</p>
+                <h3>多种控场规划策略</h3>
+                <p>你可以根据目标选择三种不同的规划算法：</p>
                 <ul>
-                    <li><code>均匀控制场 (HCF)</code>: 创建具有指定层数的完美分层区域。</li>
-                    <li><code>最大控制场</code>: 旨在从给定的一组 Portal 中创建最大数量的区域。</li>
-                    <li><code>蛛网计划</code>: 生成类似蜘蛛网的区域模式，非常适合区域拒绝。</li>
+                    <li><code>均匀控制场 (HCF)</code>: 创建具有指定层数的均匀分层控场。</li>
+                    <li><code>最大控场</code>: 从给定 Portal 集合中尽可能生成更多区域。</li>
+                    <li><code>蛛网计划</code>: 生成类似蛛网结构的控场方案，适合做区域压制。</li>
                 </ul>
             </li>
             <li>
                 <h3>交互式规划界面</h3>
-                <p>一个全面的对话框，从工具箱启动，作为指挥中心。您可以在此处选择角点 Portal，查看其图像预览，锁定它们，并微调您的计划。</p>
+                <p>插件从工具箱启动一个完整的规划对话框，作为操作中心。你可以在这里选择角点 Portal、查看预览图、锁定角点，并微调整个计划。</p>
             </li>
             <li>
                 <h3>Portal 管理</h3>
-                <p>选择三个角点 Portal 后，插件会自动填充主三角形内的所有 Portal 列表。您可以轻松地在“包含”和“排除”列表之间移动 Portal，以控制最终计划中使用哪些 Portal。</p>
+                <p>选择三个角点 Portal 后，插件会自动列出主三角形内的所有 Portal。你可以在“包含”和“排除”列表之间移动 Portal，以控制最终方案中使用哪些点。</p>
             </li>
             <li>
-                <h3>视觉反馈与自定义</h3>
-                <p>生成的计划直接绘制在地图上，显示所有必要的链接和区域。您可以实时更改计划覆盖层的颜色。选定的角点 Portal 会有动画高亮显示，便于识别。</p>
+                <h3>可视化反馈与自定义</h3>
+                <p>生成的计划会直接绘制在地图上，显示所需的链接和区域。你可以实时调整计划覆盖层颜色。选中的角点 Portal 也会带有动画高亮，便于识别。</p>
             </li>
             <li>
                 <h3>详细的分步输出</h3>
-                <p>插件会生成一个详细的文本格式计划，可以复制和分享。该计划包括：</p>
-                 <ul>
+                <p>插件会生成一份可复制、可分享的文本计划，内容包括：</p>
+                <ul>
                     <li>最佳 Portal 访问顺序。</li>
-                    <li>从每个 Portal 发出的编号链接列表。</li>
+                    <li>每个 Portal 需要发出的编号链接列表。</li>
                     <li>每个锚点所需的 SoftBank 数量。</li>
-                    <li>每个 Portal 所需的 Key 数量摘要。</li>
-                    <li>Portal 之间的总行程距离。</li>
+                    <li>每个 Portal 所需 Key 数量汇总。</li>
+                    <li>Portal 之间的总行进距离。</li>
                 </ul>
             </li>
             <li>
                 <h3>与其他插件集成</h3>
-                <p>为了提高效率，您可以通过单击将生成的链接计划直接导出到 <strong>DrawTools</strong> 和 <strong>Arc</strong> 插件。</p>
+                <p>为了进一步提升效率，你可以一键将生成的链接计划导出到 <strong>DrawTools</strong> 和 <strong>Arc</strong> 插件。</p>
             </li>
         </ul>
 
         <h2>如何使用</h2>
         <ol style="padding-left: 30px;">
-            <li>点击 IITC 工具箱中的 <strong>“区域规划”</strong> 按钮开始。</li>
-            <li>在地图上选择三个 Portal 作为您的主要锚点/角点。</li>
-            <li>规划对话框将打开。您可以在此处：
+            <li>点击 IITC 工具箱中的 <strong>"Plan Fields"</strong> 按钮开始。</li>
+            <li>在地图上选择三个 Portal 作为主要锚点/角点。</li>
+            <li>规划对话框会打开。你可以在这里：
                 <ul>
-                    <li>锁定您选择的角点。</li>
-                    <li>选择您想要的 <strong>区域类型</strong> (HCF, 通用, 蛛网)。</li>
-                    <li>为 HCF 计划设置 <strong>层数</strong>。</li>
-                    <li>选择计划的 <strong>几何结构</strong> (随机或完美)。</li>
+                    <li>锁定已选择的角点。</li>
+                    <li>选择所需的 <strong>Field type</strong> (HCF、General、Cobweb)。</li>
+                    <li>为 HCF 计划设置 <strong>Layers</strong>。</li>
+                    <li>选择计划的 <strong>Geometry</strong> (Random 或 Perfect)。</li>
                 </ul>
             </li>
-            <li>(可选) 在右侧面板中，将您不想使用的任何 Portal 从“包含”列表移动到“排除”列表。</li>
-            <li>点击 <strong>“计算 Fielding 计划”</strong> 按钮。</li>
-            <li>插件将计算最佳计划，并在地图上显示视觉覆盖层和对话框中的文本步骤。</li>
+            <li>(可选) 在右侧面板中，把不想使用的 Portal 从“包含”移动到“排除”。</li>
+            <li>点击 <strong>"Find Fielding Plan"</strong> 按钮。</li>
+            <li>插件会计算最优方案，并在地图上显示覆盖层，同时在对话框中输出文字步骤。</li>
         </ol>
 
         <div class="note">
-            <p><strong>来源:</strong> 此插件是在 <strong>57Cell</strong> 的原始脚本基础上改进的版本。目前由 <strong>mordenkainennn</strong> 在此 IITC-CE 插件集合中维护和增强。</p>
+            <p><strong>来源:</strong> 此插件是在 <strong>57Cell</strong> 原始脚本基础上改进而来的版本，目前由 <strong>cloverjune</strong> 在此 IITC-CE 插件集合中维护和增强。</p>
         </div>
 
         <h2>更新日志</h2>
         <div class="changelog-entry">
+            <h3>版本 2.1.15</h3>
+            <ul>
+                <li>修复: 规划时会缓存角点和候选 Portal 的坐标与名称，移动地图后再点击 <code>Find Fielding Plan</code> 也不会因为视野变化而失效。</li>
+                <li>修复: 角点预览区会标准化 Portal 标题和图片数据，避免名称显示为 <code>undefined</code>。</li>
+            </ul>
+        </div>
+        <div class="changelog-entry">
             <h3>版本 2.1.14</h3>
             <ul>
-                <li>修复: 对话框布局重构为 Flexbox，解决了多个渲染和调整大小问题。</li>
-                <li>更新: “包含的 Portal”和“排除的 Portal”列表现在正确使用 2:1 比例的可用垂直空间。</li>
-                <li>更新: 增加了对话框的默认高度，以获得更好的初始视图。</li>
+                <li>修复: 对话框布局重构为 Flexbox，解决了多个渲染和尺寸调整问题。</li>
+                <li>更新: “包含的 Portal”与“排除的 Portal”列表现在会按 2:1 的比例正确使用垂直空间。</li>
+                <li>更新: 增加了对话框默认高度，以获得更好的初始视图。</li>
             </ul>
         </div>
         <div class="changelog-entry">
             <h3>版本 2.1.2 &ndash; 2.1.7</h3>
             <ul>
-                <li>新增: 更新日志现在在 IITC 的插件列表中可见。</li>
-                <li>新增: 添加了 Portal 图像预览和选定 Portal 的动画角点。</li>
-                <li>新增: 对话框中添加了“清除”按钮。</li>
-                <li>修复: 主要 UI 改进和 API 兼容性修复。</li>
+                <li>新增: 更新日志现在可在 IITC 插件列表中查看。</li>
+                <li>新增: 添加了 Portal 图片预览和选中角点的动画高亮。</li>
+                <li>新增: 对话框中加入了 “Clear” 按钮。</li>
+                <li>修复: 主要 UI 改进与 API 兼容性修复。</li>
             </ul>
         </div>
         <div class="changelog-entry">
             <h3>版本 2.0.0 &ndash; 2.1.0</h3>
             <ul>
-                <li>新增: 添加了“最大控制场”和“蛛网”区域规划选项。</li>
-                <li>新增: 添加了统计输出（Portal/链接/区域数量，距离）。</li>
-                <li>新增: 创建的控制区域现在在计划中提及。</li>
-                <li>新增: 添加了地图区域绘制层。</li>
+                <li>新增: 加入 “General Maximum Fielding” 与 “Cobweb” 规划选项。</li>
+                <li>新增: 加入统计输出 (Portal/Link/Field 数量与距离)。</li>
+                <li>新增: 计划中会明确标出生成的控制区域。</li>
+                <li>新增: 地图上加入区域绘制图层。</li>
             </ul>
         </div>
         <div class="changelog-entry">
             <h3>版本 1.1.0 &ndash; 1.2.1</h3>
             <ul>
-                <li>新增: 添加了插件层和链接绘制。</li>
-                <li>新增: 任务列表添加了编号。</li>
+                <li>新增: 添加插件图层和链接绘制。</li>
+                <li>新增: 任务列表增加编号。</li>
                 <li>新增: Heistergand 添加了导出到 DrawTools 的功能。</li>
-                <li>新增: 用户可以选择生成几何上完美平衡的计划。</li>
+                <li>新增: 可以生成几何上更均衡的规划。</li>
                 <li>修复: 代码重构和 UI 改进。</li>
             </ul>
         </div>
-         <div class="changelog-entry">
+        <div class="changelog-entry">
             <h3>版本 1.0.0</h3>
             <ul>
-                <li>新增: 57Cell 的初始版本发布。</li>
+                <li>新增: 57Cell 初始版本发布。</li>
             </ul>
         </div>
     </div>

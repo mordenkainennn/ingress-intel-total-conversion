@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-homogeneous-fields@cloverjune
 // @name           IITC Plugin: 57Cell's Field Planner [cloverjune]
-// @version        2.1.14.20260116
+// @version        2.1.15.20260312
 // @description    Plugin for planning fields in IITC
 // @author         57Cell (Michael Hartley) and ChatGPT 4.0, modified by cloverjune
 // @category       Layer
@@ -24,8 +24,15 @@
 // ==/UserScript==
 
 pluginName = "57Cell's Field Planner";
-version = "2.1.14";
+version = "2.1.15";
 changeLog = [
+    {
+        version: '2.1.15.20260312',
+        changes: [
+            'FIX: Cache portal coordinates and names for selected corners and candidate portals, so field planning no longer fails after moving the map.',
+            'FIX: Normalize corner preview data so portal titles no longer render as undefined when details are incomplete.',
+        ],
+    },
     {
         version: '2.1.14.20260116',
         changes: [
@@ -178,7 +185,7 @@ changeLog = [
 function wrapper(plugin_info) {
     if (typeof window.plugin !== 'function') window.plugin = function () { };
     plugin_info.buildName = '';
-    plugin_info.dateTimeVersion = '2024-02-02-180000';
+    plugin_info.dateTimeVersion = '2026-03-12-000000';
     plugin_info.pluginId = '57CellsFieldPlanner';
 
     // PLUGIN START
@@ -186,27 +193,70 @@ function wrapper(plugin_info) {
     var changelog = changeLog;
     let self = window.plugin.homogeneousFields = function () { };
 
+    function cloneLatLng(latLng) {
+        return latLng ? new L.latLng(latLng.lat, latLng.lng) : null;
+    }
+
+    function getDefaultPortalImage() {
+        return '//commondatastorage.googleapis.com/ingress.com/img/default-portal-image.png';
+    }
+
+    function cachePortalObject(portalId, portalObject) {
+        if (!portalObject || !portalObject.latLng) return null;
+
+        self.portalCache[portalId] = {
+            id: portalId,
+            name: portalObject.name,
+            latLng: cloneLatLng(portalObject.latLng),
+        };
+
+        return {
+            id: portalId,
+            name: portalObject.name,
+            latLng: cloneLatLng(portalObject.latLng),
+        };
+    }
+
     // helper function to convert portal ID to portal object
     function portalIdToObject(portalId) {
+        let cachedPortal = self.portalCache[portalId];
+        if (cachedPortal) {
+            return {
+                id: cachedPortal.id,
+                name: cachedPortal.name,
+                latLng: cloneLatLng(cachedPortal.latLng),
+            };
+        }
+
         let portals = window.portals; // IITC global object that contains all portal data
         let portal = portals[portalId] ? portals[portalId].options.data : null;
 
         // Convert portal to the structure expected by populatePortalData
         if (portal) {
-            let lat = parseFloat(portal.latE6 / 1e6);
-            let lng = parseFloat(portal.lngE6 / 1e6);
-            return {
+            return cachePortalObject(portalId, {
                 id: portalId, // ID of the portal
                 name: portal.title, // title of the portal
-                latLng: new L.latLng(lat, lng), // use LatLng Class to stay more flexible
-            };
+                latLng: new L.latLng(parseFloat(portal.latE6 / 1e6), parseFloat(portal.lngE6 / 1e6)), // use LatLng Class to stay more flexible
+            });
         }
 
         return null;
     }
 
+    function normalizePortalDetails(portalId, portalDetails, fallbackPortal) {
+        const portal = fallbackPortal || portalIdToObject(portalId);
+        const title = (portalDetails && portalDetails.title) || (portal && portal.name) || portalId;
+        const image = (portalDetails && portalDetails.image) || getDefaultPortalImage();
+
+        return {
+            title: title,
+            image: image,
+        };
+    }
+
     // Global variables for selected portals
     self.selectedPortals = [];
+    self.portalCache = {};
 
     // layerGroup for the draws
     self.linksLayerGroup = null;
@@ -354,13 +404,17 @@ function wrapper(plugin_info) {
             return portal ? portal.latLng : null;
         });
 
+        if (triangleLatLngs.some(latLng => latLng === null)) {
+            return [];
+        }
+
         let portalsInTriangle = [];
         if (portalsToConsider == null) {
             portalsToConsider = Object.keys(window.portals)
         }
         for (let portalGuid of portalsToConsider) {
-            let portal = window.portals[portalGuid];
-            if (self.pointInTriangle(portal.getLatLng(), triangleLatLngs)) {
+            let portal = portalIdToObject(portalGuid);
+            if (portal && self.pointInTriangle(portal.latLng, triangleLatLngs)) {
                 portalsInTriangle.push(portalGuid);
             }
         }
@@ -384,7 +438,9 @@ function wrapper(plugin_info) {
         let list = [];
 
         for (let i = 0; i < GUIDs.length; i++) {
-            let ll = window.portals[GUIDs[i]].getLatLng();
+            let portal = portalIdToObject(GUIDs[i]);
+            if (!portal) continue;
+            let ll = portal.latLng;
             list.push({
                 GUID: GUIDs[i],
                 ll: ll
@@ -1271,7 +1327,9 @@ function wrapper(plugin_info) {
             }
         }
 
-        const ll = portals[guid].getLatLng();
+        const portal = portalIdToObject(guid);
+        if (!portal) return;
+        const ll = portal.latLng;
         var circle = L.circle(ll, {
             ...circleOptions,
             radius: minRadius, // Start with the minimum radius
@@ -1294,7 +1352,9 @@ function wrapper(plugin_info) {
      * @param {string} guid - The GUID of the portal.
      */
     self.animateTriangle = function (guid) {
-        const portalLocation = map.latLngToContainerPoint(portals[guid].getLatLng()); // Convert to pixel coordinates
+        const portal = portalIdToObject(guid);
+        if (!portal) return;
+        const portalLocation = map.latLngToContainerPoint(portal.latLng); // Convert to pixel coordinates
         const minTriangleRadius = 30;
         const maxTriangleRadius = 38;
         const triangleRotationSpeed = 0.02; // This can also be adjusted
@@ -1606,11 +1666,17 @@ function wrapper(plugin_info) {
         // --- Original corner selection logic follows ---
         if (!self.dialogIsOpen()) { return; }
 
-        let portalDetails = window.portals[data.selectedPortalGuid]._details;
-        if (portalDetails === undefined) return;
+        let livePortal = portalIdToObject(data.selectedPortalGuid);
+        if (!livePortal) return;
+
+        let portalDetails = window.portals[data.selectedPortalGuid] && window.portals[data.selectedPortalGuid]._details;
         if (self.selectedPortals.some(({ guid }) => guid === data.selectedPortalGuid)) return;
 
-        self.selectedPortals.push({ guid: data.selectedPortalGuid, details: portalDetails });
+        self.selectedPortals.push({
+            guid: data.selectedPortalGuid,
+            details: normalizePortalDetails(data.selectedPortalGuid, portalDetails, livePortal),
+            latLng: cloneLatLng(livePortal.latLng),
+        });
         while (self.selectedPortals.length > 3) {
             self.selectedPortals.shift();
         }
@@ -1645,9 +1711,9 @@ function wrapper(plugin_info) {
 
         let includedList = $('#hcf-included-portals');
         portalsInTriangle.forEach(guid => {
-            let portal = window.portals[guid];
-            let portalName = portal.options.data.title;
-            $('<option>').val(guid).text(portalName).appendTo(includedList);
+            let portal = portalIdToObject(guid);
+            if (!portal) return;
+            $('<option>').val(guid).text(portal.name).appendTo(includedList);
         });
     };
 
@@ -1665,9 +1731,10 @@ function wrapper(plugin_info) {
         // debugger;
 
         self.selectedPortals.forEach(({ guid, details }) => {
+            const normalizedDetails = normalizePortalDetails(guid, details);
             // ATTENTION! DO NOT EVER TOUCH THE STYLES WITHOUT INTENSE TESTING!
             portalDetailsHTML += '<fieldset ' +
-                'title="' + details.title + '" ' +
+                'title="' + normalizedDetails.title + '" ' +
                 'style="' +
                 'height: 100px; ' +
                 'min-inline-size: 0px; ' +
@@ -1677,11 +1744,11 @@ function wrapper(plugin_info) {
                 'cursor: help; ' +
                 'background: no-repeat center center; ' +
                 'background-size: cover; ' +
-                'background-image: url(\'' + details.image + '\')' +
+                'background-image: url(\'' + normalizedDetails.image + '\')' +
                 '"' + // end of style
                 'id="hcf-corner-preview-' + guid + '"' +
                 '>' +
-                '<legend class="ui-dialog-titlebar" style="min-inline-size: 0px;">' + details.title + '</legend></fieldset>\n';
+                '<legend class="ui-dialog-titlebar" style="min-inline-size: 0px;">' + normalizedDetails.title + '</legend></fieldset>\n';
         });
 
         // self.selectedPortalDetails
