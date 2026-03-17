@@ -1,13 +1,13 @@
 // ==UserScript==
-// @id             iitc-plugin-fanfield-planner@cloverjune
-// @name           IITC Plugin: cloverjune's Fanfield Planner
-// @version        2.1.4
+// @id             iitc-plugin-fanfield-planner@mordenkainennn
+// @name           IITC Plugin: mordenkainennn's Fanfield Planner
+// @version        1.9
 // @description    Plugin for planning fanfields/pincushions in IITC
-// @author         cloverjune
+// @author         mordenkainennn
 // @category       Layer
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
-// @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/fanfield-planner/fanfield-planner.meta.js
-// @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/fanfield-planner/fanfield-planner.user.js
+// @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/main/local-plugins/fanfield-planner/fanfield-planner.meta.js
+// @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/main/local-plugins/fanfield-planner/fanfield-planner.user.js
 // @include        https://intel.ingress.com/*
 // @include        http://intel.ingress.com/*
 // @match          https://intel.ingress.com/*
