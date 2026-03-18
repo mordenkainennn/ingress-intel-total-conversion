@@ -1,7 +1,7 @@
 // ==UserScript==
-// @id             iitc-plugin-fanfield-planner@mordenkainennn
-// @name           IITC Plugin: mordenkainennn's Fanfield Planner
-// @version        2.1.4
+// @id             iitc-plugin-fanfield-planner@Cloverjune
+// @name           IITC Plugin: Cloverjune's Fanfield Planner
+// @version        2.1.6
 // @description    Plugin for planning fanfields/pincushions in IITC (Phase 1 Safe Mode)
 // @author         cloverjune
 // @category       Layer
@@ -18,6 +18,14 @@ function wrapper(plugin_info) {
     const self = (window.plugin.fanfieldPlanner = function () { });
 
     self.changelog = [
+        {
+            version: '2.1.6',
+            changes: ['FIX: Phase 1 crosslink checks now validate against all previously planned links, not only anchor rays.'],
+        },
+        {
+            version: '2.1.5',
+            changes: ['FEAT: Phase 1 now greedily backlinks to as many historical bases as possible with crosslink checks.'],
+        },
         {
             version: '2.1.4',
             changes: ['FIX: Restore 1.9-style planner UI and layer groups while keeping the current safe-mode plan logic.'],
@@ -74,6 +82,69 @@ function wrapper(plugin_info) {
         });
     };
 
+    self.findShortestPathForSortedBase = function (sortedBase) {
+        if (sortedBase.length <= 1) return sortedBase;
+
+        const pathLR = sortedBase.slice();
+        const pathRL = sortedBase.slice().reverse();
+
+        let distLR = 0;
+        for (let i = 1; i < pathLR.length; i++) {
+            distLR += self.distance(
+                window.portals[pathLR[i - 1]].getLatLng(),
+                window.portals[pathLR[i]].getLatLng()
+            );
+        }
+
+        let distRL = 0;
+        for (let i = 1; i < pathRL.length; i++) {
+            distRL += self.distance(
+                window.portals[pathRL[i - 1]].getLatLng(),
+                window.portals[pathRL[i]].getLatLng()
+            );
+        }
+
+        return distLR < distRL ? pathLR : pathRL;
+    };
+
+    self.latLngIsEqual = function (a, b) {
+        return Math.abs(a.lat - b.lat) < 1e-9 && Math.abs(a.lng - b.lng) < 1e-9;
+    };
+
+    self.ccw = function (p1, p2, p3) {
+        return (p3.lat - p1.lat) * (p2.lng - p1.lng) > (p2.lat - p1.lat) * (p3.lng - p1.lng);
+    };
+
+    self.segmentsIntersect = function (p1, p2, p3, p4) {
+        if (
+            self.latLngIsEqual(p1, p3) ||
+            self.latLngIsEqual(p1, p4) ||
+            self.latLngIsEqual(p2, p3) ||
+            self.latLngIsEqual(p2, p4)
+        ) {
+            return false;
+        }
+
+        return self.ccw(p1, p3, p4) !== self.ccw(p2, p3, p4) &&
+            self.ccw(p1, p2, p3) !== self.ccw(p1, p2, p4);
+    };
+
+    self.linkWouldCrossExisting = function (fromGuid, toGuid, existingSegments) {
+        const fromPortal = window.portals[fromGuid];
+        const toPortal = window.portals[toGuid];
+        if (!fromPortal || !toPortal) return true;
+
+        const fromLL = fromPortal.getLatLng();
+        const toLL = toPortal.getLatLng();
+
+        return existingSegments.some(segment => {
+            const segFrom = window.portals[segment.from];
+            const segTo = window.portals[segment.to];
+            if (!segFrom || !segTo) return false;
+            return self.segmentsIntersect(fromLL, toLL, segFrom.getLatLng(), segTo.getLatLng());
+        });
+    };
+
     /* =======================
        Main Planning Logic
        ======================= */
@@ -85,13 +156,56 @@ function wrapper(plugin_info) {
 
         const anchorGuid = self.anchorPortal.guid;
         const baseGuids = self.basePortals.map(p => p.guid);
+        const missingPortals = baseGuids.filter(guid => !window.portals[guid]);
+
+        if (!window.portals[anchorGuid] || missingPortals.length > 0) {
+            throw new Error('Some selected portals are not currently loaded in the view. Please zoom in or reload data to ensure all portals are visible.');
+        }
 
         const sortedBase = self.sortBasePortalsByAngle(baseGuids, anchorGuid);
+        const optimizedTravelPath = self.findShortestPathForSortedBase(sortedBase);
+        const anchorLL = window.portals[anchorGuid].getLatLng();
 
-        // Track actual Phase 1 links (bidirectional)
-        const phase1Links = new Set();
-        const hasLink = (a, b) =>
-            phase1Links.has(`${a}|${b}`) || phase1Links.has(`${b}|${a}`);
+        const keysNeeded = {};
+        baseGuids.forEach(guid => {
+            keysNeeded[guid] = 0;
+        });
+        keysNeeded[anchorGuid] = 0;
+
+        const stepActions = [];
+        const phase1Segments = [];
+
+        optimizedTravelPath.forEach((guid, index) => {
+            const links = [];
+
+            links.push({ to: anchorGuid, type: 'anchor' });
+            keysNeeded[anchorGuid]++;
+            phase1Segments.push({ from: guid, to: anchorGuid });
+
+            if (index > 0) {
+                const prevGuid = optimizedTravelPath[index - 1];
+                if (!self.linkWouldCrossExisting(guid, prevGuid, phase1Segments)) {
+                    links.push({ to: prevGuid, type: 'chain' });
+                    keysNeeded[prevGuid]++;
+                    phase1Segments.push({ from: guid, to: prevGuid });
+                }
+
+                for (let k = index - 2; k >= 0; k--) {
+                    const backGuid = optimizedTravelPath[k];
+                    if (!self.linkWouldCrossExisting(guid, backGuid, phase1Segments)) {
+                        links.push({ to: backGuid, type: 'layer' });
+                        keysNeeded[backGuid]++;
+                        phase1Segments.push({ from: guid, to: backGuid });
+                    }
+                }
+            }
+
+            stepActions.push({ guid, links });
+        });
+
+        baseGuids.forEach(guid => {
+            keysNeeded[guid]++;
+        });
 
         const plan = [];
         let lastVisited = null;
@@ -101,10 +215,11 @@ function wrapper(plugin_info) {
 
         plan.push({
             type: 'header',
-            text: 'Phase 1: Build Base Fanfield (Safe Mode)',
+            text: 'Phase 1: Build Base Fanfield (Greedy Triangulation)',
         });
 
-        sortedBase.forEach((guid, index) => {
+        stepActions.forEach(step => {
+            const guid = step.guid;
             const ll = window.portals[guid].getLatLng();
             let dist = 0;
 
@@ -122,37 +237,24 @@ function wrapper(plugin_info) {
                 from: lastVisited,
                 distance: dist,
                 phase: 1,
-                keysToFarm: 1,
+                keysToFarm: keysNeeded[guid],
             });
 
-            // 1. current -> anchor (always)
-            plan.push({ type: 'link', from: guid, to: anchorGuid, phase: 1 });
-            phase1Links.add(`${guid}|${anchorGuid}`);
-            linkCount++;
-
-            // 2. current -> previous (if exists)
-            if (index > 0) {
-                const prev = sortedBase[index - 1];
-                plan.push({ type: 'link', from: guid, to: prev, phase: 1 });
-                phase1Links.add(`${guid}|${prev}`);
+            step.links.forEach(link => {
+                plan.push({ type: 'link', from: guid, to: link.to, phase: 1 });
                 linkCount++;
 
-                // Field only if triangle is fully closed
-                if (
-                    hasLink(guid, anchorGuid) &&
-                    hasLink(prev, anchorGuid) &&
-                    hasLink(guid, prev)
-                ) {
+                if (link.type === 'chain' || link.type === 'layer') {
                     plan.push({
                         type: 'field',
                         p1: guid,
                         p2: anchorGuid,
-                        p3: prev,
+                        p3: link.to,
                         phase: 1,
                     });
                     fieldCount++;
                 }
-            }
+            });
 
             lastVisited = guid;
         });
@@ -204,6 +306,7 @@ function wrapper(plugin_info) {
             linkCount,
             fieldCount,
             totalDistance,
+            keysNeeded,
             basePortalsCount: baseGuids.length,
         });
 
@@ -486,7 +589,13 @@ function wrapper(plugin_info) {
                     planText += `Base Portals: ${action.basePortalsCount}\n`;
                     planText += `Total Links: ${action.linkCount}\n`;
                     planText += `Total Fields: ${action.fieldCount}\n`;
-                    planText += `Estimated Travel Distance: ${self.formatDistance(action.totalDistance)}\n`;
+                    planText += `Estimated Travel Distance: ${self.formatDistance(action.totalDistance)}\n\n`;
+                    planText += 'Total Keys Required (check individual steps for farming location):\n';
+                    Object.keys(action.keysNeeded || {}).forEach(guid => {
+                        if (action.keysNeeded[guid] > 0) {
+                            planText += `  - ${action.keysNeeded[guid]}x keys for ${self.getPortalTitle(guid)}\n`;
+                        }
+                    });
                     break;
                 default:
                     break;
