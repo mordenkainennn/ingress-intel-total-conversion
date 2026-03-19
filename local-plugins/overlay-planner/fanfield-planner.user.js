@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-fanfield-planner@Cloverjune
 // @name           IITC Plugin: Cloverjune's Fanfield Planner
-// @version        2.1.7
+// @version        2.1.6
 // @description    Plugin for planning fanfields/pincushions in IITC (Phase 1 Safe Mode)
 // @author         cloverjune
 // @category       Layer
@@ -18,10 +18,6 @@ function wrapper(plugin_info) {
     const self = (window.plugin.fanfieldPlanner = function () { });
 
     self.changelog = [
-        {
-            version: '2.1.7',
-            changes: ['FEAT: Phase 2 now reflects against the full Phase 1 base graph and creates all closable fields.'],
-        },
         {
             version: '2.1.6',
             changes: ['FIX: Phase 1 crosslink checks now validate against all previously planned links, not only anchor rays.'],
@@ -149,43 +145,6 @@ function wrapper(plugin_info) {
         });
     };
 
-    self.makeUndirectedKey = function (a, b) {
-        return a < b ? `${a}|${b}` : `${b}|${a}`;
-    };
-
-    self.choosePhase2ReflectionOrder = function (sortedBase, adjacency) {
-        const reflected = new Set();
-        const remaining = new Set(sortedBase);
-        const order = [];
-
-        while (remaining.size > 0) {
-            let bestGuid = null;
-            let bestScore = -1;
-            let bestIndex = Number.MAX_SAFE_INTEGER;
-
-            sortedBase.forEach((guid, index) => {
-                if (!remaining.has(guid)) return;
-                const neighbors = adjacency.get(guid) || new Set();
-                let score = 0;
-                neighbors.forEach(neighbor => {
-                    if (reflected.has(neighbor)) score++;
-                });
-
-                if (score > bestScore || (score === bestScore && index < bestIndex)) {
-                    bestGuid = guid;
-                    bestScore = score;
-                    bestIndex = index;
-                }
-            });
-
-            order.push(bestGuid);
-            remaining.delete(bestGuid);
-            reflected.add(bestGuid);
-        }
-
-        return order;
-    };
-
     /* =======================
        Main Planning Logic
        ======================= */
@@ -215,19 +174,6 @@ function wrapper(plugin_info) {
 
         const stepActions = [];
         const phase1Segments = [];
-        const phase1BaseEdgeSet = new Set();
-        const phase1BaseAdjacency = new Map();
-
-        const addPhase1BaseEdge = function (fromGuid, toGuid) {
-            const key = self.makeUndirectedKey(fromGuid, toGuid);
-            if (phase1BaseEdgeSet.has(key)) return;
-            phase1BaseEdgeSet.add(key);
-
-            if (!phase1BaseAdjacency.has(fromGuid)) phase1BaseAdjacency.set(fromGuid, new Set());
-            if (!phase1BaseAdjacency.has(toGuid)) phase1BaseAdjacency.set(toGuid, new Set());
-            phase1BaseAdjacency.get(fromGuid).add(toGuid);
-            phase1BaseAdjacency.get(toGuid).add(fromGuid);
-        };
 
         optimizedTravelPath.forEach((guid, index) => {
             const links = [];
@@ -242,7 +188,6 @@ function wrapper(plugin_info) {
                     links.push({ to: prevGuid, type: 'chain' });
                     keysNeeded[prevGuid]++;
                     phase1Segments.push({ from: guid, to: prevGuid });
-                    addPhase1BaseEdge(guid, prevGuid);
                 }
 
                 for (let k = index - 2; k >= 0; k--) {
@@ -251,7 +196,6 @@ function wrapper(plugin_info) {
                         links.push({ to: backGuid, type: 'layer' });
                         keysNeeded[backGuid]++;
                         phase1Segments.push({ from: guid, to: backGuid });
-                        addPhase1BaseEdge(guid, backGuid);
                     }
                 }
             }
@@ -341,27 +285,20 @@ function wrapper(plugin_info) {
 
         plan.push({ type: 'destroy', guid: anchorGuid, phase: 2 });
 
-        const phase2Order = self.choosePhase2ReflectionOrder(sortedBase, phase1BaseAdjacency);
-        const reflectedBaseSet = new Set();
-
-        phase2Order.forEach(guid => {
+        sortedBase.forEach((guid, i) => {
             plan.push({ type: 'link', from: anchorGuid, to: guid, phase: 2 });
             linkCount++;
 
-            const neighbors = phase1BaseAdjacency.get(guid) || new Set();
-            neighbors.forEach(neighbor => {
-                if (!reflectedBaseSet.has(neighbor)) return;
+            if (i > 0) {
                 plan.push({
                     type: 'field',
                     p1: anchorGuid,
-                    p2: neighbor,
+                    p2: sortedBase[i - 1],
                     p3: guid,
                     phase: 2,
                 });
                 fieldCount++;
-            });
-
-            reflectedBaseSet.add(guid);
+            }
         });
 
         plan.push({
