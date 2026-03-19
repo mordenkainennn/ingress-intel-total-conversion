@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-fanfield-planner@Cloverjune
 // @name           IITC Plugin: Cloverjune's Fanfield Planner
-// @version        2.1.7
+// @version        2.1.8
 // @description    Plugin for planning fanfields/pincushions in IITC (Phase 1 Safe Mode)
 // @author         cloverjune
 // @category       Layer
@@ -18,6 +18,10 @@ function wrapper(plugin_info) {
     const self = (window.plugin.fanfieldPlanner = function () { });
 
     self.changelog = [
+        {
+            version: '2.1.8',
+            changes: ['FEAT: Summary now shows separate Phase 1/Phase 2 link and field counts plus totals.'],
+        },
         {
             version: '2.1.7',
             changes: ['FEAT: Phase 2 now reflects against the full Phase 1 base graph and creates all closable fields.'],
@@ -268,6 +272,10 @@ function wrapper(plugin_info) {
         let totalDistance = 0;
         let linkCount = 0;
         let fieldCount = 0;
+        let phase1LinkCount = 0;
+        let phase1FieldCount = 0;
+        let phase2LinkCount = 0;
+        let phase2FieldCount = 0;
 
         plan.push({
             type: 'header',
@@ -299,6 +307,7 @@ function wrapper(plugin_info) {
             step.links.forEach(link => {
                 plan.push({ type: 'link', from: guid, to: link.to, phase: 1 });
                 linkCount++;
+                phase1LinkCount++;
 
                 if (link.type === 'chain' || link.type === 'layer') {
                     plan.push({
@@ -309,6 +318,7 @@ function wrapper(plugin_info) {
                         phase: 1,
                     });
                     fieldCount++;
+                    phase1FieldCount++;
                 }
             });
 
@@ -347,6 +357,7 @@ function wrapper(plugin_info) {
         phase2Order.forEach(guid => {
             plan.push({ type: 'link', from: anchorGuid, to: guid, phase: 2 });
             linkCount++;
+            phase2LinkCount++;
 
             const neighbors = phase1BaseAdjacency.get(guid) || new Set();
             neighbors.forEach(neighbor => {
@@ -359,6 +370,7 @@ function wrapper(plugin_info) {
                     phase: 2,
                 });
                 fieldCount++;
+                phase2FieldCount++;
             });
 
             reflectedBaseSet.add(guid);
@@ -368,6 +380,10 @@ function wrapper(plugin_info) {
             type: 'summary',
             linkCount,
             fieldCount,
+            phase1LinkCount,
+            phase1FieldCount,
+            phase2LinkCount,
+            phase2FieldCount,
             totalDistance,
             keysNeeded,
             basePortalsCount: baseGuids.length,
@@ -650,6 +666,10 @@ function wrapper(plugin_info) {
                 case 'summary':
                     planText += '\n--- SUMMARY ---\n';
                     planText += `Base Portals: ${action.basePortalsCount}\n`;
+                    planText += `Phase 1 Links: ${action.phase1LinkCount}\n`;
+                    planText += `Phase 1 Fields: ${action.phase1FieldCount}\n`;
+                    planText += `Phase 2 Links: ${action.phase2LinkCount}\n`;
+                    planText += `Phase 2 Fields: ${action.phase2FieldCount}\n`;
                     planText += `Total Links: ${action.linkCount}\n`;
                     planText += `Total Fields: ${action.fieldCount}\n`;
                     planText += `Estimated Travel Distance: ${self.formatDistance(action.totalDistance)}\n\n`;

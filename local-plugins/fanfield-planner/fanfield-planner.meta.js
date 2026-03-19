@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-fanfield-planner@cloverjune
 // @name           IITC Plugin: cloverjune's Fanfield Planner
-// @version        2.1.7
+// @version        2.1.8
 // @description    Plugin for planning fanfields/pincushions in IITC
 // @author         cloverjune
 // @category       Layer
