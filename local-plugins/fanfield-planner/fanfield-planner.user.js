@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-fanfield-planner@Cloverjune
 // @name           IITC Plugin: Cloverjune's Fanfield Planner
-// @version        2.1.8
+// @version        2.1.10
 // @description    Plugin for planning fanfields/pincushions in IITC (Phase 1 Safe Mode)
 // @author         cloverjune
 // @category       Layer
@@ -18,6 +18,14 @@ function wrapper(plugin_info) {
     const self = (window.plugin.fanfieldPlanner = function () { });
 
     self.changelog = [
+        {
+            version: '2.1.10',
+            changes: ['FEAT: Warn when Phase 2 reflection requires SBUL mods for more than 8 outgoing links.'],
+        },
+        {
+            version: '2.1.9',
+            changes: ['FEAT: Summary now includes total AP from links and fields.'],
+        },
         {
             version: '2.1.8',
             changes: ['FEAT: Summary now shows separate Phase 1/Phase 2 link and field counts plus totals.'],
@@ -384,6 +392,8 @@ function wrapper(plugin_info) {
             phase1FieldCount,
             phase2LinkCount,
             phase2FieldCount,
+            phase2RequiredSbul: Math.max(0, Math.ceil((phase2LinkCount - 8) / 8)),
+            totalAp: linkCount * 313 + fieldCount * 1250,
             totalDistance,
             keysNeeded,
             basePortalsCount: baseGuids.length,
@@ -639,6 +649,15 @@ function wrapper(plugin_info) {
             switch (action.type) {
                 case 'header':
                     planText += `\n--- ${action.text} ---\n`;
+                    if (action.text === 'Phase 2: Re-throw from Anchor') {
+                        const summary = plan.find(stepItem => stepItem.type === 'summary');
+                        if (summary && summary.phase2RequiredSbul > 0) {
+                            planText += `[!] Prepare ${summary.phase2RequiredSbul} SBUL mod(s) before starting Phase 2.\n`;
+                            if (summary.phase2RequiredSbul > 2) {
+                                planText += `[!] This exceeds the usual solo self-deploy limit of 2 mods.\n`;
+                            }
+                        }
+                    }
                     step = 1;
                     break;
                 case 'visit': {
@@ -670,8 +689,17 @@ function wrapper(plugin_info) {
                     planText += `Phase 1 Fields: ${action.phase1FieldCount}\n`;
                     planText += `Phase 2 Links: ${action.phase2LinkCount}\n`;
                     planText += `Phase 2 Fields: ${action.phase2FieldCount}\n`;
+                    if (action.phase2RequiredSbul > 0) {
+                        planText += `Required SBUL for Phase 2: ${action.phase2RequiredSbul}\n`;
+                        if (action.phase2RequiredSbul > 2) {
+                            planText += 'Solo self-deploy limit exceeded: yes\n';
+                        }
+                    } else {
+                        planText += 'Required SBUL for Phase 2: 0\n';
+                    }
                     planText += `Total Links: ${action.linkCount}\n`;
                     planText += `Total Fields: ${action.fieldCount}\n`;
+                    planText += `Total AP: ${action.totalAp}\n`;
                     planText += `Estimated Travel Distance: ${self.formatDistance(action.totalDistance)}\n\n`;
                     planText += 'Total Keys Required (check individual steps for farming location):\n';
                     Object.keys(action.keysNeeded || {}).forEach(guid => {

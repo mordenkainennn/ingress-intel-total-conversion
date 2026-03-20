@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC Plugin: Fanfield Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', 'Noto Sans JP', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a, .lang-switch span { color: #ffce00; text-decoration: none; font-family: 'Coda', cursive; }
+        .lang-switch span { color: #fff; }
+        .container { max-width: 980px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', 'Noto Sans JP', cursive; color: #0ff; text-transform: uppercase; text-shadow: 0 0 5px #0ff; }
+        h1 { text-align: center; font-size: 2.4em; margin-bottom: 20px; }
+        h2 { font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 32px; }
+        h3 { font-size: 1.1em; color: #ffce00; margin-top: 20px; }
+        p, li { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; font-family: 'Courier New', Courier, monospace; }
+        ul { list-style-type: none; padding-left: 0; }
+        ul li { background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px; padding-left: 25px; margin-bottom: 10px; }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 14px; border-radius: 4px; margin: 16px 0; }
+        .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .panel { background: rgba(0, 0, 0, 0.25); border: 1px solid #244; border-radius: 4px; padding: 12px; }
+        .changelog-item { margin-bottom: 18px; }
+        @media (max-width: 900px) { .lang-switch { position: static; margin: 0 auto 12px auto; width: fit-content; } .container { padding: 20px; } .panel-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="lang-switch">
+        <a href="index.html">English</a> | <a href="index_zh-cn.html">简体中文</a> | <span>日本語</span>
+    </div>
+    <div class="container">
+        <h1>Fanfield Planner</h1>
+        <p><strong>Fanfield Planner</strong> は、IITC 上でアンカー型ファンフィールドやピンクッション構造を計画するためのプラグインです。アンカーポータル 1 個と複数のベースポータルを選び、2 フェーズの実行計画と可視化を生成できます。</p>
+        <div class="note">
+            <p><strong>現在の重点:</strong> Phase 1 では交差しないベースグラフを構築し、Phase 2 ではアンカーへ戻ってそのグラフに反射リンクを投げ、できるだけ多くのフィールドを閉じます。Summary には各フェーズの集計、総 AP、SBUL 必要数も表示されます。</p>
+        </div>
+
+        <h2>主な機能</h2>
+        <ul>
+            <li>マップ上でアンカーと複数のベースポータルを直接選択できます。</li>
+            <li>Phase 1 の底辺構築では交差するリンクを拒否します。</li>
+            <li>Phase 2 では Phase 1 のベースグラフを使って反射順序を計画します。</li>
+            <li>各フェーズのリンクとフィールドを別レイヤーに描画します。</li>
+            <li>Summary に Phase 1、Phase 2、合計の link / field、総 AP、SBUL 必要数を表示します。</li>
+        </ul>
+
+        <h2>使い方</h2>
+        <ol style="padding-left: 28px;">
+            <li>toolbox から <code>Fanfield Planner</code> を開きます。</li>
+            <li><code>Select Anchor</code> を選んでアンカーポータルをクリックします。</li>
+            <li><code>Select Base Portals</code> に切り替えてベースポータルを選びます。</li>
+            <li><code>Plan Fanfield</code> を押して 2 フェーズの計画を生成します。</li>
+            <li>テキスト出力と 4 つのレイヤーを確認し、必要なら再調整します。</li>
+        </ol>
+
+        <h2>アルゴリズム概要</h2>
+        <div class="panel-grid">
+            <div class="panel">
+                <h3>Phase 1</h3>
+                <p>ベースポータルをアンカー周りの角度で並べ、短い方の巡回方向を選びます。各ベースからアンカーへリンクしつつ、交差しない範囲で過去のベースへバックリンクします。</p>
+            </div>
+            <div class="panel">
+                <h3>Phase 2</h3>
+                <p>アンカーに戻った後、Phase 1 で構築したベースグラフに対して反射します。必要な出リンク数が 8 を超える場合は、開始前に SBUL 必要数を警告します。</p>
+            </div>
+        </div>
+
+        <h2>レイヤー</h2>
+        <ul>
+            <li><code>Fanfield Plan (Links Phase 1)</code></li>
+            <li><code>Fanfield Plan (Fields Phase 1)</code></li>
+            <li><code>Fanfield Plan (Links Phase 2)</code></li>
+            <li><code>Fanfield Plan (Fields Phase 2)</code></li>
+        </ul>
+
+        <h2>更新履歴</h2>
+        <div class="changelog-item">
+            <h3>Version 2.1.10</h3>
+            <ul><li>Phase 2 で 8 本を超える出リンクが必要な場合、必要な SBUL 数を警告するようにしました。</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.1.9</h3>
+            <ul><li>Summary に link と field から計算した総 AP を追加しました。</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.1.8</h3>
+            <ul><li>Summary に Phase 1、Phase 2、合計それぞれの link 数と field 数を表示するようにしました。</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.1.7</h3>
+            <ul><li>Phase 2 が Phase 1 の完全なベースグラフを使って、閉じられるすべてのフィールドを生成するようになりました。</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.1.6</h3>
+            <ul><li>Phase 1 の crosslink 判定を anchor 射線だけでなく、既存の全計画リンクに対して行うよう修正しました。</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.1.5</h3>
+            <ul><li>Phase 1 で、交差しない範囲でできるだけ多くの過去ベースへバックリンクするよう改良しました。</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.1.4</h3>
+            <ul><li>1.9 版スタイルの UI とレイヤーグループを復元しつつ、新しい safe-mode ロジックを維持しました。</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.1.3</h3>
+            <ul><li>IITC の実際のダイアログコンテナに描画するよう修正し、空白 UI 問題を解決しました。</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.1.1</h3>
+            <ul><li>UserScript の更新 URL とダウンロード URL を正しい <code>master</code> ブランチに修正しました。</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.1</h3>
+            <ul><li>ファンフィールド計画プラグインの初回リリースです。</li></ul>
+        </div>
+    </div>
+</body>
+</html>

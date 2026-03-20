@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC Plugin: Fanfield Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a, .lang-switch span { color: #ffce00; text-decoration: none; font-family: 'Coda', cursive; }
+        .lang-switch span { color: #fff; }
+        .container { max-width: 980px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', cursive; color: #0ff; text-transform: uppercase; text-shadow: 0 0 5px #0ff; }
+        h1 { text-align: center; font-size: 2.4em; margin-bottom: 20px; }
+        h2 { font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 32px; }
+        h3 { font-size: 1.1em; color: #ffce00; margin-top: 20px; }
+        p, li { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; font-family: 'Courier New', Courier, monospace; }
+        ul { list-style-type: none; padding-left: 0; }
+        ul li { background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px; padding-left: 25px; margin-bottom: 10px; }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 14px; border-radius: 4px; margin: 16px 0; }
+        .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .panel { background: rgba(0, 0, 0, 0.25); border: 1px solid #244; border-radius: 4px; padding: 12px; }
+        .changelog-item { margin-bottom: 18px; }
+        @media (max-width: 900px) { .lang-switch { position: static; margin: 0 auto 12px auto; width: fit-content; } .container { padding: 20px; } .panel-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="lang-switch">
+        <span>English</span> | <a href="index_zh-cn.html">简体中文</a> | <a href="index_ja.html">日本語</a>
+    </div>
+    <div class="container">
+        <h1>Fanfield Planner</h1>
+        <p><strong>Fanfield Planner</strong> is an IITC plugin for building anchor based fanfields and pincushion style plans. It lets you select one anchor portal and a set of base portals, then generates a two phase execution route with map overlays and readable text output.</p>
+        <div class="note">
+            <p><strong>Current focus:</strong> Phase 1 builds a non-crossing base graph. Phase 2 returns to the anchor and reflects links into that graph to close as many fields as possible. The summary also reports per-phase counts, total AP, and SBUL requirements for heavy Phase 2 reflection.</p>
+        </div>
+
+        <h2>What It Does</h2>
+        <ul>
+            <li>Select one anchor portal and multiple base portals directly from the IITC map.</li>
+            <li>Build a Phase 1 route that creates a non-crossing base structure.</li>
+            <li>Run a Phase 2 reflection plan from the anchor against the actual Phase 1 base graph.</li>
+            <li>Draw links and fields on dedicated IITC layers for both phases.</li>
+            <li>Generate step-by-step text with distances, bearings, key hints, per-phase counts, total AP, and SBUL reminders.</li>
+        </ul>
+
+        <h2>Planning Workflow</h2>
+        <ol style="padding-left: 28px;">
+            <li>Open <code>Fanfield Planner</code> from toolbox.</li>
+            <li>Select <code>Anchor</code> mode and click the top portal.</li>
+            <li>Select <code>Base</code> mode and click the base portals.</li>
+            <li>Press <code>Plan Fanfield</code> to generate the two phase route.</li>
+            <li>Inspect the text output and the four map layers, then iterate if needed.</li>
+        </ol>
+
+        <h2>Algorithm Overview</h2>
+        <div class="panel-grid">
+            <div class="panel">
+                <h3>Phase 1</h3>
+                <p>Base portals are sorted around the anchor and traversed in the shorter direction. Each visited base links back to the anchor and greedily backlinks to historical bases while rejecting crossing links.</p>
+            </div>
+            <div class="panel">
+                <h3>Phase 2</h3>
+                <p>The planner returns to the anchor and chooses a reflection order that closes as many supported fields as possible against the Phase 1 base graph. If outgoing links exceed the normal 8-link limit, the plan warns about required SBUL mods.</p>
+            </div>
+        </div>
+
+        <h2>Map Layers</h2>
+        <ul>
+            <li><code>Fanfield Plan (Links Phase 1)</code></li>
+            <li><code>Fanfield Plan (Fields Phase 1)</code></li>
+            <li><code>Fanfield Plan (Links Phase 2)</code></li>
+            <li><code>Fanfield Plan (Fields Phase 2)</code></li>
+        </ul>
+
+        <h2>Changelog</h2>
+        <div class="changelog-item">
+            <h3>Version 2.1.10</h3>
+            <ul><li>Warn when Phase 2 reflection requires SBUL mods for more than 8 outgoing links.</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.1.9</h3>
+            <ul><li>Summary now includes total AP from links and fields.</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.1.8</h3>
+            <ul><li>Summary now shows separate Phase 1 and Phase 2 link and field counts plus totals.</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.1.7</h3>
+            <ul><li>Phase 2 now reflects against the full Phase 1 base graph and creates all closable fields.</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.1.6</h3>
+            <ul><li>Phase 1 crosslink checks now validate against all previously planned links, not only anchor rays.</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.1.5</h3>
+            <ul><li>Phase 1 now greedily backlinks to as many historical bases as possible with crosslink checks.</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.1.4</h3>
+            <ul><li>Restored the 1.9-style planner UI and layer groups while keeping the current safe-mode planning logic.</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.1.3</h3>
+            <ul><li>Fixed IITC dialog rendering by targeting the actual <code>#dialog-&lt;id&gt;</code> container.</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.1.1</h3>
+            <ul><li>Corrected UserScript update and download URLs to point to the proper <code>master</code> branch.</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.1</h3>
+            <ul><li>Initial release for fanfield planning.</li></ul>
+        </div>
+    </div>
+</body>
+</html>
