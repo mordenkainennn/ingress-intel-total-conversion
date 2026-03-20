@@ -76,6 +76,8 @@ function wrapper(plugin_info) {
     self.fieldsLayerPhase1 = null;
     self.linksLayerPhase2 = null;
     self.fieldsLayerPhase2 = null;
+    self.highlightLayergroup = null;
+    self.animationRequestIds = {};
 
     /* =======================
        Geometry Helpers
@@ -481,6 +483,10 @@ function wrapper(plugin_info) {
                     <button id="fanfield-scan-btn" type="button">Scan Triangle</button>
                     <button id="fanfield-reset-candidates-btn" type="button">Reset Lists</button>
                 </div>
+                <label class="fanfield-lock-toggle">
+                    <input id="fanfield-lock-triangle" type="checkbox">
+                    Lock triangle vertices
+                </label>
             </fieldset>
 
             <fieldset>
@@ -528,6 +534,7 @@ function wrapper(plugin_info) {
                 .fanfield-candidate-column { display:flex; flex-direction:column; gap:6px; }
                 .fanfield-candidate-column select { min-height:160px; width:100%; box-sizing:border-box; }
                 .fanfield-candidate-actions { display:flex; flex-direction:column; gap:8px; }
+                .fanfield-lock-toggle { display:block; margin-top:8px; }
                 #fanfield-plan-text { height:220px; resize:vertical; width:100%; box-sizing:border-box; }
                 .placeholder { color:#999; text-align:center; padding:10px; }
             </style>
@@ -631,6 +638,101 @@ function wrapper(plugin_info) {
         self.updateDialog();
     };
 
+    self.clearHighlights = function () {
+        Object.keys(self.animationRequestIds).forEach(guid => {
+            cancelAnimationFrame(self.animationRequestIds[guid]);
+        });
+        self.animationRequestIds = {};
+        if (self.highlightLayergroup) self.highlightLayergroup.clearLayers();
+    };
+
+    self.animateTriangle = function (guid) {
+        if (!self.highlightLayergroup || !window.map) return;
+        const portal = window.portals[guid];
+        if (!portal) return;
+
+        self.clearHighlights();
+
+        const portalLocation = window.map.latLngToContainerPoint(portal.getLatLng());
+        const minTriangleRadius = 30;
+        const maxTriangleRadius = 38;
+        const triangleRotationSpeed = 0.02;
+        const colorPulseFrequency = 0.8;
+        const triangleColorStart = 'ffff00';
+        const triangleColorEnd = 'ff0000';
+        const lineWeight = 3;
+
+        let rotationAngle = 0;
+        const triangleCoordinates = [
+            [0, minTriangleRadius],
+            [minTriangleRadius * Math.sqrt(3) / 2, -minTriangleRadius / 2],
+            [-minTriangleRadius * Math.sqrt(3) / 2, -minTriangleRadius / 2],
+        ].map(coord => [coord[0] + portalLocation.x, coord[1] + portalLocation.y]);
+
+        const triangle = L.polygon(
+            triangleCoordinates.map(coord => window.map.containerPointToLatLng(coord)),
+            { color: `#${triangleColorStart}`, weight: lineWeight, fill: false, interactive: false }
+        );
+        triangle.addTo(self.highlightLayergroup);
+
+        const calculateSideLength = radius => radius * Math.sqrt(3);
+        const hexToRgb = hex => [parseInt(hex.substring(0, 2), 16), parseInt(hex.substring(2, 4), 16), parseInt(hex.substring(4, 6), 16)];
+        const rgbToHex = rgb => rgb.map(value => value.toString(16).padStart(2, '0')).join('');
+        const interpolateColor = function (start, end, factor) {
+            const startRgb = hexToRgb(start);
+            const endRgb = hexToRgb(end);
+            return rgbToHex([
+                Math.round(startRgb[0] + factor * (endRgb[0] - startRgb[0])),
+                Math.round(startRgb[1] + factor * (endRgb[1] - startRgb[1])),
+                Math.round(startRgb[2] + factor * (endRgb[2] - startRgb[2])),
+            ]);
+        };
+
+        const colorPulseStartTime = performance.now();
+        const animate = function (timestamp) {
+            const pulse = (Math.sin((timestamp - colorPulseStartTime) * 2 * Math.PI * colorPulseFrequency / 1000) + 1) / 2;
+            const radius = minTriangleRadius + pulse * (maxTriangleRadius - minTriangleRadius);
+            const newTriangleCoordinates = triangleCoordinates.map(coord => {
+                const x = coord[0] - portalLocation.x;
+                const y = coord[1] - portalLocation.y;
+                const angle = Math.atan2(y, x) - rotationAngle;
+                const newX = portalLocation.x + radius * Math.cos(angle);
+                const newY = portalLocation.y + radius * Math.sin(angle);
+                return window.map.containerPointToLatLng([newX, newY]);
+            });
+            triangle.setLatLngs(newTriangleCoordinates);
+
+            const triangleColor = interpolateColor(triangleColorStart, triangleColorEnd, pulse);
+            const sideLength = calculateSideLength(radius);
+            const sectorLength = sideLength / 3;
+            triangle.setStyle({
+                color: `#${triangleColor}`,
+                dashArray: [sectorLength, sectorLength, 2 * sectorLength, sectorLength, 2 * sectorLength, sectorLength, sectorLength],
+            });
+
+            rotationAngle += triangleRotationSpeed;
+            self.animationRequestIds[guid] = requestAnimationFrame(animate);
+        };
+
+        self.animationRequestIds[guid] = requestAnimationFrame(animate);
+    };
+
+    self.selectCandidateInLists = function (guid) {
+        const dialogElement = self.getDialogElement();
+        const option = dialogElement.find(`#fanfield-included-portals option[value="${guid}"], #fanfield-excluded-portals option[value="${guid}"]`);
+        if (!option.length) return false;
+
+        dialogElement.find('#fanfield-included-portals option, #fanfield-excluded-portals option').prop('selected', false);
+        option.prop('selected', true);
+        const list = option.parent();
+        list.scrollTop(0);
+        if (option.offset()) {
+            list.scrollTop(option.offset().top - list.offset().top + list.scrollTop());
+        }
+        self.animateTriangle(guid);
+        return true;
+    };
+
     self.getDialogElement = function () {
         const byId = $(`#dialog-${self.dialogId}`);
         if (byId.length) return byId;
@@ -725,6 +827,7 @@ function wrapper(plugin_info) {
         const dialogElement = self.getDialogElement();
         dialogElement.find('#fanfield-plan-text').val('');
         self.clearLayers();
+        self.clearHighlights();
     };
 
     self.attachEventHandler = function () {
@@ -764,6 +867,11 @@ function wrapper(plugin_info) {
 
         dialogElement.on('click.fanfieldPlanner', '#fanfield-move-to-included', function () {
             self.moveSelectedCandidates('#fanfield-excluded-portals', '#fanfield-included-portals');
+        });
+
+        dialogElement.on('click.fanfieldPlanner', '#fanfield-included-portals, #fanfield-excluded-portals', function (e) {
+            const guid = $(e.target).val();
+            if (guid) self.animateTriangle(guid);
         });
 
         dialogElement.on('click.fanfieldPlanner', '#plan-fanfield-btn', function () {
@@ -950,6 +1058,11 @@ function wrapper(plugin_info) {
     self.portalSelected = function (data) {
         if (!self.dialogIsOpen()) return;
 
+        const dialogElement = self.getDialogElement();
+        const clickedGuid = data.selectedPortalGuid;
+        const selectedInList = self.selectCandidateInLists(clickedGuid);
+        if (dialogElement.find('#fanfield-lock-triangle').is(':checked')) return;
+
         const portalRecord = self.getPortalRecord(data.selectedPortalGuid);
         if (!portalRecord) return;
 
@@ -981,6 +1094,9 @@ function wrapper(plugin_info) {
             }
         }
 
+        if (!selectedInList && (self.includedPortalGuids.includes(clickedGuid) || self.excludedPortalGuids.includes(clickedGuid))) {
+            self.selectCandidateInLists(clickedGuid);
+        }
         self.updateDialog();
     };
 
@@ -1023,11 +1139,13 @@ function wrapper(plugin_info) {
         if (!self.fieldsLayerPhase1) self.fieldsLayerPhase1 = new L.LayerGroup();
         if (!self.linksLayerPhase2) self.linksLayerPhase2 = new L.LayerGroup();
         if (!self.fieldsLayerPhase2) self.fieldsLayerPhase2 = new L.LayerGroup();
+        if (!self.highlightLayergroup) self.highlightLayergroup = new L.LayerGroup();
 
         window.addLayerGroup('Fanfield Plan (Links Phase 1)', self.linksLayerPhase1, false);
         window.addLayerGroup('Fanfield Plan (Fields Phase 1)', self.fieldsLayerPhase1, false);
         window.addLayerGroup('Fanfield Plan (Links Phase 2)', self.linksLayerPhase2, false);
         window.addLayerGroup('Fanfield Plan (Fields Phase 2)', self.fieldsLayerPhase2, false);
+        window.addLayerGroup('Fanfield Plan (Highlights)', self.highlightLayergroup, true);
     };
 
     const setup = self.setup;
