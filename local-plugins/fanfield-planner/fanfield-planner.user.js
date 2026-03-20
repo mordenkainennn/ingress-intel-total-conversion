@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-fanfield-planner@Cloverjune
 // @name           IITC Plugin: Cloverjune's Fanfield Planner
-// @version        2.1.10
+// @version        2.2.0
 // @description    Plugin for planning fanfields/pincushions in IITC (Phase 1 Safe Mode)
 // @author         cloverjune
 // @category       Layer
@@ -18,6 +18,10 @@ function wrapper(plugin_info) {
     const self = (window.plugin.fanfieldPlanner = function () { });
 
     self.changelog = [
+        {
+            version: '2.2.0',
+            changes: ['FEAT: Add triangle-based portal discovery with included/excluded lists so large fanfields can be curated without manual base selection.'],
+        },
         {
             version: '2.1.10',
             changes: ['FEAT: Warn when Phase 2 reflection requires SBUL mods for more than 8 outgoing links.'],
@@ -61,8 +65,11 @@ function wrapper(plugin_info) {
     ];
 
     self.anchorPortal = null;
+    self.framePortals = [];
     self.basePortals = [];
     self.selectMode = 'anchor';
+    self.includedPortalGuids = [];
+    self.excludedPortalGuids = [];
     self.dialogId = 'fanfield-planner-view';
     self.dialogRef = null;
     self.linksLayerPhase1 = null;
@@ -163,6 +170,53 @@ function wrapper(plugin_info) {
 
     self.makeUndirectedKey = function (a, b) {
         return a < b ? `${a}|${b}` : `${b}|${a}`;
+    };
+
+    self.dotProduct = function (a, b) {
+        return a.x * b.x + a.y * b.y + a.z * b.z;
+    };
+
+    self.vectorSubtract = function (a, b) {
+        return {
+            x: a.x - b.x,
+            y: a.y - b.y,
+            z: a.z - b.z,
+        };
+    };
+
+    self.pointInTriangle = function (pt, triangle) {
+        const convertTo3D = function (latLng) {
+            const lat = latLng.lat * Math.PI / 180;
+            const lng = latLng.lng * Math.PI / 180;
+            return {
+                x: Math.cos(lat) * Math.cos(lng),
+                y: Math.cos(lat) * Math.sin(lng),
+                z: Math.sin(lat),
+            };
+        };
+
+        const [p1, p2, p3] = triangle.map(convertTo3D);
+        const pt3D = convertTo3D(pt);
+
+        const v0 = self.vectorSubtract(p3, p1);
+        const v1 = self.vectorSubtract(p2, p1);
+        const v2 = self.vectorSubtract(pt3D, p1);
+
+        const dot00 = self.dotProduct(v0, v0);
+        const dot01 = self.dotProduct(v0, v1);
+        const dot02 = self.dotProduct(v0, v2);
+        const dot11 = self.dotProduct(v1, v1);
+        const dot12 = self.dotProduct(v1, v2);
+
+        const invDeno = 1 / (dot00 * dot11 - dot01 * dot01);
+        const eps = 1e-6;
+        const u = (dot11 * dot02 - dot01 * dot12) * invDeno;
+        if (u <= eps || u >= 1 - eps) return false;
+
+        const v = (dot00 * dot12 - dot01 * dot02) * invDeno;
+        if (v <= eps || v >= 1 - eps) return false;
+
+        return u + v < 1 - eps;
     };
 
     self.choosePhase2ReflectionOrder = function (sortedBase, adjacency) {
@@ -407,7 +461,8 @@ function wrapper(plugin_info) {
             <div class="fanfield-select-mode-container">
                 <strong>Selection Mode:</strong>
                 <label><input type="radio" name="fanfield-select-mode" value="anchor" checked> Select Anchor</label>
-                <label><input type="radio" name="fanfield-select-mode" value="base"> Select Base Portals</label>
+                <label><input type="radio" name="fanfield-select-mode" value="frame"> Select Outer Corners</label>
+                <label><input type="radio" name="fanfield-select-mode" value="manual"> Add Base Portals</label>
             </div>
 
             <fieldset>
@@ -418,9 +473,38 @@ function wrapper(plugin_info) {
             </fieldset>
 
             <fieldset>
+                <legend>Outer Triangle</legend>
+                <div id="fanfield-frame-portal-details">
+                    <div class="placeholder">Please select two additional outer corners.</div>
+                </div>
+                <div id="fanfield-scan-controls">
+                    <button id="fanfield-scan-btn" type="button">Scan Triangle</button>
+                    <button id="fanfield-reset-candidates-btn" type="button">Reset Lists</button>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Candidate Base Portals</legend>
+                <div class="fanfield-candidate-layout">
+                    <div class="fanfield-candidate-column">
+                        <label for="fanfield-included-portals"><strong>Included</strong></label>
+                        <select id="fanfield-included-portals" multiple></select>
+                    </div>
+                    <div class="fanfield-candidate-actions">
+                        <button id="fanfield-move-to-excluded" type="button">&gt;</button>
+                        <button id="fanfield-move-to-included" type="button">&lt;</button>
+                    </div>
+                    <div class="fanfield-candidate-column">
+                        <label for="fanfield-excluded-portals"><strong>Excluded</strong></label>
+                        <select id="fanfield-excluded-portals" multiple></select>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
                 <legend>Base Portals (<span id="fanfield-base-count">0</span> selected)</legend>
                 <div id="fanfield-base-portals-list">
-                    <div class="placeholder">Please select at least 2 base portals.</div>
+                    <div class="placeholder">Scan a triangle or add base portals manually.</div>
                 </div>
             </fieldset>
 
@@ -433,10 +517,17 @@ function wrapper(plugin_info) {
             <style>
                 #fanfield-planner-container { display:flex; flex-direction:column; gap:8px; }
                 .fanfield-select-mode-container, #fanfield-buttons-container { padding:5px 0; }
+                #fanfield-scan-controls { display:flex; gap:8px; margin-top:8px; }
                 #fanfield-base-portals-list { max-height:150px; overflow-y:auto; display:flex; flex-direction:column; gap:5px; }
                 .fanfield-portal-item { display:flex; align-items:center; background:rgba(0,0,0,0.3); padding:3px; border-radius:4px; gap:8px; }
                 .fanfield-portal-item img { width:40px; height:40px; border-radius:4px; }
                 .fanfield-remove-btn { margin-left:auto; cursor:pointer; color:#ff5555; }
+                .fanfield-frame-grid { display:flex; gap:8px; flex-wrap:wrap; }
+                .fanfield-frame-grid .fanfield-portal-item { flex:1 1 45%; }
+                .fanfield-candidate-layout { display:grid; grid-template-columns:1fr 44px 1fr; gap:8px; align-items:center; }
+                .fanfield-candidate-column { display:flex; flex-direction:column; gap:6px; }
+                .fanfield-candidate-column select { min-height:160px; width:100%; box-sizing:border-box; }
+                .fanfield-candidate-actions { display:flex; flex-direction:column; gap:8px; }
                 #fanfield-plan-text { height:220px; resize:vertical; width:100%; box-sizing:border-box; }
                 .placeholder { color:#999; text-align:center; padding:10px; }
             </style>
@@ -463,6 +554,81 @@ function wrapper(plugin_info) {
 
     self.getPortalImage = function (portal) {
         return portal?.details?.image || window.portals[portal?.guid]?.options?.data?.image || window.DEFAULT_PORTAL_IMG;
+    };
+
+    self.getPortalRecord = function (guid) {
+        if (!guid) return null;
+        const portal = window.portals[guid];
+        if (!portal) return null;
+        return {
+            guid,
+            details: portal._details || { title: portal.options?.data?.title, image: portal.options?.data?.image },
+        };
+    };
+
+    self.syncBasePortalsFromIncluded = function () {
+        self.basePortals = self.includedPortalGuids
+            .map(guid => self.getPortalRecord(guid))
+            .filter(Boolean);
+    };
+
+    self.getTriangleCornerGuids = function () {
+        if (!self.anchorPortal || self.framePortals.length !== 2) return [];
+        return [self.anchorPortal.guid, self.framePortals[0].guid, self.framePortals[1].guid];
+    };
+
+    self.getPortalsInTriangle = function (triangleGuids, portalsToConsider) {
+        const triangleLatLngs = triangleGuids.map(guid => {
+            const portal = window.portals[guid];
+            return portal ? portal.getLatLng() : null;
+        });
+
+        if (triangleLatLngs.some(latLng => latLng === null)) return [];
+
+        const portalGuids = portalsToConsider || Object.keys(window.portals);
+        return portalGuids.filter(guid => {
+            const portal = window.portals[guid];
+            return portal && self.pointInTriangle(portal.getLatLng(), triangleLatLngs);
+        });
+    };
+
+    self.sortPortalGuidsByTitle = function (guids) {
+        return guids.slice().sort((a, b) => self.getPortalTitle(a).localeCompare(self.getPortalTitle(b)));
+    };
+
+    self.scanTrianglePortals = function () {
+        const triangleGuids = self.getTriangleCornerGuids();
+        if (triangleGuids.length !== 3) {
+            throw new Error('Select the anchor and two additional outer corners before scanning.');
+        }
+
+        const corners = new Set(triangleGuids);
+        const discovered = self.getPortalsInTriangle(triangleGuids, Object.keys(window.portals))
+            .filter(guid => !corners.has(guid));
+
+        self.includedPortalGuids = self.sortPortalGuidsByTitle(discovered);
+        self.excludedPortalGuids = [];
+        self.syncBasePortalsFromIncluded();
+        self.updateDialog();
+    };
+
+    self.moveSelectedCandidates = function (sourceSelector, destinationSelector) {
+        const dialogElement = self.getDialogElement();
+        const selected = dialogElement.find(`${sourceSelector} option:selected`).map(function () {
+            return $(this).val();
+        }).get();
+        if (selected.length === 0) return;
+
+        if (sourceSelector === '#fanfield-included-portals') {
+            self.includedPortalGuids = self.includedPortalGuids.filter(guid => !selected.includes(guid));
+            self.excludedPortalGuids = self.sortPortalGuidsByTitle(self.excludedPortalGuids.concat(selected));
+        } else {
+            self.excludedPortalGuids = self.excludedPortalGuids.filter(guid => !selected.includes(guid));
+            self.includedPortalGuids = self.sortPortalGuidsByTitle(self.includedPortalGuids.concat(selected));
+        }
+
+        self.syncBasePortalsFromIncluded();
+        self.updateDialog();
     };
 
     self.getDialogElement = function () {
@@ -496,6 +662,37 @@ function wrapper(plugin_info) {
             anchorDiv.append('<div class="placeholder">Please select one anchor portal.</div>');
         }
 
+        const frameDiv = dialogElement.find('#fanfield-frame-portal-details');
+        frameDiv.empty();
+        if (self.framePortals.length > 0) {
+            frameDiv.append('<div class="fanfield-frame-grid"></div>');
+            const frameGrid = frameDiv.find('.fanfield-frame-grid');
+            self.framePortals.forEach((portal, index) => {
+                frameGrid.append(`
+                    <div class="fanfield-portal-item">
+                        <img src="${self.escapeHtml(self.getPortalImage(portal))}" alt="${self.escapeHtml(self.getPortalTitle(portal.guid))}">
+                        <span>Corner ${index + 2}: ${self.escapeHtml(self.getPortalTitle(portal.guid))}</span>
+                    </div>
+                `);
+            });
+            for (let i = self.framePortals.length; i < 2; i++) {
+                frameGrid.append('<div class="placeholder">Select one more outer corner.</div>');
+            }
+        } else {
+            frameDiv.append('<div class="placeholder">Please select two additional outer corners.</div>');
+        }
+
+        const includedList = dialogElement.find('#fanfield-included-portals');
+        const excludedList = dialogElement.find('#fanfield-excluded-portals');
+        includedList.empty();
+        excludedList.empty();
+        self.sortPortalGuidsByTitle(self.includedPortalGuids).forEach(guid => {
+            includedList.append(`<option value="${self.escapeHtml(guid)}">${self.escapeHtml(self.getPortalTitle(guid))}</option>`);
+        });
+        self.sortPortalGuidsByTitle(self.excludedPortalGuids).forEach(guid => {
+            excludedList.append(`<option value="${self.escapeHtml(guid)}">${self.escapeHtml(self.getPortalTitle(guid))}</option>`);
+        });
+
         const baseListDiv = dialogElement.find('#fanfield-base-portals-list');
         baseListDiv.empty();
         dialogElement.find('#fanfield-base-count').text(self.basePortals.length);
@@ -510,16 +707,20 @@ function wrapper(plugin_info) {
                 `);
             });
         } else {
-            baseListDiv.append('<div class="placeholder">Please select at least 2 base portals.</div>');
+            baseListDiv.append('<div class="placeholder">Scan a triangle or add base portals manually.</div>');
         }
 
         dialogElement.find(`input[name="fanfield-select-mode"][value="${self.selectMode}"]`).prop('checked', true);
+        dialogElement.find('#fanfield-scan-btn').prop('disabled', !(self.anchorPortal && self.framePortals.length === 2));
         dialogElement.find('#plan-fanfield-btn').prop('disabled', !(self.anchorPortal && self.basePortals.length >= 2));
     };
 
     self.resetSelection = function () {
         self.anchorPortal = null;
+        self.framePortals = [];
         self.basePortals = [];
+        self.includedPortalGuids = [];
+        self.excludedPortalGuids = [];
         self.updateDialog();
         const dialogElement = self.getDialogElement();
         dialogElement.find('#fanfield-plan-text').val('');
@@ -534,11 +735,35 @@ function wrapper(plugin_info) {
         $(document).off('click.fanfieldPlannerRemove');
 
         dialogElement.on('change.fanfieldPlanner', 'input[name="fanfield-select-mode"]', function () {
-            self.selectMode = $(this).val() === 'base' ? 'base' : 'anchor';
+            const mode = $(this).val();
+            self.selectMode = mode === 'frame' || mode === 'manual' ? mode : 'anchor';
         });
 
         dialogElement.on('click.fanfieldPlanner', '#clear-fanfield-btn', function () {
             self.resetSelection();
+        });
+
+        dialogElement.on('click.fanfieldPlanner', '#fanfield-scan-btn', function () {
+            try {
+                self.scanTrianglePortals();
+            } catch (err) {
+                dialogElement.find('#fanfield-plan-text').val(`Triangle scan failed:\n${err.message}`);
+            }
+        });
+
+        dialogElement.on('click.fanfieldPlanner', '#fanfield-reset-candidates-btn', function () {
+            self.includedPortalGuids = [];
+            self.excludedPortalGuids = [];
+            self.syncBasePortalsFromIncluded();
+            self.updateDialog();
+        });
+
+        dialogElement.on('click.fanfieldPlanner', '#fanfield-move-to-excluded', function () {
+            self.moveSelectedCandidates('#fanfield-included-portals', '#fanfield-excluded-portals');
+        });
+
+        dialogElement.on('click.fanfieldPlanner', '#fanfield-move-to-included', function () {
+            self.moveSelectedCandidates('#fanfield-excluded-portals', '#fanfield-included-portals');
         });
 
         dialogElement.on('click.fanfieldPlanner', '#plan-fanfield-btn', function () {
@@ -554,7 +779,13 @@ function wrapper(plugin_info) {
 
         $(document).on('click.fanfieldPlannerRemove', '#dialog-' + self.dialogId + ' .fanfield-remove-btn', function () {
             const indexToRemove = $(this).data('index');
-            self.basePortals.splice(indexToRemove, 1);
+            const removed = self.basePortals[indexToRemove];
+            if (!removed) return;
+            self.includedPortalGuids = self.includedPortalGuids.filter(guid => guid !== removed.guid);
+            if (!self.excludedPortalGuids.includes(removed.guid)) {
+                self.excludedPortalGuids = self.sortPortalGuidsByTitle(self.excludedPortalGuids.concat([removed.guid]));
+            }
+            self.syncBasePortalsFromIncluded();
             self.updateDialog();
         });
     };
@@ -719,19 +950,35 @@ function wrapper(plugin_info) {
     self.portalSelected = function (data) {
         if (!self.dialogIsOpen()) return;
 
-        const details = window.portals[data.selectedPortalGuid]?._details;
-        if (!details) return;
+        const portalRecord = self.getPortalRecord(data.selectedPortalGuid);
+        if (!portalRecord) return;
 
         if (self.selectMode === 'anchor') {
-            self.anchorPortal = {
-                guid: data.selectedPortalGuid,
-                details,
-            };
-        } else if (!self.basePortals.some(p => p.guid === data.selectedPortalGuid)) {
-            self.basePortals.push({
-                guid: data.selectedPortalGuid,
-                details,
-            });
+            self.anchorPortal = portalRecord;
+            self.framePortals = self.framePortals.filter(portal => portal.guid !== portalRecord.guid);
+            self.includedPortalGuids = self.includedPortalGuids.filter(guid => guid !== portalRecord.guid);
+            self.excludedPortalGuids = self.excludedPortalGuids.filter(guid => guid !== portalRecord.guid);
+            self.syncBasePortalsFromIncluded();
+        } else if (self.selectMode === 'frame') {
+            if (!self.anchorPortal) {
+                self.anchorPortal = portalRecord;
+            } else if (portalRecord.guid !== self.anchorPortal.guid && !self.framePortals.some(portal => portal.guid === portalRecord.guid)) {
+                if (self.framePortals.length >= 2) self.framePortals.shift();
+                self.framePortals.push(portalRecord);
+                self.includedPortalGuids = self.includedPortalGuids.filter(guid => guid !== portalRecord.guid);
+                self.excludedPortalGuids = self.excludedPortalGuids.filter(guid => guid !== portalRecord.guid);
+                self.syncBasePortalsFromIncluded();
+            }
+        } else if (self.selectMode === 'manual') {
+            if (
+                portalRecord.guid !== self.anchorPortal?.guid &&
+                !self.framePortals.some(portal => portal.guid === portalRecord.guid) &&
+                !self.includedPortalGuids.includes(portalRecord.guid)
+            ) {
+                self.includedPortalGuids = self.sortPortalGuidsByTitle(self.includedPortalGuids.concat([portalRecord.guid]));
+                self.excludedPortalGuids = self.excludedPortalGuids.filter(guid => guid !== portalRecord.guid);
+                self.syncBasePortalsFromIncluded();
+            }
         }
 
         self.updateDialog();
@@ -761,7 +1008,10 @@ function wrapper(plugin_info) {
 
     self.setup = function () {
         self.anchorPortal = null;
+        self.framePortals = [];
         self.basePortals = [];
+        self.includedPortalGuids = [];
+        self.excludedPortalGuids = [];
 
         $('#toolbox').append(
             '<a onclick="window.plugin.fanfieldPlanner.openDialog(); return false;">Fanfield Planner</a>'
