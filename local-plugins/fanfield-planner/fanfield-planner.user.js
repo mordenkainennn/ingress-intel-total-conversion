@@ -507,13 +507,6 @@ function wrapper(plugin_info) {
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend>Base Portals (<span id="fanfield-base-count">0</span> selected)</legend>
-                <div id="fanfield-base-portals-list">
-                    <div class="placeholder">Scan a triangle or add base portals manually.</div>
-                </div>
-            </fieldset>
-
             <div id="fanfield-buttons-container">
                 <button id="plan-fanfield-btn" disabled>Plan Fanfield</button>
                 <button id="clear-fanfield-btn">Clear Portals</button>
@@ -524,7 +517,6 @@ function wrapper(plugin_info) {
                 #fanfield-planner-container { display:flex; flex-direction:column; gap:8px; }
                 .fanfield-select-mode-container, #fanfield-buttons-container { padding:5px 0; }
                 #fanfield-scan-controls { display:flex; gap:8px; margin-top:8px; }
-                #fanfield-base-portals-list { max-height:150px; overflow-y:auto; display:flex; flex-direction:column; gap:5px; }
                 .fanfield-portal-item { display:flex; align-items:center; background:rgba(0,0,0,0.3); padding:3px; border-radius:4px; gap:8px; }
                 .fanfield-portal-item img { width:40px; height:40px; border-radius:4px; }
                 .fanfield-remove-btn { margin-left:auto; cursor:pointer; color:#ff5555; }
@@ -795,23 +787,6 @@ function wrapper(plugin_info) {
             excludedList.append(`<option value="${self.escapeHtml(guid)}">${self.escapeHtml(self.getPortalTitle(guid))}</option>`);
         });
 
-        const baseListDiv = dialogElement.find('#fanfield-base-portals-list');
-        baseListDiv.empty();
-        dialogElement.find('#fanfield-base-count').text(self.basePortals.length);
-        if (self.basePortals.length > 0) {
-            self.basePortals.forEach((portal, index) => {
-                baseListDiv.append(`
-                    <div class="fanfield-portal-item">
-                        <img src="${self.escapeHtml(self.getPortalImage(portal))}" alt="${self.escapeHtml(self.getPortalTitle(portal.guid))}">
-                        <span>${self.escapeHtml(self.getPortalTitle(portal.guid))}</span>
-                        <a class="fanfield-remove-btn" data-index="${index}" title="Remove">X</a>
-                    </div>
-                `);
-            });
-        } else {
-            baseListDiv.append('<div class="placeholder">Scan a triangle or add base portals manually.</div>');
-        }
-
         dialogElement.find(`input[name="fanfield-select-mode"][value="${self.selectMode}"]`).prop('checked', true);
         dialogElement.find('#fanfield-scan-btn').prop('disabled', !(self.anchorPortal && self.framePortals.length === 2));
         dialogElement.find('#plan-fanfield-btn').prop('disabled', !(self.anchorPortal && self.basePortals.length >= 2));
@@ -883,18 +858,6 @@ function wrapper(plugin_info) {
                 dialogElement.find('#fanfield-plan-text').val(`An error occurred during planning:\n${err.message}`);
                 self.clearLayers();
             }
-        });
-
-        $(document).on('click.fanfieldPlannerRemove', '#dialog-' + self.dialogId + ' .fanfield-remove-btn', function () {
-            const indexToRemove = $(this).data('index');
-            const removed = self.basePortals[indexToRemove];
-            if (!removed) return;
-            self.includedPortalGuids = self.includedPortalGuids.filter(guid => guid !== removed.guid);
-            if (!self.excludedPortalGuids.includes(removed.guid)) {
-                self.excludedPortalGuids = self.sortPortalGuidsByTitle(self.excludedPortalGuids.concat([removed.guid]));
-            }
-            self.syncBasePortalsFromIncluded();
-            self.updateDialog();
         });
     };
 
