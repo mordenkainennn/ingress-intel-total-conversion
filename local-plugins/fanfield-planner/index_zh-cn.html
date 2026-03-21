@@ -35,38 +35,42 @@
     </div>
     <div class="container">
         <h1>扇形场规划器</h1>
-        <p><strong>Fanfield Planner</strong> 是一个用于 IITC 的扇形场与刺球场规划插件。它允许你选择一个顶点 Portal 和一组底边 Portal，生成双阶段执行计划，并用独立图层查看链接与场的结果。</p>
+        <p><strong>Fanfield Planner</strong> 是一个用于 IITC 的扇形场与 pincushion 规划插件。它支持先定义三角形范围，再扫描候选 Portal、整理 Included / Excluded 列表，最后生成双阶段执行路线、图层覆盖与文字计划。</p>
         <div class="note">
-            <p><strong>当前重点：</strong> 第一阶段负责构造无交叉的底边图；第二阶段回到顶点并向这张底边图反射，尽量闭合更多场。Summary 还会显示分阶段统计、总 AP，以及第二阶段是否需要提前准备 SBUL。</p>
+            <p><strong>当前重点：</strong> Phase 1 会基于筛选后的候选点构建一个不交叉的底边图。Phase 2 则回到 Anchor 向这张底边图反射。你可以选择忽略外连上限，也可以启用 SBUL 限制模式，让插件在给定上限内尽量获得更多 field。</p>
         </div>
 
         <h2>主要功能</h2>
         <ul>
-            <li>在地图上直接选择一个顶点 Portal 和多个底边 Portal。</li>
-            <li>生成第一阶段底边搭建路线，并拒绝交叉 link。</li>
-            <li>根据第一阶段底边图生成第二阶段反射计划。</li>
-            <li>分别绘制两阶段的链接和场，并输出文字计划。</li>
-            <li>Summary 分别显示 Phase 1、Phase 2 和总计的 link / field、总 AP，以及第二阶段所需 SBUL。</li>
+            <li>选择 1 个 Anchor 和 2 个外框点，定义用于规划的外三角。</li>
+            <li>扫描三角形内当前已加载的所有 Portal，并通过 Included / Excluded 列表筛选候选底边点。</li>
+            <li>支持锁定三角形顶点，避免在审查候选点时误改 Anchor 或外框点。</li>
+            <li>支持在列表中选中 Portal 后直接在地图上高亮定位。</li>
+            <li>生成不交叉的 Phase 1 底边构建路线。</li>
+            <li>基于真实的 Phase 1 底边图生成 Phase 2 反射计划。</li>
+            <li>可选启用 Phase 2 的 SBUL 限制模式，支持 0 到 4 个 SBUL，并在可用外连预算内尽量最大化 field 数量。</li>
+            <li>分别绘制两个阶段的 links / fields 图层，并输出可执行的文字步骤。</li>
         </ul>
 
         <h2>使用流程</h2>
         <ol style="padding-left: 28px;">
             <li>在 toolbox 中打开 <code>Fanfield Planner</code>。</li>
-            <li>选择 <code>Select Anchor</code> 后点击顶点 Portal。</li>
-            <li>切换到 <code>Select Base Portals</code> 后依次选择底边 Portal。</li>
-            <li>点击 <code>Plan Fanfield</code> 生成双阶段计划。</li>
-            <li>阅读文字计划，并结合 4 个图层检查结果。</li>
+            <li>选择 Anchor，并再选择两个外三角顶点。</li>
+            <li>点击 <code>Scan Triangle</code> 扫描三角形内当前已加载的 Portal。</li>
+            <li>在 <code>Included</code> 和 <code>Excluded</code> 两个列表之间移动 Portal，整理出想要的底边集合。</li>
+            <li>如有需要，启用 <code>Limit Phase 2 by SBUL</code> 并选择 0 到 4 的 SBUL 数量。</li>
+            <li>点击 <code>Plan Fanfield</code> 生成路线、图层、统计摘要和钥匙需求。</li>
         </ol>
 
         <h2>算法概览</h2>
         <div class="panel-grid">
             <div class="panel">
-                <h3>第一阶段</h3>
-                <p>底边点先按围绕顶点的角度排序，再选择较短方向进行访问。每到一个底边点，规划器都会尝试回连历史底边点，同时拒绝会造成交叉的 link。</p>
+                <h3>Phase 1</h3>
+                <p>底边点会先围绕 Anchor 按角度排序，再选择总路程较短的方向进行访问。每访问一个底边点，规划器都会先连回 Anchor，再在不产生交叉的前提下尽量回连更多历史底边点。Phase 1 形成的这张图，就是 Phase 2 真正反射所依据的底边图。</p>
             </div>
             <div class="panel">
-                <h3>第二阶段</h3>
-                <p>规划器回到顶点后，会根据第一阶段真实构造的底边图决定反射顺序，使每次新增 anchor link 尽量闭合更多场。若第二阶段需要超过 8 条出链，会提前提示所需 SBUL 数量。</p>
+                <h3>Phase 2</h3>
+                <p>规划器回到 Anchor 后，会向 Phase 1 的底边图反射。在不受限模式下，会尽可能反射更多 Anchor link。在 SBUL 限制模式下，Phase 2 的最大外连数为 <code>8 + 8 * SBUL</code>，插件会在这个上限内贪心选择能闭合最多 field 的反射子集和顺序。</p>
             </div>
         </div>
 
@@ -76,40 +80,57 @@
             <li><code>Fanfield Plan (Fields Phase 1)</code></li>
             <li><code>Fanfield Plan (Links Phase 2)</code></li>
             <li><code>Fanfield Plan (Fields Phase 2)</code></li>
+            <li><code>Fanfield Plan (Highlights)</code></li>
         </ul>
 
         <h2>更新记录</h2>
         <div class="changelog-item">
+            <h3>版本 2.3.1</h3>
+            <ul><li>将可选的 Phase 2 SBUL 选择范围从 0-2 扩展到 0-4，以适配多人协作部署的场景。</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>版本 2.3.0</h3>
+            <ul><li>新增可选的 Phase 2 SBUL 限制模式，在给定外连上限内尽量最大化 field 数量。</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>版本 2.2.1</h3>
+            <ul><li>移除了过时的手动底边选择模式，仅保留 Included / Excluded 列表作为底边 Portal 输入方式。</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>版本 2.2.0</h3>
+            <ul><li>新增基于三角形扫描的 Portal 发现能力，并加入 Included / Excluded 列表，方便大规模 fanfield 的筛选与整理。</li></ul>
+        </div>
+        <div class="changelog-item">
             <h3>版本 2.1.10</h3>
-            <ul><li>当第二阶段反射需要超过 8 条出链时，提前提示所需 SBUL 数量。</li></ul>
+            <ul><li>当 Phase 2 反射需要超过 8 条外连时，提前提示所需的 SBUL 数量。</li></ul>
         </div>
         <div class="changelog-item">
             <h3>版本 2.1.9</h3>
-            <ul><li>Summary 新增基于 link 和 field 的总 AP 统计。</li></ul>
+            <ul><li>Summary 新增 links 和 fields 对应的总 AP 统计。</li></ul>
         </div>
         <div class="changelog-item">
             <h3>版本 2.1.8</h3>
-            <ul><li>Summary 分别显示 Phase 1、Phase 2 以及总计的 link 数和 field 数。</li></ul>
+            <ul><li>Summary 分别显示 Phase 1、Phase 2 以及总计的 link 和 field 数量。</li></ul>
         </div>
         <div class="changelog-item">
             <h3>版本 2.1.7</h3>
-            <ul><li>第二阶段反射改为基于第一阶段完整底边图，生成所有可以闭合的场。</li></ul>
+            <ul><li>Phase 2 改为基于完整的 Phase 1 底边图反射，并生成所有可闭合的场。</li></ul>
         </div>
         <div class="changelog-item">
             <h3>版本 2.1.6</h3>
-            <ul><li>第一阶段的 crosslink 检查改为对所有已规划 link 生效，不再只检查 anchor 射线。</li></ul>
+            <ul><li>修复 Phase 1 的 crosslink 检查逻辑，现在会校验所有已规划 link，而不只检查 Anchor 射线。</li></ul>
         </div>
         <div class="changelog-item">
             <h3>版本 2.1.5</h3>
-            <ul><li>第一阶段支持在不交叉的前提下，尽量回连更多历史底边点。</li></ul>
+            <ul><li>Phase 1 现在会在不交叉的前提下，尽量回连更多历史底边点。</li></ul>
         </div>
         <div class="changelog-item">
             <h3>版本 2.1.4</h3>
-            <ul><li>恢复了 1.9 版本风格的主界面和图层组，同时保留新的 safe-mode 规划逻辑。</li></ul>
+            <ul><li>恢复 1.9 风格的规划界面和图层分组，同时保留当前 safe-mode 规划逻辑。</li></ul>
         </div>
         <div class="changelog-item">
             <h3>版本 2.1.3</h3>
-            <ul><li>修复 IITC 对话框渲染容器，解决主界面空白问题。</li></ul>
+            <ul><li>修复 IITC 对话框渲染容器，解决界面空白问题。</li></ul>
         </div>
         <div class="changelog-item">
             <h3>版本 2.1.1</h3>
@@ -117,7 +138,7 @@
         </div>
         <div class="changelog-item">
             <h3>版本 2.1</h3>
-            <ul><li>扇形场规划插件初始发布。</li></ul>
+            <ul><li>扇形场规划插件首次发布。</li></ul>
         </div>
     </div>
 </body>

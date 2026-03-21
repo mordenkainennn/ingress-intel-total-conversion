@@ -35,38 +35,42 @@
     </div>
     <div class="container">
         <h1>Fanfield Planner</h1>
-        <p><strong>Fanfield Planner</strong> is an IITC plugin for building anchor based fanfields and pincushion style plans. It lets you select one anchor portal and a set of base portals, then generates a two phase execution route with map overlays and readable text output.</p>
+        <p><strong>Fanfield Planner</strong> is an IITC plugin for planning anchor-based fanfields and pincushion-style builds. It lets you define a triangle, scan candidate portals inside it, curate the base set, and generate a two-phase execution plan with overlays and text instructions.</p>
         <div class="note">
-            <p><strong>Current focus:</strong> Phase 1 builds a non-crossing base graph. Phase 2 returns to the anchor and reflects links into that graph to close as many fields as possible. The summary also reports per-phase counts, total AP, and SBUL requirements for heavy Phase 2 reflection.</p>
+            <p><strong>Current focus:</strong> Phase 1 builds a non-crossing base graph from the curated portal list. Phase 2 returns to the anchor and reflects into that graph. You can either ignore outgoing-link limits, or enable SBUL cap mode and let the planner maximize fields within the configured limit.</p>
         </div>
 
         <h2>What It Does</h2>
         <ul>
-            <li>Select one anchor portal and multiple base portals directly from the IITC map.</li>
-            <li>Build a Phase 1 route that creates a non-crossing base structure.</li>
-            <li>Run a Phase 2 reflection plan from the anchor against the actual Phase 1 base graph.</li>
-            <li>Draw links and fields on dedicated IITC layers for both phases.</li>
-            <li>Generate step-by-step text with distances, bearings, key hints, per-phase counts, total AP, and SBUL reminders.</li>
+            <li>Select one anchor and two outer corners to define the planning triangle.</li>
+            <li>Scan all loaded portals inside the triangle and manage them through Included and Excluded lists.</li>
+            <li>Lock triangle vertices while reviewing candidates or selecting items from the lists.</li>
+            <li>Highlight a candidate portal from either list directly on the map.</li>
+            <li>Generate a Phase 1 route that builds a non-crossing base structure.</li>
+            <li>Generate a Phase 2 reflection plan from the anchor against the actual Phase 1 base graph.</li>
+            <li>Optionally cap Phase 2 by SBUL count from 0 to 4, using the available outgoing-link budget to maximize fields.</li>
+            <li>Draw links and fields on dedicated IITC layers and export readable step-by-step text.</li>
         </ul>
 
         <h2>Planning Workflow</h2>
         <ol style="padding-left: 28px;">
-            <li>Open <code>Fanfield Planner</code> from toolbox.</li>
-            <li>Select <code>Anchor</code> mode and click the top portal.</li>
-            <li>Select <code>Base</code> mode and click the base portals.</li>
-            <li>Press <code>Plan Fanfield</code> to generate the two phase route.</li>
-            <li>Inspect the text output and the four map layers, then iterate if needed.</li>
+            <li>Open <code>Fanfield Planner</code> from the toolbox.</li>
+            <li>Select the anchor portal and two outer triangle corners.</li>
+            <li>Press <code>Scan Triangle</code> to discover all currently loaded portals inside the triangle.</li>
+            <li>Move portals between <code>Included</code> and <code>Excluded</code> until the candidate set matches the intended base graph.</li>
+            <li>Optionally enable <code>Limit Phase 2 by SBUL</code> and choose a value from 0 to 4.</li>
+            <li>Press <code>Plan Fanfield</code> to generate the route, overlays, summary, and key requirements.</li>
         </ol>
 
         <h2>Algorithm Overview</h2>
         <div class="panel-grid">
             <div class="panel">
                 <h3>Phase 1</h3>
-                <p>Base portals are sorted around the anchor and traversed in the shorter direction. Each visited base links back to the anchor and greedily backlinks to historical bases while rejecting crossing links.</p>
+                <p>Base portals are sorted around the anchor and traversed in the shorter direction. Each visited base links to the anchor and then greedily backlinks to earlier bases while rejecting any crossing link. The resulting graph is the actual structure used by Phase 2.</p>
             </div>
             <div class="panel">
                 <h3>Phase 2</h3>
-                <p>The planner returns to the anchor and chooses a reflection order that closes as many supported fields as possible against the Phase 1 base graph. If outgoing links exceed the normal 8-link limit, the plan warns about required SBUL mods.</p>
+                <p>The planner returns to the anchor and reflects links into the Phase 1 graph. In unrestricted mode it throws as many anchor links as possible. In SBUL cap mode it limits the number of outgoing links to <code>8 + 8 * SBUL</code> and greedily chooses the reflection subset and order that closes the most supported fields within that cap.</p>
             </div>
         </div>
 
@@ -76,9 +80,26 @@
             <li><code>Fanfield Plan (Fields Phase 1)</code></li>
             <li><code>Fanfield Plan (Links Phase 2)</code></li>
             <li><code>Fanfield Plan (Fields Phase 2)</code></li>
+            <li><code>Fanfield Plan (Highlights)</code></li>
         </ul>
 
         <h2>Changelog</h2>
+        <div class="changelog-item">
+            <h3>Version 2.3.1</h3>
+            <ul><li>Expanded the optional Phase 2 SBUL selector from 0-2 to 0-4 for coordinated team setups.</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.3.0</h3>
+            <ul><li>Added optional Phase 2 SBUL cap mode that maximizes fields within a configured outgoing-link limit.</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.2.1</h3>
+            <ul><li>Removed the obsolete manual base selection mode and kept Included and Excluded lists as the only base portal input.</li></ul>
+        </div>
+        <div class="changelog-item">
+            <h3>Version 2.2.0</h3>
+            <ul><li>Added triangle-based portal discovery with Included and Excluded lists so large fanfields can be curated without manual base selection.</li></ul>
+        </div>
         <div class="changelog-item">
             <h3>Version 2.1.10</h3>
             <ul><li>Warn when Phase 2 reflection requires SBUL mods for more than 8 outgoing links.</li></ul>

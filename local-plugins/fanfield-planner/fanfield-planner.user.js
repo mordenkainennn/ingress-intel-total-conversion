@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-fanfield-planner@Cloverjune
 // @name           IITC Plugin: Cloverjune's Fanfield Planner
-// @version        2.2.1
+// @version        2.3.1
 // @description    Plugin for planning fanfields/pincushions in IITC (Phase 1 Safe Mode)
 // @author         cloverjune
 // @category       Layer
@@ -18,6 +18,14 @@ function wrapper(plugin_info) {
     const self = (window.plugin.fanfieldPlanner = function () { });
 
     self.changelog = [
+        {
+            version: '2.3.1',
+            changes: ['REFINE: Expand the optional Phase 2 SBUL selector from 0-2 to 0-4 for coordinated team setups.'],
+        },
+        {
+            version: '2.3.0',
+            changes: ['FEAT: Add optional Phase 2 SBUL cap mode that maximizes fields within a configured outgoing-link limit.'],
+        },
         {
             version: '2.2.1',
             changes: ['REFINE: Remove the obsolete manual base selection mode and keep included/excluded lists as the only base portal input.'],
@@ -82,6 +90,8 @@ function wrapper(plugin_info) {
     self.fieldsLayerPhase2 = null;
     self.highlightLayergroup = null;
     self.animationRequestIds = {};
+    self.phase2LimitEnabled = false;
+    self.phase2DeployedSbul = 0;
 
     /* =======================
        Geometry Helpers
@@ -225,14 +235,18 @@ function wrapper(plugin_info) {
         return u + v < 1 - eps;
     };
 
-    self.choosePhase2ReflectionOrder = function (sortedBase, adjacency) {
+    self.choosePhase2ReflectionOrder = function (sortedBase, adjacency, maxLinks) {
         const reflected = new Set();
         const remaining = new Set(sortedBase);
         const order = [];
+        const linkLimit = typeof maxLinks === 'number' && maxLinks >= 0
+            ? Math.min(maxLinks, sortedBase.length)
+            : sortedBase.length;
 
-        while (remaining.size > 0) {
+        while (remaining.size > 0 && order.length < linkLimit) {
             let bestGuid = null;
             let bestScore = -1;
+            let bestDegree = -1;
             let bestIndex = Number.MAX_SAFE_INTEGER;
 
             sortedBase.forEach((guid, index) => {
@@ -242,14 +256,21 @@ function wrapper(plugin_info) {
                 neighbors.forEach(neighbor => {
                     if (reflected.has(neighbor)) score++;
                 });
+                const degree = neighbors.size;
 
-                if (score > bestScore || (score === bestScore && index < bestIndex)) {
+                if (
+                    score > bestScore ||
+                    (score === bestScore && degree > bestDegree) ||
+                    (score === bestScore && degree === bestDegree && index < bestIndex)
+                ) {
                     bestGuid = guid;
                     bestScore = score;
+                    bestDegree = degree;
                     bestIndex = index;
                 }
             });
 
+            if (bestGuid === null) break;
             order.push(bestGuid);
             remaining.delete(bestGuid);
             reflected.add(bestGuid);
@@ -419,7 +440,8 @@ function wrapper(plugin_info) {
 
         plan.push({ type: 'destroy', guid: anchorGuid, phase: 2 });
 
-        const phase2Order = self.choosePhase2ReflectionOrder(sortedBase, phase1BaseAdjacency);
+        const phase2LinkLimit = self.phase2LimitEnabled ? 8 + self.phase2DeployedSbul * 8 : null;
+        const phase2Order = self.choosePhase2ReflectionOrder(sortedBase, phase1BaseAdjacency, phase2LinkLimit);
         const reflectedBaseSet = new Set();
 
         phase2Order.forEach(guid => {
@@ -452,6 +474,10 @@ function wrapper(plugin_info) {
             phase1FieldCount,
             phase2LinkCount,
             phase2FieldCount,
+            phase2LinkLimitEnabled: self.phase2LimitEnabled,
+            phase2LinkLimit,
+            phase2DeployedSbul: self.phase2DeployedSbul,
+            phase2SkippedCount: sortedBase.length - phase2Order.length,
             phase2RequiredSbul: Math.max(0, Math.ceil((phase2LinkCount - 8) / 8)),
             totalAp: linkCount * 313 + fieldCount * 1250,
             totalDistance,
@@ -470,27 +496,48 @@ function wrapper(plugin_info) {
                 <label><input type="radio" name="fanfield-select-mode" value="frame"> Select Outer Corners</label>
             </div>
 
-            <fieldset>
-                <legend>Anchor Portal</legend>
-                <div id="fanfield-anchor-portal-details">
-                    <div class="placeholder">Please select one anchor portal.</div>
-                </div>
-            </fieldset>
+            <div class="fanfield-top-grid">
+                <fieldset>
+                    <legend>Anchor Portal</legend>
+                    <div id="fanfield-anchor-portal-details">
+                        <div class="placeholder">Please select one anchor portal.</div>
+                    </div>
+                </fieldset>
 
-            <fieldset>
-                <legend>Outer Triangle</legend>
-                <div id="fanfield-frame-portal-details">
-                    <div class="placeholder">Please select two additional outer corners.</div>
-                </div>
+                <fieldset>
+                    <legend>Outer Triangle</legend>
+                    <div id="fanfield-frame-portal-details">
+                        <div class="placeholder">Please select two additional outer corners.</div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <div id="fanfield-top-controls">
                 <div id="fanfield-scan-controls">
                     <button id="fanfield-scan-btn" type="button">Scan Triangle</button>
                     <button id="fanfield-reset-candidates-btn" type="button">Reset Lists</button>
                 </div>
-                <label class="fanfield-lock-toggle">
-                    <input id="fanfield-lock-triangle" type="checkbox">
-                    Lock triangle vertices
-                </label>
-            </fieldset>
+                <div class="fanfield-top-options">
+                    <label class="fanfield-lock-toggle">
+                        <input id="fanfield-lock-triangle" type="checkbox">
+                        Lock triangle vertices
+                    </label>
+                    <label class="fanfield-limit-toggle">
+                        <input id="fanfield-limit-phase2" type="checkbox">
+                        Limit Phase 2 by SBUL
+                    </label>
+                    <label class="fanfield-sbul-select">
+                        SBUL:
+                        <select id="fanfield-phase2-sbul">
+                            <option value="0">0</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
 
             <fieldset>
                 <legend>Candidate Base Portals</legend>
@@ -519,7 +566,11 @@ function wrapper(plugin_info) {
             <style>
                 #fanfield-planner-container { display:flex; flex-direction:column; gap:8px; }
                 .fanfield-select-mode-container, #fanfield-buttons-container { padding:5px 0; }
+                .fanfield-top-grid { display:grid; grid-template-columns:1fr 1.2fr; gap:8px; align-items:start; }
+                .fanfield-top-grid fieldset { min-width:0; }
+                #fanfield-top-controls { display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
                 #fanfield-scan-controls { display:flex; gap:8px; margin-top:8px; }
+                .fanfield-top-options { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
                 .fanfield-portal-item { display:flex; align-items:center; background:rgba(0,0,0,0.3); padding:3px; border-radius:4px; gap:8px; }
                 .fanfield-portal-item img { width:40px; height:40px; border-radius:4px; }
                 .fanfield-frame-grid { display:flex; gap:8px; flex-wrap:wrap; }
@@ -528,9 +579,15 @@ function wrapper(plugin_info) {
                 .fanfield-candidate-column { display:flex; flex-direction:column; gap:6px; }
                 .fanfield-candidate-column select { min-height:160px; width:100%; box-sizing:border-box; }
                 .fanfield-candidate-actions { display:flex; flex-direction:column; gap:8px; }
-                .fanfield-lock-toggle { display:block; margin-top:8px; }
+                .fanfield-lock-toggle { display:block; }
+                .fanfield-sbul-select select { margin-left:4px; }
                 #fanfield-plan-text { height:220px; resize:vertical; width:100%; box-sizing:border-box; }
                 .placeholder { color:#999; text-align:center; padding:10px; }
+                @media (max-width: 720px) {
+                    .fanfield-top-grid { grid-template-columns:1fr; }
+                    #fanfield-top-controls { align-items:flex-start; }
+                    .fanfield-top-options { align-items:flex-start; }
+                }
             </style>
         </div>
     `;
@@ -790,6 +847,10 @@ function wrapper(plugin_info) {
         });
 
         dialogElement.find(`input[name="fanfield-select-mode"][value="${self.selectMode}"]`).prop('checked', true);
+        dialogElement.find('#fanfield-limit-phase2').prop('checked', self.phase2LimitEnabled);
+        dialogElement.find('#fanfield-phase2-sbul')
+            .val(String(self.phase2DeployedSbul))
+            .prop('disabled', !self.phase2LimitEnabled);
         dialogElement.find('#fanfield-scan-btn').prop('disabled', !(self.anchorPortal && self.framePortals.length === 2));
         dialogElement.find('#plan-fanfield-btn').prop('disabled', !(self.anchorPortal && self.basePortals.length >= 2));
     };
@@ -800,6 +861,8 @@ function wrapper(plugin_info) {
         self.basePortals = [];
         self.includedPortalGuids = [];
         self.excludedPortalGuids = [];
+        self.phase2LimitEnabled = false;
+        self.phase2DeployedSbul = 0;
         self.updateDialog();
         const dialogElement = self.getDialogElement();
         dialogElement.find('#fanfield-plan-text').val('');
@@ -820,6 +883,16 @@ function wrapper(plugin_info) {
 
         dialogElement.on('click.fanfieldPlanner', '#clear-fanfield-btn', function () {
             self.resetSelection();
+        });
+
+        dialogElement.on('change.fanfieldPlanner', '#fanfield-limit-phase2', function () {
+            self.phase2LimitEnabled = $(this).is(':checked');
+            self.updateDialog();
+        });
+
+        dialogElement.on('change.fanfieldPlanner', '#fanfield-phase2-sbul', function () {
+            const value = parseInt($(this).val(), 10);
+            self.phase2DeployedSbul = Number.isNaN(value) ? 0 : Math.max(0, Math.min(4, value));
         });
 
         dialogElement.on('click.fanfieldPlanner', '#fanfield-scan-btn', function () {
@@ -954,7 +1027,12 @@ function wrapper(plugin_info) {
                     planText += `\n--- ${action.text} ---\n`;
                     if (action.text === 'Phase 2: Re-throw from Anchor') {
                         const summary = plan.find(stepItem => stepItem.type === 'summary');
-                        if (summary && summary.phase2RequiredSbul > 0) {
+                        if (summary && summary.phase2LinkLimitEnabled) {
+                            planText += `[!] Phase 2 link cap enabled: ${summary.phase2LinkLimit} outgoing links (${summary.phase2DeployedSbul} SBUL).\n`;
+                            if (summary.phase2SkippedCount > 0) {
+                                planText += `[!] ${summary.phase2SkippedCount} base portal(s) were skipped to stay within the configured cap.\n`;
+                            }
+                        } else if (summary && summary.phase2RequiredSbul > 0) {
                             planText += `[!] Prepare ${summary.phase2RequiredSbul} SBUL mod(s) before starting Phase 2.\n`;
                             if (summary.phase2RequiredSbul > 2) {
                                 planText += `[!] This exceeds the usual solo self-deploy limit of 2 mods.\n`;
@@ -992,12 +1070,20 @@ function wrapper(plugin_info) {
                     planText += `Phase 1 Fields: ${action.phase1FieldCount}\n`;
                     planText += `Phase 2 Links: ${action.phase2LinkCount}\n`;
                     planText += `Phase 2 Fields: ${action.phase2FieldCount}\n`;
-                    if (action.phase2RequiredSbul > 0) {
+                    if (action.phase2LinkLimitEnabled) {
+                        planText += `Phase 2 Link Cap Mode: enabled\n`;
+                        planText += `Configured SBUL for Phase 2: ${action.phase2DeployedSbul}\n`;
+                        planText += `Phase 2 Link Limit: ${action.phase2LinkLimit}\n`;
+                        planText += `Skipped Base Portals Due To Limit: ${action.phase2SkippedCount}\n`;
+                    } else {
+                        planText += 'Phase 2 Link Cap Mode: disabled\n';
+                    }
+                    if (!action.phase2LinkLimitEnabled && action.phase2RequiredSbul > 0) {
                         planText += `Required SBUL for Phase 2: ${action.phase2RequiredSbul}\n`;
                         if (action.phase2RequiredSbul > 2) {
                             planText += 'Solo self-deploy limit exceeded: yes\n';
                         }
-                    } else {
+                    } else if (!action.phase2LinkLimitEnabled) {
                         planText += 'Required SBUL for Phase 2: 0\n';
                     }
                     planText += `Total Links: ${action.linkCount}\n`;
