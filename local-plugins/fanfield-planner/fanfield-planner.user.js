@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-fanfield-planner@Cloverjune
 // @name           IITC Plugin: Cloverjune's Fanfield Planner
-// @version        2.2.0
+// @version        2.2.1
 // @description    Plugin for planning fanfields/pincushions in IITC (Phase 1 Safe Mode)
 // @author         cloverjune
 // @category       Layer
@@ -18,6 +18,10 @@ function wrapper(plugin_info) {
     const self = (window.plugin.fanfieldPlanner = function () { });
 
     self.changelog = [
+        {
+            version: '2.2.1',
+            changes: ['REFINE: Remove the obsolete manual base selection mode and keep included/excluded lists as the only base portal input.'],
+        },
         {
             version: '2.2.0',
             changes: ['FEAT: Add triangle-based portal discovery with included/excluded lists so large fanfields can be curated without manual base selection.'],
@@ -464,7 +468,6 @@ function wrapper(plugin_info) {
                 <strong>Selection Mode:</strong>
                 <label><input type="radio" name="fanfield-select-mode" value="anchor" checked> Select Anchor</label>
                 <label><input type="radio" name="fanfield-select-mode" value="frame"> Select Outer Corners</label>
-                <label><input type="radio" name="fanfield-select-mode" value="manual"> Add Base Portals</label>
             </div>
 
             <fieldset>
@@ -519,7 +522,6 @@ function wrapper(plugin_info) {
                 #fanfield-scan-controls { display:flex; gap:8px; margin-top:8px; }
                 .fanfield-portal-item { display:flex; align-items:center; background:rgba(0,0,0,0.3); padding:3px; border-radius:4px; gap:8px; }
                 .fanfield-portal-item img { width:40px; height:40px; border-radius:4px; }
-                .fanfield-remove-btn { margin-left:auto; cursor:pointer; color:#ff5555; }
                 .fanfield-frame-grid { display:flex; gap:8px; flex-wrap:wrap; }
                 .fanfield-frame-grid .fanfield-portal-item { flex:1 1 45%; }
                 .fanfield-candidate-layout { display:grid; grid-template-columns:1fr 44px 1fr; gap:8px; align-items:center; }
@@ -810,11 +812,10 @@ function wrapper(plugin_info) {
         if (!dialogElement.length) return;
 
         dialogElement.off('.fanfieldPlanner');
-        $(document).off('click.fanfieldPlannerRemove');
 
         dialogElement.on('change.fanfieldPlanner', 'input[name="fanfield-select-mode"]', function () {
             const mode = $(this).val();
-            self.selectMode = mode === 'frame' || mode === 'manual' ? mode : 'anchor';
+            self.selectMode = mode === 'frame' ? 'frame' : 'anchor';
         });
 
         dialogElement.on('click.fanfieldPlanner', '#clear-fanfield-btn', function () {
@@ -1042,16 +1043,6 @@ function wrapper(plugin_info) {
                 if (self.framePortals.length >= 2) self.framePortals.shift();
                 self.framePortals.push(portalRecord);
                 self.includedPortalGuids = self.includedPortalGuids.filter(guid => guid !== portalRecord.guid);
-                self.excludedPortalGuids = self.excludedPortalGuids.filter(guid => guid !== portalRecord.guid);
-                self.syncBasePortalsFromIncluded();
-            }
-        } else if (self.selectMode === 'manual') {
-            if (
-                portalRecord.guid !== self.anchorPortal?.guid &&
-                !self.framePortals.some(portal => portal.guid === portalRecord.guid) &&
-                !self.includedPortalGuids.includes(portalRecord.guid)
-            ) {
-                self.includedPortalGuids = self.sortPortalGuidsByTitle(self.includedPortalGuids.concat([portalRecord.guid]));
                 self.excludedPortalGuids = self.excludedPortalGuids.filter(guid => guid !== portalRecord.guid);
                 self.syncBasePortalsFromIncluded();
             }
