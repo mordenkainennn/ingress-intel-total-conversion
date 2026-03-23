@@ -89,7 +89,7 @@ function wrapper(plugin_info) {
     if (typeof window.plugin !== 'function') window.plugin = function () { };
     plugin_info.buildName = '';
     plugin_info.dateTimeVersion = '20260220-120000';
-    plugin_info.pluginId = 'mordenkainennnsDronePlanner';
+    plugin_info.pluginId = 'cloverjunesDronePlanner';
 
     // PLUGIN START
     console.log('loading drone plugin')

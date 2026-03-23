@@ -19,9 +19,9 @@ function wrapper(plugin_info) {
 
     // PLUGIN AUTHORS: writing a plugin outside of the IITC build environment? if so, delete these lines!!
     //(leaving them in place might break the 'About IITC' page or break update checks)
-    plugin_info.buildName = 'mordenkainennn-local';
+    plugin_info.buildName = 'cloverjune-local';
     plugin_info.dateTimeVersion = '20260115';
-    plugin_info.pluginId = 'ap-stats-mordenkainennn';
+    plugin_info.pluginId = 'ap-stats-cloverjune';
     //END PLUGIN AUTHORS NOTE
 
     /* exported setup, changelog --eslint */
@@ -33,7 +33,7 @@ function wrapper(plugin_info) {
         },
         {
             version: '0.4.6.1',
-            changes: ['MOD: Converted to standalone script and updated metadata by mordenkainennn.'],
+            changes: ['MOD: Converted to standalone script and updated metadata by cloverjune.'],
         },
         {
             version: '0.4.6',
