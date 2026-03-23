@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC 插件：多边形 AP 统计 (Polygon AP Counter)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+            z-index: 1000;
+        }
+
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+        }
+
+        .lang-switch span {
+            color: #fff;
+            font-family: 'Coda', cursive;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Coda', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.1em;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 1.7em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 32px;
+        }
+
+        h3 {
+            font-size: 1.1em;
+            color: #ffce00;
+            margin-top: 20px;
+        }
+
+        p,
+        li {
+            color: #ccc;
+        }
+
+        strong {
+            color: #ffce00;
+        }
+
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 14px;
+            border-radius: 4px;
+            margin: 16px 0;
+        }
+
+        .pac-enl { color: #03dc03; font-weight: bold; }
+        .pac-res { color: #0492d0; font-weight: bold; }
+
+        @media (max-width: 900px) {
+            .lang-switch {
+                position: static;
+                margin: 0 auto 12px auto;
+                width: fit-content;
+            }
+
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="lang-switch">
+        <a href="index.html">English</a> | <span>简体中文</span> | <a href="index_ja.html">日本語</a>
+    </div>
+
+    <div class="container">
+        <h1>多边形 AP 统计 (Polygon AP Counter)</h1>
+        <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/polygon-ap" style="color: #ffce00; text-decoration: none; font-weight: 700;">在 GitHub 上查看此插件目录</a></p>
+
+        <p>
+            <strong>Polygon AP Counter</strong> 是一款 IITC 插件，专门用于分析 Intel 地图上封闭多边形区域内的 Portal、链接 (Link) 和控制场 (Field)。 
+            它可以快速预览两个阵营（启蒙军 ENL 和 抵抗军 RES）在该区域内可获得的潜在 <strong>AP (Action Points)</strong>，并统计 Portal 的总数。
+        </p>
+
+        <div class="note">
+            <p>
+                <strong>鸣谢：</strong> 原始多边形 Portal 统计插件由 57Cell 编写。 
+                由 <strong>Cloverjune</strong> 添加了 AP 统计功能并进行维护。
+            </p>
+        </div>
+
+        <h2>核心功能</h2>
+        <ul>
+            <li><strong>Portal 分析：</strong> 自动识别所有位于 Draw Tools 插件绘制的多边形内的 Portal。</li>
+            <li><strong>AP 计算：</strong> 计算包括占领、部署共振器以及摧毁敌方链接和控制场在内的潜在 AP 收益。</li>
+            <li><strong>阵营统计：</strong> 分别查看 <span class="pac-enl">启蒙军</span> 和 <span class="pac-res">抵抗军</span> 的独立 AP 数据。</li>
+            <li><strong>地图交互气泡：</strong> 在地图上直接以紧凑的标签显示 Portal 数量和阵营 AP。</li>
+            <li><strong>摘要表格：</strong> 提供包含每个多边形统计数据的详细列表及总计摘要。</li>
+        </ul>
+
+        <h2>使用方法</h2>
+        <ol style="padding-left: 28px; color: #ccc;">
+            <li>确保已安装并启用 <strong>Draw Tools</strong> 插件。</li>
+            <li>使用 Draw Tools 在地图上绘制一个或多个 <strong>多边形 (Polygon)</strong>。</li>
+            <li>在左侧工具栏 (Toolbox) 中点击 <strong>Polygon AP Counter</strong>。</li>
+            <li>弹出对话框将显示每个已绘制多边形的统计数据。</li>
+            <li>如果移动了地图或修改了多边形，点击 <strong>Refresh</strong> 刷新数据。</li>
+            <li>点击表格中的 <strong>View</strong> 可以将地图中心定位到对应的多边形。</li>
+        </ol>
+
+        <h2>AP 计算逻辑</h2>
+        <p>计算规则遵循标准的 Ingress AP 规则，类似于 <em>Available AP Statistics</em> 插件：</p>
+        <ul>
+            <li><strong>占领与部署：</strong> 包含占领中立 Portal 并完全部署 8 个共振器的 AP。</li>
+            <li><strong>摧毁：</strong> 包含摧毁敌方共振器、链接和控制场的 AP。</li>
+            <li><strong>Machina Portal：</strong> 包含收复 Machina 控制的 Portal 的 AP。</li>
+            <li><strong>链接与控制场：</strong> 如果链接或控制场的至少一个顶点在多边形内，则计入统计。</li>
+        </ul>
+
+        <h2>运行要求</h2>
+        <p>
+            此插件依赖于 <strong>Draw Tools</strong> 插件。如果没有绘制任何多边形，插件点击后将不显示任何有效数据。
+        </p>
+
+        <h2>作者信息</h2>
+        <ul>
+            <li>原始概念：<strong>57Cell</strong></li>
+            <li>当前维护 / AP 功能开发：<a href="https://gongjupal.com/ingress/" target="_blank">Cloverjune</a></li>
+        </ul>
+    </div>
+</body>
+
+</html>

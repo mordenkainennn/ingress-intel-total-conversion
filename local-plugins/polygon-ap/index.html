@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITC Plugin: Polygon AP Counter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #eee;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+            z-index: 1000;
+        }
+
+        .lang-switch a {
+            color: #ffce00;
+            text-decoration: none;
+            font-family: 'Coda', cursive;
+        }
+
+        .lang-switch span {
+            color: #fff;
+            font-family: 'Coda', cursive;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            background-color: rgba(10, 25, 30, 0.85);
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 25px 40px;
+            border-radius: 5px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Coda', cursive;
+            color: #0ff;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #0ff;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.4em;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 1.7em;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 10px;
+            margin-top: 32px;
+        }
+
+        h3 {
+            font-size: 1.1em;
+            color: #ffce00;
+            margin-top: 20px;
+        }
+
+        p,
+        li {
+            color: #ccc;
+        }
+
+        strong {
+            color: #ffce00;
+        }
+
+        code {
+            background-color: #000;
+            padding: 2px 5px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fada5e;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        ul li {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+
+        .note {
+            background-color: rgba(255, 206, 0, 0.1);
+            border: 1px solid #ffce00;
+            padding: 14px;
+            border-radius: 4px;
+            margin: 16px 0;
+        }
+
+        .pac-enl { color: #03dc03; font-weight: bold; }
+        .pac-res { color: #0492d0; font-weight: bold; }
+
+        @media (max-width: 900px) {
+            .lang-switch {
+                position: static;
+                margin: 0 auto 12px auto;
+                width: fit-content;
+            }
+
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="lang-switch">
+        <span>English</span> | <a href="index_zh-cn.html">简体中文</a> | <a href="index_ja.html">日本語</a>
+    </div>
+
+    <div class="container">
+        <h1>Polygon AP Counter</h1>
+        <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/polygon-ap" style="color: #ffce00; text-decoration: none; font-weight: 700;">View this plugin directory on GitHub</a></p>
+
+        <p>
+            <strong>Polygon AP Counter</strong> is an IITC plugin designed to analyze portals, links, and fields within closed polygons drawn on the map. 
+            It provides a quick overview of the potential <strong>Action Points (AP)</strong> available for both factions (ENL and RES) and the total portal count.
+        </p>
+
+        <div class="note">
+            <p>
+                <strong>Credits:</strong> Original "Polygon Portal Counter" by 57Cell. 
+                Enhanced with AP statistics and maintained by <strong>Cloverjune</strong>.
+            </p>
+        </div>
+
+        <h2>Core Features</h2>
+        <ul>
+            <li><strong>Portal Analysis:</strong> Automatically identifies all portals inside polygons drawn with the Draw Tools plugin.</li>
+            <li><strong>AP Calculation:</strong> Computes potential AP gains considering portal capture, resonator deployment, and destruction of enemy links and fields.</li>
+            <li><strong>Faction-Specific Stats:</strong> View independent AP statistics for both <span class="pac-enl">Enlightened</span> and <span class="pac-res">Resistance</span>.</li>
+            <li><strong>Interactive Map Bubbles:</strong> Shows portal count and faction AP in compact labels directly on the map.</li>
+            <li><strong>Summary Table:</strong> Provides a detailed list of all polygons with their respective stats and a total summary.</li>
+        </ul>
+
+        <h2>How to Use</h2>
+        <ol style="padding-left: 28px; color: #ccc;">
+            <li>Ensure the <strong>Draw Tools</strong> plugin is installed and active.</li>
+            <li>Draw one or more <strong>polygons</strong> on the map using Draw Tools.</li>
+            <li>Click <strong>Polygon AP Counter</strong> in the toolbox sidebar.</li>
+            <li>A dialog will appear with the statistics for each drawn polygon.</li>
+            <li>Click <strong>Refresh</strong> to update data if you move the map or edit the polygons.</li>
+            <li>Click <strong>View</strong> in the table to center the map on a specific polygon.</li>
+        </ol>
+
+        <h2>AP Calculation Logic</h2>
+        <p>The calculation follows the standard Ingress AP rules, similar to the <em>Available AP Statistics</em> plugin:</p>
+        <ul>
+            <li><strong>Capture & Deploy:</strong> AP for capturing a neutral portal and fully deploying 8 resonators.</li>
+            <li><strong>Destruction:</strong> AP for destroying enemy resonators, links, and fields.</li>
+            <li><strong>Machina Portals:</strong> Includes reclaim AP for Machina-controlled portals.</li>
+            <li><strong>Links & Fields:</strong> Links and fields are counted if at least one of their vertices is within the polygon boundary.</li>
+        </ul>
+
+        <h2>Requirements</h2>
+        <p>
+            This plugin requires the <strong>Draw Tools</strong> plugin to be installed. Without any drawn polygons, the plugin will not show any data.
+        </p>
+
+        <h2>Authors</h2>
+        <ul>
+            <li>Original Concept: <strong>57Cell</strong></li>
+            <li>Current Maintainer / AP Features: <a href="https://gongjupal.com/ingress/" target="_blank">Cloverjune</a></li>
+        </ul>
+    </div>
+</body>
+
+</html>
