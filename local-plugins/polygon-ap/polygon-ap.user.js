@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-polygon-ap
 // @name           IITC Plugin: Polygon AP
-// @version        0.5.0
+// @version        0.5.1
 // @description    Plugin for calculating portal count and AP of polygons
 // @author         Cloverjune
 // @category       Layer
@@ -24,8 +24,15 @@
 // ==/UserScript==
 
 pluginName = "Polygon AP Counter";
-version = "0.5.0";
+version = "0.5.1";
 changeLog = [
+    {
+        version: '0.5.1',
+        changes: [
+            'NEW: Cache per-polygon stats so moving the map no longer clears previously computed results.',
+            'NEW: Refresh only overwrites a polygon when it is fully inside the current view and map data is complete.',
+        ],
+    },
     {
         version: '0.5.0',
         changes: [
@@ -55,6 +62,15 @@ function wrapper(plugin_info) {
     var self = window.plugin.polygonPortalCounter;
 
     self.layerGroup = null;
+    self.statsCache = {};
+
+    self.createEmptyStats = function () {
+        return {
+            count: 0,
+            enl: { AP: 0, destroyPortals: 0, capturePortals: 0, finishPortals: 0, destroyLinks: 0, destroyFields: 0, reclaimPortals: 0 },
+            res: { AP: 0, destroyPortals: 0, capturePortals: 0, finishPortals: 0, destroyLinks: 0, destroyFields: 0, reclaimPortals: 0 },
+        };
+    };
 
     // Helper: format large numbers
     self.formatAP = function (ap) {
@@ -89,16 +105,46 @@ function wrapper(plugin_info) {
         return L.latLng(lat / numPoints, lng / numPoints);
     };
 
+    self.getPolygonRing = function (polygon) {
+        return Array.isArray(polygon[0]) ? polygon[0] : polygon;
+    };
+
+    self.getPolygonKey = function (polygon) {
+        var ring = self.getPolygonRing(polygon);
+        return ring.map(function (point) {
+            return point.lat.toFixed(6) + ',' + point.lng.toFixed(6);
+        }).join('|');
+    };
+
+    self.getPolygonBounds = function (polygon) {
+        var ring = self.getPolygonRing(polygon);
+        return L.latLngBounds(ring);
+    };
+
+    self.canRefreshPolygon = function (polygon) {
+        if (!window.map || !window.mapDataRequest || !window.mapDataRequest.fetchedDataParams) return false;
+        if (window.activeRequests && window.activeRequests.length > 0) return false;
+
+        var tileParams = window.getDataZoomTileParameters ? window.getDataZoomTileParameters() : null;
+        if (!tileParams || !tileParams.hasPortals) return false;
+
+        var polygonBounds = self.getPolygonBounds(polygon);
+        var mapBounds = window.map.getBounds();
+        var fetched = window.mapDataRequest.fetchedDataParams;
+
+        if (fetched.mapZoom !== window.map.getZoom()) return false;
+        if (!mapBounds.contains(polygonBounds)) return false;
+        if (!fetched.bounds.contains(polygonBounds)) return false;
+
+        return true;
+    };
+
     /**
      * Compute portal count + AP stats for portals/links/fields inside a polygon.
      * Returns { count, enl: { AP, ... }, res: { AP, ... } }
      */
     self.computeStatsInPolygon = function (polygonLatLngs) {
-        var result = {
-            count: 0,
-            enl: { AP: 0, destroyPortals: 0, capturePortals: 0, finishPortals: 0, destroyLinks: 0, destroyFields: 0, reclaimPortals: 0 },
-            res: { AP: 0, destroyPortals: 0, capturePortals: 0, finishPortals: 0, destroyLinks: 0, destroyFields: 0, reclaimPortals: 0 },
-        };
+        var result = self.createEmptyStats();
 
         var PORTAL_FULL_DEPLOY_AP = window.CAPTURE_PORTAL + 8 * window.DEPLOY_RESONATOR + window.COMPLETION_BONUS;
 
@@ -198,8 +244,26 @@ function wrapper(plugin_info) {
             if (!(layer instanceof L.Polygon)) continue;
 
             var polygonLatLngs = layer.getLatLngs();
-            var stats = self.computeStatsInPolygon(polygonLatLngs);
+            var polygonKey = self.getPolygonKey(polygonLatLngs);
+            var canRefresh = self.canRefreshPolygon(polygonLatLngs);
+            var stats = null;
             var center = self.getPolygonCenter(polygonLatLngs);
+            var sourceLabel = '';
+
+            if (canRefresh) {
+                stats = self.computeStatsInPolygon(polygonLatLngs);
+                self.statsCache[polygonKey] = stats;
+                sourceLabel = 'fresh';
+            } else if (self.statsCache[polygonKey]) {
+                stats = self.statsCache[polygonKey];
+                sourceLabel = 'cached';
+            } else {
+                stats = self.createEmptyStats();
+                sourceLabel = 'unavailable';
+            }
+
+            var statusText = sourceLabel === 'fresh' ? 'Fresh' : sourceLabel === 'cached' ? 'Cached' : 'No Data';
+            var statusClass = sourceLabel === 'fresh' ? 'pac-status-fresh' : sourceLabel === 'cached' ? 'pac-status-cached' : 'pac-status-empty';
 
             totalCount += stats.count;
             totalEnlAP += stats.enl.AP;
@@ -214,13 +278,15 @@ function wrapper(plugin_info) {
                 '<td class="pac-num">' + stats.count + '</td>' +
                 '<td class="pac-enl">' + self.formatAP(stats.enl.AP) + '</td>' +
                 '<td class="pac-res">' + self.formatAP(stats.res.AP) + '</td>' +
+                '<td class="' + statusClass + '">' + statusText + '</td>' +
                 '<td>' + linkToPosition + '</td>' +
                 '</tr>';
 
             // Map bubble
-            if (center) {
+            if (center && sourceLabel !== 'unavailable') {
                 var bubbleHtml =
                     '<div class="pac-bubble">' +
+                    '<div class="pac-bubble-index">Polygon ' + polygonIndex + '</div>' +
                     '<div class="pac-bubble-count">&#x1F3F4; ' + stats.count + ' portals</div>' +
                     '<div class="pac-bubble-enl">ENL: ' + self.formatAP(stats.enl.AP) + ' AP</div>' +
                     '<div class="pac-bubble-res">RES: ' + self.formatAP(stats.res.AP) + ' AP</div>' +
@@ -247,6 +313,7 @@ function wrapper(plugin_info) {
             '<th>Portals</th>' +
             '<th class="pac-enl">ENL AP</th>' +
             '<th class="pac-res">RES AP</th>' +
+            '<th>Status</th>' +
             '<th>Position</th>' +
             '</tr></thead>' +
             '<tbody>' + rows + '</tbody>' +
@@ -255,6 +322,7 @@ function wrapper(plugin_info) {
             '<td class="pac-num"><b>' + totalCount + '</b></td>' +
             '<td class="pac-enl"><b>' + self.formatAP(totalEnlAP) + '</b></td>' +
             '<td class="pac-res"><b>' + self.formatAP(totalResAP) + '</b></td>' +
+            '<td></td>' +
             '<td></td>' +
             '</tr></tfoot>' +
             '</table>';
@@ -307,6 +375,7 @@ function wrapper(plugin_info) {
             '  white-space: nowrap;',
             '  line-height: 1.6;',
             '}',
+            '.pac-bubble-index { color: #ffce00; }',
             '.pac-bubble-count { color: #fff; }',
             '.pac-bubble-enl   { color: #03dc03; }',
             '.pac-bubble-res   { color: #0492d0; }',
@@ -318,6 +387,9 @@ function wrapper(plugin_info) {
             '.pac-table .pac-enl { color: #03dc03; }',
             '.pac-table .pac-res { color: #0492d0; }',
             '.pac-table .pac-num { color: #fff; }',
+            '.pac-table .pac-status-fresh { color: #7CFF7C; }',
+            '.pac-table .pac-status-cached { color: #ffce00; }',
+            '.pac-table .pac-status-empty { color: #999; }',
         ].join('\n')).appendTo('head');
     };
 
@@ -335,7 +407,7 @@ function wrapper(plugin_info) {
         self.setupLayer();
         self.setupUI();
         window.addHook('drawTools', self.updatePortalCounts);
-        window.map.on('zoom', self.updatePortalCounts);
+        window.addHook('mapDataRefreshEnd', self.updatePortalCounts);
     };
 
     setup.info = plugin_info;
