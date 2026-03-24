@@ -3,63 +3,142 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IITC Plugin: Player Activity Log</title>
+  <title>Player Activity Log for IITC | COMM History and Movement Review</title>
+  <meta name="description" content="Player Activity Log is an IITC plugin for Niantic's Ingress Intel Map that records public COMM activity, visualizes player movement trails, and supports local import and export.">
+  <link rel="canonical" href="https://gongjupal.com/ingress/player-activity-log/index.html">
+  <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/player-activity-log/index.html">
+  <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/player-activity-log/index_ja.html">
+  <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/player-activity-log/index_zh-cn.html">
+  <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/player-activity-log/index.html">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
+  <meta property="og:title" content="Player Activity Log for IITC | COMM History and Movement Review">
+  <meta property="og:description" content="Track public COMM activity, review movement trails, and manage local player history data on Niantic's Ingress Intel Map.">
+  <meta property="og:url" content="https://gongjupal.com/ingress/player-activity-log/index.html">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Player Activity Log for IITC | COMM History and Movement Review">
+  <meta name="twitter:description" content="An IITC activity log plugin for Ingress Intel that records COMM actions, shows trails, and supports local backup and merge workflows.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Player Activity Log",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Web Browser",
+    "description": "Player Activity Log is an IITC plugin for Niantic's Ingress Intel Map that records public COMM activity, visualizes player movement trails, and supports local import and export workflows.",
+    "url": "https://gongjupal.com/ingress/player-activity-log/index.html",
+    "softwareVersion": "0.8.3",
+    "inLanguage": "en",
+    "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/player-activity-log"
+  }
+  </script>
   <style>
     body { background:#0e1111; color:#eee; font-family:'Roboto',sans-serif; margin:0; padding:20px; line-height:1.6; }
-    .lang-switch { position:fixed; top:20px; right:30px; background:rgba(0,0,0,.5); border:1px solid #0ff; padding:10px; border-radius:5px; }
+    .lang-switch { position:fixed; top:20px; right:30px; background:rgba(0,0,0,.5); border:1px solid #0ff; padding:10px; border-radius:5px; z-index:1000; }
     .lang-switch a { color:#ffce00; text-decoration:none; font-family:'Coda',cursive; margin:0 4px; }
     .container { max-width:900px; margin:0 auto; background:rgba(10,25,30,.85); border:1px solid #0ff; box-shadow:0 0 20px rgba(0,255,255,.5); padding:25px 40px; border-radius:6px; }
-    h1,h2,h3 { font-family:'Coda',cursive; color:#0ff; text-shadow:0 0 5px #0ff; }
-    h1 { text-align:center; font-size:2.4em; margin-bottom:20px; }
-    h2 { font-size:1.6em; border-bottom:1px solid #0aa; padding-bottom:10px; margin-top:28px; }
+    h1,h2,h3 { font-family:'Coda',cursive; text-shadow:0 0 5px #0ff; }
+    h1 { color:#0ff; text-align:center; font-size:2.4em; margin-bottom:18px; }
+    h2 { color:#0ff; font-size:1.6em; border-bottom:1px solid #0aa; padding-bottom:10px; margin-top:28px; }
     h3 { font-size:1.1em; color:#ffce00; margin-bottom:8px; }
     p,li { color:#ccc; }
     strong { color:#ffce00; }
     code { background:#000; border:1px solid #333; border-radius:3px; padding:2px 5px; color:#fada5e; }
-    .note { background:rgba(255,206,0,.1); border:1px solid #ffce00; padding:15px; margin-top:20px; border-radius:4px; }
+    .intro,.summary { text-align:center; max-width:760px; margin-left:auto; margin-right:auto; }
+    .intro { color:#bbb; margin-bottom:10px; }
+    .summary { margin-bottom:22px; }
+    .resource-links { text-align:center; margin:0 0 28px 0; }
+    .resource-links a { color:#ffce00; text-decoration:none; font-weight:700; }
+    .feature-list,.faq-list,.related-list { padding-left:20px; }
+    .feature-list li,.faq-list li,.related-list li { margin-bottom:12px; }
+    .note { background:rgba(255,206,0,.1); border:1px solid #ffce00; padding:15px; border-radius:4px; margin-top:18px; }
     .note-danger { border-color:#f88; background:rgba(255,80,80,.08); }
     .note-danger strong { color:#f88; }
+    .faq-q { color:#ffce00; font-weight:700; }
   </style>
 </head>
 <body>
   <div class="lang-switch">
-    <a href="index_zh-cn.html">简体中文</a> | <a href="index_ja.html">日本語</a>
+    <a href="index_zh-cn.html" lang="zh-CN">简体中文</a> |
+    <a href="index_ja.html" lang="ja">日本語</a>
   </div>
-
-  <div class="container">
+  <main class="container">
     <h1>Player Activity Log</h1>
-    <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/player-activity-log" style="color: #ffce00; text-decoration: none; font-weight: 700;">View this plugin directory on GitHub</a></p>
-    <p>This plugin monitors public COMM messages and stores parsed player activities in your browser.</p>
-    <p>Use it to review actions over time, visualize movement paths, and exchange merged data between users.</p>
+    <p class="intro">A local COMM history and movement review plugin for IITC on Niantic's Ingress Intel Map.</p>
+    <p class="summary"><strong>Player Activity Log</strong> listens to public COMM, stores supported activities in your browser, lets you review agent history over time, and visualizes movement trails for local analysis and planning.</p>
+    <p class="resource-links">
+      <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/player-activity-log">View this plugin directory on GitHub</a> |
+      <a href="https://gongjupal.com/ingress/index.html">See all IITC plugins</a>
+    </p>
 
-    <h2>What's New in 0.8.3</h2>
-    <ul>
-      <li>Added toolbox Portal Held Time display: <code>Activity Log（xxD）</code> for selected owned portals.</li>
-      <li>Improved update behavior when switching portals, and hid held-time label for neutral portals.</li>
-      <li>Added disclaimer text in the Activity Log window.</li>
-    </ul>
+    <section aria-labelledby="who">
+      <h2 id="who">Who This Plugin Is For</h2>
+      <p>This plugin is useful for agents who want a local record of public COMM events, movement history, and portal interaction timing. It is especially helpful if you review operations after the fact, compare activity windows, or want to merge local logs between trusted users.</p>
+    </section>
 
-    <h2>Features</h2>
-    <ul>
-      <li><h3>Automatic Logging from COMM</h3><p>Passively listens to public COMM events and records supported actions (capture, deploy, link, field, etc.). MACHINA is ignored.</p></li>
-      <li><h3>Interactive Activity Viewer</h3><p>Open from toolbox and browse players on the left with detailed activity entries on the right. Search supports player ID/name filtering.</p></li>
-      <li><h3>Portal Held Time in Toolbox</h3><p>When you select an owned portal, the toolbox link shows held time as <code>Activity Log（xxD）</code>. If no local capture record is found, or the portal is neutral, it stays <code>Activity Log</code>.</p></li>
-      <li><h3>Import and Export</h3><p>Import supports merge with de-duplication. Export JSON and CSV are available.</p></li>
-      <li><h3>Local Storage</h3><p>All data is stored locally in browser <code>localStorage</code>.</p></li>
-    </ul>
+    <section aria-labelledby="features">
+      <h2 id="features">Key Features</h2>
+      <ul class="feature-list">
+        <li><strong>Automatic logging from COMM:</strong> Passively records supported public COMM actions such as capture, deploy, link, and field events. MACHINA is ignored.</li>
+        <li><strong>Interactive activity viewer:</strong> Browse players, search by name or ID, and inspect detailed activity entries from the IITC toolbox.</li>
+        <li><strong>Movement trail review:</strong> Visualize movement paths over time to understand local action flow and repeated activity routes.</li>
+        <li><strong>Portal Held Time in toolbox:</strong> For owned portals, the toolbox can show <code>Activity Log（xxD）</code> based on the latest local capture record.</li>
+        <li><strong>Import and export:</strong> Supports JSON and CSV export, plus merge-style import with de-duplication.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="held-time">
+      <h2 id="held-time">Portal Held Time</h2>
+      <p>When you select a currently owned portal, the toolbox link can change to <code>Activity Log（xxD）</code>. The value reflects how many full days have passed since the latest locally recorded capture event for that portal.</p>
+      <p>If there is no matching local capture record, or if the portal is neutral, the toolbox simply remains <code>Activity Log</code>.</p>
+    </section>
+
+    <section aria-labelledby="how-it-works">
+      <h2 id="how-it-works">How It Works</h2>
+      <p>Player Activity Log reads public COMM messages already visible to your client and parses supported activity events into a local history database. It does not promise a complete global record, because its usefulness depends on what your local client actually saw and stored.</p>
+      <p>This means the plugin is valuable for timeline reconstruction and local review, but it should always be treated as partial history rather than authoritative ground truth.</p>
+    </section>
+
+    <section aria-labelledby="whats-new">
+      <h2 id="whats-new">What&apos;s New in 0.8.3</h2>
+      <ul class="feature-list">
+        <li>Added toolbox Portal Held Time display in the form <code>Activity Log（xxD）</code> for selected owned portals.</li>
+        <li>Improved update behavior when switching portals and hid the held-time label for neutral portals.</li>
+        <li>Added disclaimer text in the Activity Log window and documentation.</li>
+      </ul>
+    </section>
 
     <div class="note">
-      <p><strong>Important:</strong> Data is local only and not synced across devices/accounts. Back up regularly using export features.</p>
+      <p><strong>Important:</strong> All data stays local to your browser and is not synced across devices or accounts. Back up regularly with export features if the history matters to you.</p>
     </div>
     <div class="note">
-      <p><strong>Disclaimer:</strong> The data source is local recorded history and may be incomplete or inaccurate.</p>
+      <p><strong>Disclaimer:</strong> The plugin works from locally recorded COMM history, so the data may be incomplete or inaccurate.</p>
     </div>
     <div class="note note-danger">
-      <p><strong>Compatibility Note:</strong> Trail drawing overlaps with the official <strong>Player activity tracker</strong> layer. Disable one of them if needed.</p>
+      <p><strong>Compatibility note:</strong> Trail drawing overlaps with the official <strong>Player activity tracker</strong> layer. Disable one of them if you do not want duplicate visual paths.</p>
     </div>
-  </div>
+
+    <section aria-labelledby="faq">
+      <h2 id="faq">FAQ</h2>
+      <ul class="faq-list">
+        <li><span class="faq-q">Does this plugin read private or hidden data?</span> No. It works from public COMM activity already visible to your local client.</li>
+        <li><span class="faq-q">Can I move history between devices?</span> Yes, but only manually. Use export and import to back up or merge local activity records.</li>
+        <li><span class="faq-q">Why can held time be wrong or missing?</span> The calculation depends on your own locally recorded capture history. If your client did not see the relevant event, the result can be missing or incomplete.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="related">
+      <h2 id="related">Related Plugins</h2>
+      <ul class="related-list">
+        <li><a href="https://gongjupal.com/ingress/recharge-monitor/index.html" style="color:#ffce00;">Recharge Monitor</a> complements activity history with portal health and decay tracking.</li>
+        <li><a href="https://gongjupal.com/ingress/portal-db/index.html" style="color:#ffce00;">Portal DB</a> is useful when you want stronger local portal data infrastructure alongside COMM history.</li>
+        <li><a href="https://gongjupal.com/ingress/portal-afterimage/index.html" style="color:#ffce00;">Portal Afterimage</a> adds visual portal memory while Activity Log focuses on player and event history.</li>
+      </ul>
+    </section>
+  </main>
 </body>
 </html>

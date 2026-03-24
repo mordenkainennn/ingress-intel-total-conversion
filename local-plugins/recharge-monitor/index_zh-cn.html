@@ -3,171 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC 插件: 充电监控与衰减预测 (Recharge Monitor)</title>
+    <title>Recharge Monitor for IITC | Portal 健康监控与衰减预测</title>
+    <meta name="description" content="Recharge Monitor 是适用于 Niantic Ingress Intel 地图的 IITC 插件，可监控 Portal 健康度、预测衰减时间，并从 COMM 与活动日志恢复部署历史。">
+    <link rel="canonical" href="https://gongjupal.com/ingress/recharge-monitor/index_zh-cn.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/recharge-monitor/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/recharge-monitor/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/recharge-monitor/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/recharge-monitor/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Ingress Intel 地图插件目录">
+    <meta property="og:title" content="Recharge Monitor for IITC | Portal 健康监控与衰减预测">
+    <meta property="og:description" content="在 Niantic Ingress Intel 地图上监控 Portal 健康度、估算衰减时点，并从本地 COMM 与活动历史恢复部署时间。">
+    <meta property="og:url" content="https://gongjupal.com/ingress/recharge-monitor/index_zh-cn.html">
+    <meta property="og:locale" content="zh_CN">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Recharge Monitor for IITC | Portal 健康监控与衰减预测">
+    <meta name="twitter:description" content="适用于 Ingress Intel 的 IITC 监控插件，可管理 watchlist、估算衰减时间，并根据本地历史提供充电提醒。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Recharge Monitor",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Recharge Monitor 是适用于 Niantic Ingress Intel 地图的 IITC 插件，可监控 Portal 健康度、预测衰减时间，并从本地 COMM 与活动日志恢复部署历史。",
+      "url": "https://gongjupal.com/ingress/recharge-monitor/index_zh-cn.html",
+      "softwareVersion": "0.3.1",
+      "inLanguage": "zh-CN",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/recharge-monitor"
+    }
+    </script>
     <style>
-        body {
-            background-color: #0e1111;
-            color: #eee;
-            font-family: 'Roboto', 'Noto Sans SC', sans-serif;
-            font-size: 16px;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
-        .lang-switch {
-            position: fixed;
-            top: 20px;
-            right: 30px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #0ff;
-        }
-        .lang-switch a {
-            color: #ffce00;
-            text-decoration: none;
-            font-family: 'Coda', cursive;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background-color: rgba(10, 25, 30, 0.85);
-            border: 1px solid #0ff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            padding: 25px 40px;
-            border-radius: 5px;
-        }
-        h1, h2, h3 {
-            font-family: 'Coda', 'Noto Sans SC', cursive;
-            color: #0ff;
-            text-transform: uppercase;
-            text-shadow: 0 0 5px #0ff;
-        }
-        h1 {
-            text-align: center;
-            font-size: 2.2em;
-            margin-bottom: 20px;
-        }
-        h2 {
-            font-size: 1.8em;
-            border-bottom: 1px solid #0aa;
-            padding-bottom: 10px;
-            margin-top: 30px;
-        }
-        h3 {
-             font-size: 1.2em;
-             color: #ffce00;
-        }
-        p, li {
-            color: #ccc;
-        }
-        strong {
-            color: #ffce00;
-        }
-        code {
-            background-color: #000;
-            padding: 2px 5px;
-            border: 1px solid #333;
-            border-radius: 3px;
-            color: #fada5e;
-        }
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        ul li {
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
-            padding-left: 25px;
-            margin-bottom: 10px;
-        }
-        .note {
-            background-color: rgba(255, 206, 0, 0.1);
-            border: 1px solid #ffce00;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 4px;
-        }
-        .note strong {
-            color: #ffce00;
-        }
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', 'Noto Sans SC', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', cursive; margin: 0 5px; }
+        .container { max-width: 900px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', 'Noto Sans SC', cursive; color: #0ff; text-shadow: 0 0 5px #0ff; }
+        h1 { text-align: center; font-size: 2.4em; margin-bottom: 18px; }
+        h2 { font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 30px; }
+        h3 { font-size: 1.15em; color: #ffce00; }
+        p, li { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { color: #bbb; margin-bottom: 10px; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li { margin-bottom: 12px; }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 15px; margin-top: 20px; border-radius: 4px; }
+        .note-danger { border-color: #f88; background: rgba(255, 80, 80, 0.08); }
+        .note-danger strong { color: #f88; }
+        .faq-q { color: #ffce00; font-weight: 700; }
     </style>
 </head>
 <body>
-
     <div class="lang-switch">
-        <a href="index.html">English</a> | <a href="index_ja.html">日本語</a>
+        <a href="index.html" lang="en">English</a> |
+        <a href="index_ja.html" lang="ja">日本語</a>
     </div>
 
-    <div class="container">
-        <h1>充电监控与衰减预测 (Recharge Monitor)</h1>
-        <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/recharge-monitor" style="color: #ffce00; text-decoration: none; font-weight: 700;">在 GitHub 上查看此插件目录</a></p>
+    <main class="container">
+        <h1>Recharge Monitor</h1>
+        <p class="intro">面向 Niantic Ingress Intel 地图的 IITC Portal 监控列表、健康追踪与衰减预测插件。</p>
+        <p class="summary"><strong>Recharge Monitor</strong> 帮助特工跨区域追踪重要 Portal 的健康度，在 Portal 不在当前视野时估算衰减时间，并通过本地 COMM 与活动历史恢复部署时间。</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/recharge-monitor">在 GitHub 上查看此插件目录</a> |
+            <a href="https://gongjupal.com/ingress/index_zh-cn.html">查看全部 IITC 插件</a>
+        </p>
 
-        <p>此插件是为管理跨区域多个 Portal 的特工设计的必备工具。它可以实时监控 Portal 的健康度，并为您提供智能的能量衰减预测，即使 Portal 不在您当前的地图视野内，也能掌握其动态。</p>
-        <p>通过与 COMM 数据和其他日志插件的集成，它能确保您永远不会错过充电截止时间。</p>
+        <section aria-labelledby="who">
+            <h2 id="who">适合哪些用户</h2>
+            <p>如果你需要维护多个重要 Portal、长链锚点或跨区域防守目标，这个插件会非常实用。尤其当这些 Portal 并不总在你的当前地图视野中时，它能提供持续的本地监控能力。</p>
+        </section>
 
-        <h2>功能特性</h2>
-        <ul>
-            <li>
-                <h3>能量监控列表</h3>
-                <p>通过 Portal 详情面板将特定的 Portal 添加到您的个人监控列表。在一个集中的面板中追踪它们的当前健康度、最后观测状态以及部署时间戳。</p>
-            </li>
-            <li>
-                <h3>智能衰减预测</h3>
-                <p>对于当前在地图上不可见的 Portal，插件会根据每日 15% 的标准能量损失计算 <code>预计衰减 (Est. Decay)</code> 日期。为您提供可靠的“倒计时”，提示 Portal 何时会中立化。</p>
-            </li>
-            <li>
-                <h3>多源历史同步</h3>
-                <p>通过两种强大的方式自动找回准确的部署时间：</p>
-                <ul>
-                    <li><code>COMM 回溯</code>: 扫描 IITC 内部的聊天缓存，查找占领 (Capture) 和部署 (Deploy) 事件。</li>
-                    <li><code>日志插件集成</code>: 利用 <strong>Player Activity Log</strong> 插件的持久化数据，通过 GUID 和坐标精确匹配历史记录。</li>
-                </ul>
-            </li>
-            <li>
-                <h3>视觉预警提醒</h3>
-                <p>当监控列表中的任何 Portal 健康度降至 30% 以下时，IITC 工具箱中的“Recharge Mon”按钮会动态变色并显示警告数量（例如：<code>⚠️ Recharge (3)</code>）。</p>
-            </li>
-            <li>
-                <h3>本地化支持</h3>
-                <p>所有时间戳均以您的<strong>本地时区</strong>显示。提供用户友好的界面，支持在必要时手动修正部署时间。</p>
-            </li>
-        </ul>
+        <section aria-labelledby="features">
+            <h2 id="features">核心功能</h2>
+            <ul class="feature-list">
+                <li><strong>监控列表面板：</strong>可从 Portal 详情面板将目标加入 watchlist，并集中管理。</li>
+                <li><strong>Portal 健康度追踪：</strong>查看当前能量、最后观测状态，以及部署时间相关信息。</li>
+                <li><strong>衰减预测：</strong>根据标准 15% 日衰减模式，估算视野外 Portal 何时会中立化。</li>
+                <li><strong>历史恢复：</strong>可从 COMM 回溯和 <strong>Player Activity Log</strong> 中恢复更准确的部署时间。</li>
+                <li><strong>充电提醒：</strong>当 watchlist 中的 Portal 健康度跌破阈值时，在工具箱显示预警数量。</li>
+            </ul>
+        </section>
 
-        <h2>如何使用</h2>
-        <ol style="padding-left: 30px;">
-            <li>在地图上选择任意 Portal 以打开其详情面板。</li>
-            <li>点击 <strong>"🛡️ Add to Watchlist"</strong> (加入监控列表) 开始监控。</li>
-            <li>点击侧边栏工具箱中的 <strong>"Recharge Mon"</strong> 按钮打开主面板。</li>
-            <li>在面板中，使用 <strong>"🔄 Sync History"</strong> 按钮从 COMM 或日志中拉取历史数据，以提高时间的准确性。</li>
-            <li>如果工具箱按钮变成<strong>橙色/红色</strong>，那就是时候出门或者使用 Hypercube 充电了！</li>
-        </ol>
+        <section aria-labelledby="history">
+            <h2 id="history">历史同步与时间恢复</h2>
+            <p>Recharge Monitor 是否准确，很大程度取决于它能否还原 Portal 的原始部署时间。为此它支持两种本地历史来源：</p>
+            <ul class="feature-list">
+                <li><strong>COMM 回溯：</strong>扫描 IITC 本地聊天缓存中的 capture 与 deploy 事件。</li>
+                <li><strong>Player Activity Log 集成：</strong>通过 GUID 和坐标匹配读取兼容的活动历史。</li>
+            </ul>
+            <p>因为插件依赖本地历史，所以“预计衰减”是否准确，取决于你的客户端过去是否实际看到了这些相关事件。</p>
+        </section>
+
+        <section aria-labelledby="usage">
+            <h2 id="usage">如何使用</h2>
+            <ol>
+                <li>选择一个 Portal，并通过详情面板把它加入 watchlist。</li>
+                <li>从工具箱中的 <strong>Recharge Mon</strong> 打开主面板。</li>
+                <li>当你需要补全历史时，使用 <strong>Sync History</strong> 从本地来源恢复部署时间。</li>
+                <li>当工具箱变成橙色或红色时，就表示某些监控 Portal 已进入危险区间。</li>
+            </ol>
+        </section>
+
+        <section aria-labelledby="whats-new">
+            <h2 id="whats-new">近期更新</h2>
+            <h3>版本 0.3.1</h3>
+            <ul class="feature-list">
+                <li>统一使用 <strong>Decay</strong> 术语，更贴近官方 Ingress 用语。</li>
+                <li>增强健康度计算逻辑，减少误覆盖问题。</li>
+            </ul>
+            <h3>版本 0.3.0</h3>
+            <ul class="feature-list">
+                <li>新增实时 COMM 监控与历史回溯同步。</li>
+                <li>新增从 <strong>Player Activity Log</strong> 恢复历史的能力。</li>
+                <li>watchlist 新增 <strong>Est. Decay</strong> 列。</li>
+                <li>所有时间显示切换为本地时间格式。</li>
+            </ul>
+        </section>
 
         <div class="note">
-            <p><strong>高手提示:</strong> 强烈建议将此插件与 <strong>Player Activity Log</strong> 配合使用。每当您添加新 Portal 时，监控器会自动从活动历史中“吸取”部署时间。</p>
+            <p><strong>高手提示：</strong>Recharge Monitor 与 <a href="https://gongjupal.com/ingress/player-activity-log/index_zh-cn.html" style="color:#ffce00;">Player Activity Log</a> 搭配使用效果最佳，因为它可以在你加入 Portal 时自动吸收本地活动历史中的部署时间信息。</p>
+        </div>
+        <div class="note">
+            <p><strong>重要提示：</strong>历史恢复与衰减预测都依赖本地数据来源。如果你的客户端当时没有看到相关事件，估算结果就可能不完整。</p>
+        </div>
+        <div class="note note-danger">
+            <p><strong>提醒：</strong>这是一个本地规划与监控工具，不是服务器端的绝对历史真相来源，不应被当作权威数据库。</p>
         </div>
 
-        <h2>更新日志</h2>
-        <div class="changelog-entry">
-            <h3>版本 0.3.1</h3>
-            <ul>
-                <li>更新: 统一术语为 "Decay" 以符合官方标准。</li>
-                <li>修复: 增强健康度计算逻辑的健壮性，防止数据覆盖错误。</li>
+        <section aria-labelledby="faq">
+            <h2 id="faq">常见问题</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">它能预测当前视野外 Portal 的衰减吗？</span> 可以，只要插件拥有足够的本地历史来推断部署时间与当前状态。</li>
+                <li><span class="faq-q">为什么推荐搭配 Player Activity Log？</span> 因为它能提供额外的本地 capture / deploy 历史，从而提升 Recharge Monitor 的估算质量。</li>
+                <li><span class="faq-q">为什么预测结果仍可能不准？</span> 因为它依赖你本地看到并记录下来的 COMM 与历史数据，缺失事件就意味着缺失上下文。</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>版本 0.3.0</h3>
-            <ul>
-                <li>新增: 实现实时 COMM 监控和回溯同步功能。</li>
-                <li>新增: 集成从 Player Activity Log 插件恢复历史记录的功能。</li>
-                <li>新增: 监控列表中添加“预计衰减”列。</li>
-                <li>更新: 所有时间显示切换为本地时间格式。</li>
-                <li>更新: 将界面和注释完全翻译为英文（适配全局使用）。</li>
+        </section>
+
+        <section aria-labelledby="related">
+            <h2 id="related">相关插件</h2>
+            <ul class="related-list">
+                <li><a href="https://gongjupal.com/ingress/player-activity-log/index_zh-cn.html" style="color:#ffce00;">玩家活动日志</a> 可提升部署时间恢复与活动历史匹配能力。</li>
+                <li><a href="https://gongjupal.com/ingress/portal-db/index_zh-cn.html" style="color:#ffce00;">Portal DB</a> 适合与你的本地 Portal 数据工作流一起使用。</li>
+                <li><a href="https://gongjupal.com/ingress/portal-afterimage/index_zh-cn.html" style="color:#ffce00;">Portal Afterimage</a> 则从地图可视化记忆角度补充这一监控体系。</li>
             </ul>
-        </div>
-    </div>
+        </section>
+    </main>
 
 </body>
 </html>

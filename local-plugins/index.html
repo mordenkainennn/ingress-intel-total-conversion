@@ -3,10 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC Plugin Directory</title>
+    <title>IITC Plugins for Ingress Intel Map | Custom Tools for Agents</title>
+    <meta name="description" content="Browse custom IITC plugins for Niantic's Ingress Intel Map, including portal tracking, drone route planning, fanfield planning, recharge monitoring, and agent utilities.">
+    <link rel="canonical" href="https://gongjupal.com/ingress/index.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/index.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
+    <meta property="og:title" content="IITC Plugins for Ingress Intel Map | Custom Tools for Agents">
+    <meta property="og:description" content="Explore custom IITC plugins for Niantic's Ingress Intel Map, from portal databases and afterimage layers to drone planners and recharge monitoring tools.">
+    <meta property="og:url" content="https://gongjupal.com/ingress/index.html">
+    <meta property="og:locale" content="en_US">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="IITC Plugins for Ingress Intel Map | Custom Tools for Agents">
+    <meta name="twitter:description" content="Explore custom IITC plugins for Niantic's Ingress Intel Map, including portal tracking, field planning, drone routing, and agent utilities.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "IITC Plugins for Ingress Intel Map",
+      "description": "A directory of custom IITC plugins for Niantic's Ingress Intel Map, including portal tracking, planning, visualization, and agent utility tools.",
+      "url": "https://gongjupal.com/ingress/index.html",
+      "inLanguage": "en"
+    }
+    </script>
     <style>
         body {
             background-color: #0e1111;
@@ -42,14 +67,38 @@
             padding: 25px 40px;
             border-radius: 5px;
         }
-        h1 {
+        h1, h2 {
             font-family: 'Coda', cursive;
             color: #0ff;
-            text-transform: uppercase;
             text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
             text-align: center;
             font-size: 2.5em;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        h2 {
+            font-size: 1.5em;
+            margin: 34px 0 16px 0;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 8px;
+        }
+        .intro {
+            text-align: center;
+            color: #bbb;
+            margin: 0 auto 16px auto;
+            max-width: 760px;
+        }
+        .summary {
+            text-align: center;
+            color: #ccc;
+            margin: 0 auto 26px auto;
+            max-width: 760px;
+        }
+        .section-copy {
+            color: #ccc;
+            margin: 0 0 18px 0;
         }
         .plugin-grid {
             display: grid;
@@ -72,6 +121,10 @@
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
         }
+        .plugin-card:focus {
+            outline: 2px solid #ffce00;
+            outline-offset: 2px;
+        }
         .plugin-card h3 {
             font-family: 'Coda', cursive;
             color: #ffce00;
@@ -83,6 +136,19 @@
             font-size: 0.9em;
             margin: 0;
             flex-grow: 1;
+        }
+        .resource-list,
+        .faq-list {
+            padding-left: 20px;
+            color: #ccc;
+        }
+        .resource-list li,
+        .faq-list li {
+            margin-bottom: 10px;
+        }
+        .faq-q {
+            color: #ffce00;
+            font-weight: 700;
         }
         .footer {
             text-align: center;
@@ -97,62 +163,97 @@
 <body>
 
     <div class="lang-switch">
-        <a href="index_zh-cn.html">中文</a> | <a href="index_ja.html">日本語</a>
+        <a href="https://gongjupal.com/ingress/index_zh-cn.html" lang="zh-CN">中文</a> |
+        <a href="https://gongjupal.com/ingress/index_ja.html" lang="ja">日本語</a>
     </div>
 
-    <div class="container">
+    <main class="container">
         <h1>IITC Plugin Directory</h1>
-        
-        <p style="text-align: center; color: #888; margin-bottom: 18px;">
-            A collection of custom-built and enhanced plugins for Ingress agents.
+
+        <p class="intro">
+            A collection of custom-built and enhanced plugins for IITC on Niantic's Ingress Intel Map.
+        </p>
+        <p class="summary">
+            This directory highlights tools for Ingress agents who need portal tracking, field planning, drone route planning, activity analysis, recharge monitoring, and other map-focused IITC utilities.
         </p>
         <p style="text-align: center; margin: 0 0 40px 0;">
             <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion" style="color: #ffce00; text-decoration: none; font-weight: 700;">Browse the GitHub repository</a>
         </p>
 
-        <div class="plugin-grid">
-            <a href="portal-db/index.html" class="plugin-card">
-                <h3>Portal DB</h3>
-                <p>The core infrastructure. Persistent database with move detection and update statistics.</p>
-            </a>
-            <a href="portal-afterimage/index.html" class="plugin-card">
-                <h3>Portal Afterimage</h3>
-                <p>Draws a "memory layer" of portals you've seen when official markers are hidden by zoom.</p>
-            </a>
-            <a href="player-activity-log/index.html" class="plugin-card">
-                <h3>Player Activity Log</h3>
-                <p>Logs agent activities from COMM and visualizes movement trails on the map.</p>
-            </a>
-            <a href="recharge-monitor/index.html" class="plugin-card">
-                <h3>Recharge Monitor</h3>
-                <p>Real-time portal health monitoring and intelligent decay prediction.</p>
-            </a>
-            <a href="uniques-tools/index.html" class="plugin-card">
-                <h3>Uniques Tools</h3>
-                <p>Enhanced tracking for visits, captures, and drone movements with official history import.</p>
-            </a>
-            <a href="homogeneous-fields/index.html" class="plugin-card">
-                <h3>Homogeneous Fields</h3>
-                <p>Advanced tool for planning and visualizing homogeneous control fields.</p>
-            </a>
-            <a href="drone-flight-planner/index.html" class="plugin-card">
-                <h3>Drone Flight Planner</h3>
-                <p>Plans drone routes with S2 mechanics, key-jump constraints, and JSON import/export.</p>
-            </a>
-            <a href="fanfield-planner/index.html" class="plugin-card">
-                <h3>Fanfield Planner</h3>
-                <p>Plans two-phase fanfields with non-crossing base links, anchor reflections, and clear per-phase summaries.</p>
-            </a>
-            <a href="all-portal-names/index.html" class="plugin-card">
-                <h3>All Portal Names</h3>
-                <p>Force display of all portal names regardless of overlap at user-defined zoom levels.</p>
-            </a>
-        </div>
+        <section aria-labelledby="plugin-directory">
+            <h2 id="plugin-directory">Plugin Directory</h2>
+            <p class="section-copy">
+                Each page below explains what the plugin does, who it is useful for, and how it supports planning or analysis on the Ingress Intel Map.
+            </p>
+            <div class="plugin-grid">
+                <a href="https://gongjupal.com/ingress/portal-db/index.html" class="plugin-card">
+                    <h3>Portal DB</h3>
+                    <p>Builds a persistent local portal database for IITC, with move detection and update statistics for Ingress Intel analysis.</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/portal-afterimage/index.html" class="plugin-card">
+                    <h3>Portal Afterimage</h3>
+                    <p>Draws a memory layer of portals you have already seen when official Ingress Intel markers are hidden by zoom.</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/player-activity-log/index.html" class="plugin-card">
+                    <h3>Player Activity Log</h3>
+                    <p>Records agent actions from COMM and visualizes movement trails for Ingress activity review on the map.</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/recharge-monitor/index.html" class="plugin-card">
+                    <h3>Recharge Monitor</h3>
+                    <p>Monitors portal health in real time and predicts decay windows for defense planning on the Intel Map.</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/uniques-tools/index.html" class="plugin-card">
+                    <h3>Uniques Tools</h3>
+                    <p>Tracks visits, captures, and drone movements with official history import for long-term Ingress progress tracking.</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/homogeneous-fields/index.html" class="plugin-card">
+                    <h3>Homogeneous Fields</h3>
+                    <p>Helps plan and visualize homogeneous control fields for structured Ingress fielding operations.</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/drone-flight-planner/index.html" class="plugin-card">
+                    <h3>Drone Flight Planner</h3>
+                    <p>Plans drone routes with S2 mechanics, key-jump constraints, and JSON import or export for Intel workflows.</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/fanfield-planner/index.html" class="plugin-card">
+                    <h3>Fanfield Planner</h3>
+                    <p>Plans two-phase fanfields with non-crossing base links, anchor reflections, and clear phase-by-phase summaries.</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/all-portal-names/index.html" class="plugin-card">
+                    <h3>All Portal Names</h3>
+                    <p>Forces portal name display at chosen zoom levels so Ingress Intel labels stay visible even with overlap.</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/polygon-ap/index.html" class="plugin-card">
+                    <h3>Polygon AP Counter</h3>
+                    <p>Analyzes user-drawn polygons to estimate portal counts, links, fields, and potential ENL or RES AP inside target areas.</p>
+                </a>
+            </div>
+        </section>
+
+        <section aria-labelledby="why-use">
+            <h2 id="why-use">Why Use These IITC Plugins</h2>
+            <p class="section-copy">
+                These tools are designed for agents who use IITC to extend the Ingress Intel Map beyond the default experience. They focus on portal memory, operational planning, field construction, COMM-based review, and quality-of-life improvements for daily play.
+            </p>
+            <ul class="resource-list">
+                <li>Portal tracking and local data storage for better map awareness.</li>
+                <li>Planning support for drone jumps, fanfields, and homogeneous fields.</li>
+                <li>Agent utilities that turn Intel Map activity into more actionable information.</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="faq">
+            <h2 id="faq">FAQ</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">What is IITC?</span> IITC is an enhanced interface for the Ingress Intel Map used by agents who want more control, visibility, and planning tools.</li>
+                <li><span class="faq-q">Are these plugins for Niantic's Ingress?</span> Yes. This directory is specifically about plugins for IITC on Niantic's Ingress Intel Map, not Kubernetes or networking software.</li>
+                <li><span class="faq-q">Where can I review source files and plugin code?</span> Use the GitHub repository link above to inspect the source, plugin scripts, and update history.</li>
+            </ul>
+        </section>
 
         <div class="footer">
             Note: These plugins are based on locally received data only and do not violate Niantic's TOS.
         </div>
-    </div>
+    </main>
 
 </body>
 </html>

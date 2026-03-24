@@ -3,223 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC 插件: 57Cell's Field Planner</title>
+    <title>Homogeneous Fields for IITC | Ingress 控场规划插件</title>
+    <meta name="description" content="Homogeneous Fields 是 Niantic Ingress Intel Map 的 IITC 插件，可基于选定锚点 Portal 规划均匀分层控场、最大控场和 Cobweb 方案。">
+    <link rel="canonical" href="https://gongjupal.com/ingress/homogeneous-fields/index_zh-cn.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/homogeneous-fields/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/homogeneous-fields/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/homogeneous-fields/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/homogeneous-fields/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
+    <meta property="og:title" content="Homogeneous Fields for IITC | Ingress 控场规划插件">
+    <meta property="og:description" content="在 Niantic Ingress Intel Map 上规划均匀控场、最大控场和 Cobweb 结构，并生成可执行的分步文本方案。">
+    <meta property="og:url" content="https://gongjupal.com/ingress/homogeneous-fields/index_zh-cn.html">
+    <meta property="og:locale" content="zh_CN">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Homogeneous Fields for IITC | Ingress 控场规划插件">
+    <meta name="twitter:description" content="适用于 Ingress 特工的 IITC 控场规划插件，支持分层控场算法、Portal 筛选、DrawTools 导出和详细执行计划。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Homogeneous Fields",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Homogeneous Fields 是 Niantic Ingress Intel Map 的 IITC 插件，可基于选定锚点 Portal 设计均匀分层控场、最大控场和 Cobweb 控场方案。",
+      "url": "https://gongjupal.com/ingress/homogeneous-fields/index_zh-cn.html",
+      "softwareVersion": "2.1.15",
+      "inLanguage": "zh-CN",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/homogeneous-fields"
+    }
+    </script>
     <style>
-        body {
-            background-color: #0e1111;
-            color: #eee;
-            font-family: 'Roboto', sans-serif;
-            font-size: 16px;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
-        .lang-switch {
-            position: fixed;
-            top: 20px;
-            right: 30px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #0ff;
-        }
-        .lang-switch a {
-            color: #ffce00;
-            text-decoration: none;
-            font-family: 'Coda', cursive;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background-color: rgba(10, 25, 30, 0.85);
-            border: 1px solid #0ff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            padding: 25px 40px;
-            border-radius: 5px;
-        }
-        h1, h2, h3 {
-            font-family: 'Coda', cursive;
-            color: #0ff;
-            text-transform: uppercase;
-            text-shadow: 0 0 5px #0ff;
-        }
-        h1 {
-            text-align: center;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-        h2 {
-            font-size: 1.8em;
-            border-bottom: 1px solid #0aa;
-            padding-bottom: 10px;
-            margin-top: 30px;
-        }
-        h3 {
-            font-size: 1.2em;
-            color: #ffce00;
-        }
-        p, li {
-            color: #ccc;
-        }
-        strong {
-            color: #ffce00;
-        }
-        code {
-            background-color: #000;
-            padding: 2px 5px;
-            border: 1px solid #333;
-            border-radius: 3px;
-            color: #fada5e;
-        }
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        ul li {
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
-            padding-left: 25px;
-            margin-bottom: 10px;
-        }
-        .note {
-            background-color: rgba(255, 206, 0, 0.1);
-            border: 1px solid #ffce00;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 4px;
-        }
-        .note strong {
-            color: #ffce00;
-        }
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', 'Noto Sans SC', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', 'Noto Sans SC', cursive; margin: 0 5px; }
+        .container { max-width: 900px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', 'Noto Sans SC', cursive; text-shadow: 0 0 5px #0ff; }
+        h1 { color: #0ff; text-align: center; font-size: 2.5em; margin-bottom: 18px; }
+        h2 { color: #0ff; font-size: 1.8em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 30px; }
+        h3 { font-size: 1.2em; color: #ffce00; margin-top: 20px; }
+        p, li { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; font-family: 'Courier New', Courier, monospace; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { margin-bottom: 10px; color: #bbb; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li { margin-bottom: 12px; }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 15px; margin-top: 20px; border-radius: 4px; }
+        .faq-q { color: #ffce00; font-weight: 700; }
     </style>
 </head>
 <body>
 
     <div class="lang-switch">
-        <a href="index.html">English</a> | <a href="index_ja.html">日本語</a>
+        <a href="https://gongjupal.com/ingress/homogeneous-fields/index.html" lang="en">English</a> |
+        <a href="https://gongjupal.com/ingress/homogeneous-fields/index_ja.html" lang="ja">日本語</a>
     </div>
 
-    <div class="container">
-        <h1>57Cell's Field Planner</h1>
-        <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/homogeneous-fields" style="color: #ffce00; text-decoration: none; font-weight: 700;">在 GitHub 上查看此插件目录</a></p>
+    <main class="container">
+        <h1>Homogeneous Fields</h1>
+        <p class="intro">适用于 Niantic Ingress Intel Map 的高级 IITC 控场规划插件。</p>
+        <p class="summary"><strong>Homogeneous Fields</strong> 最早由 <strong>57Cell</strong> 创建，用于帮助 Ingress 特工从选定锚点 Portal 自动生成复杂控场方案。它支持经典均匀分层控场、最大控场和 Cobweb 风格规划，并同时提供地图覆盖层和可执行的分步文本输出。</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/homogeneous-fields">在 GitHub 上查看此插件目录</a> |
+            <a href="https://gongjupal.com/ingress/index_zh-cn.html">查看全部 IITC 插件</a>
+        </p>
 
-        <p>此插件是用于设计和执行复杂控场规划的进阶工具。它最初由 <strong>57Cell</strong> 创建，并经过 <strong>Heistergand</strong> 与 <strong>mordenkainennn</strong> 等贡献者持续增强，已经成为面向战略玩法的强力辅助工具。</p>
-        <p>它可以基于你选定的锚点 Portal 自动计算链接和控场计划，显著减少手动规划所需的时间。</p>
+        <section aria-labelledby="who">
+            <h2 id="who">适合哪些用户</h2>
+            <p>这个插件适合需要认真设计大规模控场行动，而不是手动画每一条连线的玩家。对于需要多层控场、三角区域内 Portal 筛选、执行顺序、钥匙数量和行进距离估算的作战计划，它会非常有帮助。</p>
+        </section>
 
-        <h2>功能特性</h2>
-        <ul>
-            <li>
-                <h3>多种控场规划策略</h3>
-                <p>你可以根据目标选择三种不同的规划算法：</p>
-                <ul>
-                    <li><code>均匀控制场 (HCF)</code>: 创建具有指定层数的均匀分层控场。</li>
-                    <li><code>最大控场</code>: 从给定 Portal 集合中尽可能生成更多区域。</li>
-                    <li><code>蛛网计划</code>: 生成类似蛛网结构的控场方案，适合做区域压制。</li>
-                </ul>
-            </li>
-            <li>
-                <h3>交互式规划界面</h3>
-                <p>插件从工具箱启动一个完整的规划对话框，作为操作中心。你可以在这里选择角点 Portal、查看预览图、锁定角点，并微调整个计划。</p>
-            </li>
-            <li>
-                <h3>Portal 管理</h3>
-                <p>选择三个角点 Portal 后，插件会自动列出主三角形内的所有 Portal。你可以在“包含”和“排除”列表之间移动 Portal，以控制最终方案中使用哪些点。</p>
-            </li>
-            <li>
-                <h3>可视化反馈与自定义</h3>
-                <p>生成的计划会直接绘制在地图上，显示所需的链接和区域。你可以实时调整计划覆盖层颜色。选中的角点 Portal 也会带有动画高亮，便于识别。</p>
-            </li>
-            <li>
-                <h3>详细的分步输出</h3>
-                <p>插件会生成一份可复制、可分享的文本计划，内容包括：</p>
-                <ul>
-                    <li>最佳 Portal 访问顺序。</li>
-                    <li>每个 Portal 需要发出的编号链接列表。</li>
-                    <li>每个锚点所需的 SoftBank 数量。</li>
-                    <li>每个 Portal 所需 Key 数量汇总。</li>
-                    <li>Portal 之间的总行进距离。</li>
-                </ul>
-            </li>
-            <li>
-                <h3>与其他插件集成</h3>
-                <p>为了进一步提升效率，你可以一键将生成的链接计划导出到 <strong>DrawTools</strong> 和 <strong>Arc</strong> 插件。</p>
-            </li>
-        </ul>
+        <section aria-labelledby="features">
+            <h2 id="features">核心功能</h2>
+            <ul class="feature-list">
+                <li><strong>多种规划模式：</strong> 可在 <strong>Homogeneous Fields (HCF)</strong>、<strong>General Maximum Fielding</strong> 和 <strong>Cobweb Plan</strong> 之间切换。</li>
+                <li><strong>交互式规划对话框：</strong> 可以选择角点 Portal、查看锚点预览图、锁定选择并调整参数。</li>
+                <li><strong>Portal 纳入与排除控制：</strong> 通过 Included / Excluded 列表精细控制最终参与方案的 Portal。</li>
+                <li><strong>地图可视化覆盖：</strong> 直接在 Intel Map 上绘制规划结果，并可调整覆盖层颜色。</li>
+                <li><strong>详细执行输出：</strong> 自动生成访问顺序、连线顺序、SoftBank 数量、钥匙数量和总路程统计。</li>
+                <li><strong>插件联动：</strong> 支持把生成的连线方案导出到 <strong>DrawTools</strong> 与 <strong>Arc</strong>。</li>
+            </ul>
+        </section>
 
-        <h2>如何使用</h2>
-        <ol style="padding-left: 30px;">
-            <li>点击 IITC 工具箱中的 <strong>"Plan Fields"</strong> 按钮开始。</li>
-            <li>在地图上选择三个 Portal 作为主要锚点/角点。</li>
-            <li>规划对话框会打开。你可以在这里：
-                <ul>
-                    <li>锁定已选择的角点。</li>
-                    <li>选择所需的 <strong>Field type</strong> (HCF、General、Cobweb)。</li>
-                    <li>为 HCF 计划设置 <strong>Layers</strong>。</li>
-                    <li>选择计划的 <strong>Geometry</strong> (Random 或 Perfect)。</li>
-                </ul>
-            </li>
-            <li>(可选) 在右侧面板中，把不想使用的 Portal 从“包含”移动到“排除”。</li>
-            <li>点击 <strong>"Find Fielding Plan"</strong> 按钮。</li>
-            <li>插件会计算最优方案，并在地图上显示覆盖层，同时在对话框中输出文字步骤。</li>
-        </ol>
+        <section aria-labelledby="modes">
+            <h2 id="modes">规划模式</h2>
+            <ul class="feature-list">
+                <li><strong>Homogeneous Fields (HCF)：</strong> 生成指定层数的均匀分层控场。</li>
+                <li><strong>General Maximum Fielding：</strong> 尽可能从现有 Portal 中生成更多控制场。</li>
+                <li><strong>Cobweb Plan：</strong> 生成蛛网状结构，适合做高密度或压制型控场。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="workflow">
+            <h2 id="workflow">如何使用</h2>
+            <ol>
+                <li>点击 IITC 工具箱中的 <strong>Plan Fields</strong>。</li>
+                <li>在地图上选择三个 Portal 作为主要锚点或三角角点。</li>
+                <li>打开规划对话框，并在需要时锁定角点。</li>
+                <li>选择控场类型、层数和几何模式。</li>
+                <li>按需把 Portal 在 Included 和 Excluded 列表之间移动。</li>
+                <li>点击 <strong>Find Fielding Plan</strong> 生成最终结果。</li>
+            </ol>
+        </section>
+
+        <section aria-labelledby="output">
+            <h2 id="output">输出内容</h2>
+            <ul class="feature-list">
+                <li>最佳 Portal 访问顺序。</li>
+                <li>每个 Portal 的编号连线列表。</li>
+                <li>主要锚点所需的 SoftBank 数量。</li>
+                <li>每个 Portal 所需的钥匙统计。</li>
+                <li>总行进距离和整体计划统计。</li>
+            </ul>
+        </section>
 
         <div class="note">
-            <p><strong>来源:</strong> 此插件是在 <strong>57Cell</strong> 原始脚本基础上改进而来的版本，目前由 <strong>cloverjune</strong> 在此 IITC-CE 插件集合中维护和增强。</p>
+            <p><strong>来源与维护：</strong> 这是在 <strong>57Cell</strong> 原始 Field Planner 基础上持续改进的版本，后续由 <strong>Heistergand</strong>、<strong>cloverjune</strong> 等贡献者扩展并维护。</p>
         </div>
 
-        <h2>更新日志</h2>
-        <div class="changelog-entry">
+        <section aria-labelledby="faq">
+            <h2 id="faq">常见问题</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">这个插件只能做均匀控场吗？</span> 不是。均匀控场只是其中一种模式，它也支持最大控场和 Cobweb 规划。</li>
+                <li><span class="faq-q">可以排除某些 Portal 吗？</span> 可以。选定主三角后，可以把不想使用的 Portal 从 Included 移到 Excluded。</li>
+                <li><span class="faq-q">插件只显示图形结果吗？</span> 不是。它还会生成详细的文本计划，包含连线顺序、钥匙、SoftBank 和距离信息。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="related">
+            <h2 id="related">相关插件</h2>
+            <ul class="related-list">
+                <li><a href="https://gongjupal.com/ingress/fanfield-planner/index_zh-cn.html" style="color:#ffce00;">Fanfield Planner</a> 适合需要另一种分阶段控场风格时使用。</li>
+                <li><a href="https://gongjupal.com/ingress/overlay-planner/index_zh-cn.html" style="color:#ffce00;">Overlay Planner</a> 适合把控场方案与其他地图绘制内容叠加比较。</li>
+                <li><a href="https://gongjupal.com/ingress/all-portal-names/index_zh-cn.html" style="color:#ffce00;">All Portal Names</a> 可以在高密度区域保留更多 Portal 名称，便于规划阅读。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="changelog">
+            <h2 id="changelog">更新日志</h2>
             <h3>版本 2.1.15</h3>
-            <ul>
-                <li>修复: 规划时会缓存角点和候选 Portal 的坐标与名称，移动地图后再点击 <code>Find Fielding Plan</code> 也不会因为视野变化而失效。</li>
-                <li>修复: 角点预览区会标准化 Portal 标题和图片数据，避免名称显示为 <code>undefined</code>。</li>
+            <ul class="feature-list">
+                <li>缓存了角点和候选 Portal 的坐标与名称，移动地图后规划不再失效。</li>
+                <li>规范化角点预览数据，避免 Portal 名称显示为 <code>undefined</code>。</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
             <h3>版本 2.1.14</h3>
-            <ul>
-                <li>修复: 对话框布局重构为 Flexbox，解决了多个渲染和尺寸调整问题。</li>
-                <li>更新: “包含的 Portal”与“排除的 Portal”列表现在会按 2:1 的比例正确使用垂直空间。</li>
-                <li>更新: 增加了对话框默认高度，以获得更好的初始视图。</li>
+            <ul class="feature-list">
+                <li>用 Flexbox 重构对话框布局，修复渲染与尺寸调整问题。</li>
+                <li>优化 Included / Excluded 列表的垂直空间分配。</li>
+                <li>提高默认对话框高度。</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>版本 2.1.2 &ndash; 2.1.7</h3>
-            <ul>
-                <li>新增: 更新日志现在可在 IITC 插件列表中查看。</li>
-                <li>新增: 添加了 Portal 图片预览和选中角点的动画高亮。</li>
-                <li>新增: 对话框中加入了 “Clear” 按钮。</li>
-                <li>修复: 主要 UI 改进与 API 兼容性修复。</li>
+            <h3>版本 2.0.0 到 2.1.0</h3>
+            <ul class="feature-list">
+                <li>加入 <strong>General Maximum Fielding</strong> 和 <strong>Cobweb</strong> 模式。</li>
+                <li>加入 Portal、Link、Field 和距离统计输出。</li>
+                <li>加入地图上的控场绘制图层。</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>版本 2.0.0 &ndash; 2.1.0</h3>
-            <ul>
-                <li>新增: 加入 “General Maximum Fielding” 与 “Cobweb” 规划选项。</li>
-                <li>新增: 加入统计输出 (Portal/Link/Field 数量与距离)。</li>
-                <li>新增: 计划中会明确标出生成的控制区域。</li>
-                <li>新增: 地图上加入区域绘制图层。</li>
+            <h3>版本 1.1.0 到 1.2.1</h3>
+            <ul class="feature-list">
+                <li>加入插件图层、连线绘制和编号任务输出。</li>
+                <li>后续贡献者加入了 DrawTools 导出功能。</li>
+                <li>加入几何上更均衡的规划选项。</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>版本 1.1.0 &ndash; 1.2.1</h3>
-            <ul>
-                <li>新增: 添加插件图层和链接绘制。</li>
-                <li>新增: 任务列表增加编号。</li>
-                <li>新增: Heistergand 添加了导出到 DrawTools 的功能。</li>
-                <li>新增: 可以生成几何上更均衡的规划。</li>
-                <li>修复: 代码重构和 UI 改进。</li>
-            </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>版本 1.0.0</h3>
-            <ul>
-                <li>新增: 57Cell 初始版本发布。</li>
-            </ul>
-        </div>
-    </div>
+        </section>
+    </main>
 
 </body>
 </html>

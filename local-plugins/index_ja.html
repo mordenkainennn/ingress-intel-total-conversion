@@ -3,10 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC プラグインディレクトリ</title>
+    <title>IITC Ingress Intel マップ用プラグイン一覧 | エージェント向けツール</title>
+    <meta name="description" content="Niantic Ingress Intel マップ向けの IITC カスタムプラグインを一覧できます。ポータル追跡、ドローン経路計画、ファンフィールド計画、リチャージ監視などを収録。">
+    <link rel="canonical" href="https://gongjupal.com/ingress/index_ja.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/index.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="IITC Ingress Intel マップ用プラグイン一覧">
+    <meta property="og:title" content="IITC Ingress Intel マップ用プラグイン一覧 | エージェント向けツール">
+    <meta property="og:description" content="Niantic Ingress Intel マップ向けの IITC プラグインを紹介します。ポータルDB、残像レイヤー、ドローン計画、フィールド計画、リチャージ監視などを収録。">
+    <meta property="og:url" content="https://gongjupal.com/ingress/index_ja.html">
+    <meta property="og:locale" content="ja_JP">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="IITC Ingress Intel マップ用プラグイン一覧 | エージェント向けツール">
+    <meta name="twitter:description" content="Niantic Ingress Intel マップ向けの IITC プラグインを一覧。ポータル追跡、フィールド計画、ドローン経路、日常運用ツールを収録。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "IITC Ingress Intel マップ用プラグイン一覧",
+      "description": "Niantic Ingress Intel マップ向けの IITC カスタムプラグイン一覧。ポータル追跡、計画、可視化、エージェント向け効率化ツールを収録。",
+      "url": "https://gongjupal.com/ingress/index_ja.html",
+      "inLanguage": "ja"
+    }
+    </script>
     <style>
         body {
             background-color: #0e1111;
@@ -42,14 +67,37 @@
             padding: 25px 40px;
             border-radius: 5px;
         }
-        h1 {
+        h1, h2 {
             font-family: 'Coda', 'Noto Sans JP', cursive;
             color: #0ff;
-            text-transform: uppercase;
             text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
             text-align: center;
             font-size: 2.5em;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.5em;
+            margin: 34px 0 16px 0;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 8px;
+        }
+        .intro {
+            text-align: center;
+            color: #bbb;
+            margin: 0 auto 16px auto;
+            max-width: 760px;
+        }
+        .summary {
+            text-align: center;
+            color: #ccc;
+            margin: 0 auto 26px auto;
+            max-width: 760px;
+        }
+        .section-copy {
+            color: #ccc;
+            margin: 0 0 18px 0;
         }
         .plugin-grid {
             display: grid;
@@ -72,6 +120,10 @@
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
         }
+        .plugin-card:focus {
+            outline: 2px solid #ffce00;
+            outline-offset: 2px;
+        }
         .plugin-card h3 {
             font-family: 'Coda', 'Noto Sans JP', cursive;
             color: #ffce00;
@@ -83,6 +135,19 @@
             font-size: 0.9em;
             margin: 0;
             flex-grow: 1;
+        }
+        .resource-list,
+        .faq-list {
+            padding-left: 20px;
+            color: #ccc;
+        }
+        .resource-list li,
+        .faq-list li {
+            margin-bottom: 10px;
+        }
+        .faq-q {
+            color: #ffce00;
+            font-weight: 700;
         }
         .footer {
             text-align: center;
@@ -97,62 +162,97 @@
 <body>
 
     <div class="lang-switch">
-        <a href="index.html">English</a> | <a href="index_zh-cn.html">中文</a>
+        <a href="https://gongjupal.com/ingress/index.html" lang="en">English</a> |
+        <a href="https://gongjupal.com/ingress/index_zh-cn.html" lang="zh-CN">中文</a>
     </div>
 
-    <div class="container">
+    <main class="container">
         <h1>IITC プラグインディレクトリ</h1>
-        
-        <p style="text-align: center; color: #888; margin-bottom: 18px;">
-            Ingress エージェント向けにカスタマイズおよび強化されたプラグインコレクション。
+
+        <p class="intro">
+            Niantic Ingress Intel マップ向けの IITC カスタムプラグインと拡張ツールをまとめた一覧です。
+        </p>
+        <p class="summary">
+            このディレクトリでは、ポータル追跡、フィールド計画、ドローン経路計画、活動ログ分析、リチャージ監視など、Ingress エージェント向けの IITC ユーティリティを紹介しています。
         </p>
         <p style="text-align: center; margin: 0 0 40px 0;">
             <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion" style="color: #ffce00; text-decoration: none; font-weight: 700;">GitHub リポジトリを見る</a>
         </p>
 
-        <div class="plugin-grid">
-            <a href="portal-db/index_ja.html" class="plugin-card">
-                <h3>Portal DB</h3>
-                <p>基幹インフラ。永続データベース、移動検知、更新統計機能を提供します。</p>
-            </a>
-            <a href="portal-afterimage/index_ja.html" class="plugin-card">
-                <h3>Portal Afterimage</h3>
-                <p>ズームアウトでポータルが消える際、過去に見た位置を「残影」として描画します。</p>
-            </a>
-            <a href="player-activity-log/index_ja.html" class="plugin-card">
-                <h3>プレイヤー活動ログ</h3>
-                <p>COMMからの情報を記録し、エージェントの移動軌跡をマップ上で視覚化します。</p>
-            </a>
-            <a href="recharge-monitor/index_ja.html" class="plugin-card">
-                <h3>リチャージモニター</h3>
-                <p>ポータルの健康状態をリアルタイムで監視し、減衰予測日時を算出します。</p>
-            </a>
-            <a href="uniques-tools/index_ja.html" class="plugin-card">
-                <h3>Uniques Tools</h3>
-                <p>訪問・キャプチャ・ドローン移動の追跡を強化。公式履歴のインポートも可能です。</p>
-            </a>
-            <a href="homogeneous-fields/index_ja.html" class="plugin-card">
-                <h3>Homogeneous Fields</h3>
-                <p>同質コントロールフィールド（多重CF）の計画と可視化のための高度なツール。</p>
-            </a>
-            <a href="drone-flight-planner/index_ja.html" class="plugin-card">
-                <h3>Drone Flight Planner</h3>
-                <p>S2メカニズムに基づいたドローン飛行ルートの計画。キー不足による制限やJSON入出力に対応。</p>
-            </a>
-            <a href="fanfield-planner/index_ja.html" class="plugin-card">
-                <h3>Fanfield Planner</h3>
-                <p>交差しない底辺構築とアンカー反射を使って、2 フェーズのファンフィールド計画を作成します。</p>
-            </a>
-            <a href="all-portal-names/index_ja.html" class="plugin-card">
-                <h3>All Portal Names</h3>
-                <p>ズームレベルに応じて、ポータル名の重なりによる非表示を回避し、すべて強制表示します。</p>
-            </a>
-        </div>
+        <section aria-labelledby="plugin-directory">
+            <h2 id="plugin-directory">プラグイン一覧</h2>
+            <p class="section-copy">
+                各ページでは、プラグインの用途、どんなエージェントに向いているか、そして Ingress Intel マップ上の計画や分析をどう支援するかを説明しています。
+            </p>
+            <div class="plugin-grid">
+                <a href="https://gongjupal.com/ingress/portal-db/index_ja.html" class="plugin-card">
+                    <h3>Portal DB</h3>
+                    <p>IITC 用の永続的なローカルポータルデータベースを構築し、座標移動検知や更新統計を提供します。</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/portal-afterimage/index_ja.html" class="plugin-card">
+                    <h3>Portal Afterimage</h3>
+                    <p>公式マーカーがズームで隠れたときに、既知ポータルの記憶レイヤーを描画します。</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/player-activity-log/index_ja.html" class="plugin-card">
+                    <h3>プレイヤー活動ログ</h3>
+                    <p>COMM からエージェントの行動を記録し、移動軌跡をマップ上で可視化して振り返りを助けます。</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/recharge-monitor/index_ja.html" class="plugin-card">
+                    <h3>リチャージモニター</h3>
+                    <p>ポータルの健康状態をリアルタイムで監視し、防衛計画向けに減衰タイミングを予測します。</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/uniques-tools/index_ja.html" class="plugin-card">
+                    <h3>Uniques Tools</h3>
+                    <p>訪問、取得、ドローン移動の記録を強化し、公式履歴の取り込みにも対応します。</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/homogeneous-fields/index_ja.html" class="plugin-card">
+                    <h3>Homogeneous Fields</h3>
+                    <p>同質コントロールフィールドの計画と可視化を支援し、構造的なフィールド運用に役立ちます。</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/drone-flight-planner/index_ja.html" class="plugin-card">
+                    <h3>Drone Flight Planner</h3>
+                    <p>S2 メカニクス、キー制約、JSON 入出力を使ってドローン経路を計画します。</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/fanfield-planner/index_ja.html" class="plugin-card">
+                    <h3>Fanfield Planner</h3>
+                    <p>交差しない底辺リンクやアンカー反射を考慮しながら、2 フェーズのファンフィールドを計画します。</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/all-portal-names/index_ja.html" class="plugin-card">
+                    <h3>All Portal Names</h3>
+                    <p>指定ズームでポータル名を強制表示し、重なりがあっても Intel マップ上のラベルを見やすくします。</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/polygon-ap/index_ja.html" class="plugin-card">
+                    <h3>Polygon AP Counter</h3>
+                    <p>ユーザーが描いた多角形内の Portal 数、Link、Field、ENL または RES の潜在 AP を分析します。</p>
+                </a>
+            </div>
+        </section>
+
+        <section aria-labelledby="why-use">
+            <h2 id="why-use">これらの IITC プラグインを使う理由</h2>
+            <p class="section-copy">
+                これらのツールは、Ingress Intel マップをより深く活用したいエージェント向けに作られており、ポータル記録、作戦計画、フィールド構築、COMM の振り返り、日常運用の効率化を支援します。
+            </p>
+            <ul class="resource-list">
+                <li>ポータル追跡とローカル保存でマップ認識を強化できます。</li>
+                <li>ドローン移動、ファンフィールド、同質フィールドの計画精度を高められます。</li>
+                <li>Intel マップ上の情報を、より実用的な行動判断につなげられます。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="faq">
+            <h2 id="faq">よくある質問</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">IITC とは何ですか？</span> IITC は Ingress Intel マップを拡張するインターフェースで、視認性、操作性、計画機能を高めたいエージェントに適しています。</li>
+                <li><span class="faq-q">これらは Niantic の Ingress 向けプラグインですか？</span> はい。このディレクトリは Niantic Ingress Intel マップ向けの IITC プラグインを扱っており、Kubernetes やネットワーク分野の Ingress とは無関係です。</li>
+                <li><span class="faq-q">ソースコードやスクリプトはどこで確認できますか？</span> 上部の GitHub リポジトリリンクから、ソースコード、プラグインスクリプト、更新履歴を確認できます。</li>
+            </ul>
+        </section>
 
         <div class="footer">
-            注：これらのプラグインはローカルで受信したデータのみに基づき、Nianticの利用規約に違反しません。
+            注: これらのプラグインはローカルで受信したデータのみに基づき、Niantic の利用規約に違反しません。
         </div>
-    </div>
+    </main>
 
 </body>
 </html>

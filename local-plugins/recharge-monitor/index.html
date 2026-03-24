@@ -3,178 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC Plugin: Recharge Monitor & Decay Predictor</title>
+    <title>Recharge Monitor for IITC | Portal Health and Decay Predictor</title>
+    <meta name="description" content="Recharge Monitor is an IITC plugin for Niantic's Ingress Intel Map that tracks watched portal health, predicts decay timing, and syncs deployment history from COMM and activity logs.">
+    <link rel="canonical" href="https://gongjupal.com/ingress/recharge-monitor/index.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/recharge-monitor/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/recharge-monitor/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/recharge-monitor/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/recharge-monitor/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
+    <meta property="og:title" content="Recharge Monitor for IITC | Portal Health and Decay Predictor">
+    <meta property="og:description" content="Monitor watched portals, estimate decay deadlines, and recover deployment timing from COMM and local activity history on the Ingress Intel Map.">
+    <meta property="og:url" content="https://gongjupal.com/ingress/recharge-monitor/index.html">
+    <meta property="og:locale" content="en_US">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Recharge Monitor for IITC | Portal Health and Decay Predictor">
+    <meta name="twitter:description" content="An IITC watchlist plugin for portal health, estimated decay timing, and recharge alerts using local Ingress Intel history.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Recharge Monitor",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Recharge Monitor is an IITC plugin for Niantic's Ingress Intel Map that watches portal health, predicts decay timing, and recovers deploy history from local COMM and activity logs.",
+      "url": "https://gongjupal.com/ingress/recharge-monitor/index.html",
+      "softwareVersion": "0.3.1",
+      "inLanguage": "en",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/recharge-monitor"
+    }
+    </script>
     <style>
-        body {
-            background-color: #0e1111;
-            color: #eee;
-            font-family: 'Roboto', sans-serif;
-            font-size: 16px;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
-        .lang-switch {
-            position: fixed;
-            top: 20px;
-            right: 30px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #0ff;
-        }
-        .lang-switch a {
-            color: #ffce00;
-            text-decoration: none;
-            font-family: 'Coda', cursive;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background-color: rgba(10, 25, 30, 0.85);
-            border: 1px solid #0ff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            padding: 25px 40px;
-            border-radius: 5px;
-        }
-        h1, h2, h3 {
-            font-family: 'Coda', cursive;
-            color: #0ff;
-            text-transform: uppercase;
-            text-shadow: 0 0 5px #0ff;
-        }
-        h1 {
-            text-align: center;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-        h2 {
-            font-size: 1.8em;
-            border-bottom: 1px solid #0aa;
-            padding-bottom: 10px;
-            margin-top: 30px;
-        }
-        h3 {
-             font-size: 1.2em;
-             color: #ffce00;
-        }
-        p, li {
-            color: #ccc;
-        }
-        strong {
-            color: #ffce00;
-        }
-        code {
-            background-color: #000;
-            padding: 2px 5px;
-            border: 1px solid #333;
-            border-radius: 3px;
-            color: #fada5e;
-        }
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        ul li {
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
-            padding-left: 25px;
-            margin-bottom: 10px;
-        }
-        .note {
-            background-color: rgba(255, 206, 0, 0.1);
-            border: 1px solid #ffce00;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 4px;
-        }
-        .note strong {
-            color: #ffce00;
-        }
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', cursive; margin: 0 5px; }
+        .container { max-width: 900px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', cursive; color: #0ff; text-shadow: 0 0 5px #0ff; }
+        h1 { text-align: center; font-size: 2.4em; margin-bottom: 18px; text-transform: uppercase; }
+        h2 { font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 30px; }
+        h3 { font-size: 1.15em; color: #ffce00; }
+        p, li { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { color: #bbb; margin-bottom: 10px; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li { margin-bottom: 12px; }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 15px; margin-top: 20px; border-radius: 4px; }
+        .note-danger { border-color: #f88; background: rgba(255, 80, 80, 0.08); }
+        .note-danger strong { color: #f88; }
+        .faq-q { color: #ffce00; font-weight: 700; }
     </style>
 </head>
 <body>
-
     <div class="lang-switch">
-        <a href="index_zh-cn.html">中文</a> | <a href="index_ja.html">日本語</a>
+        <a href="index_zh-cn.html" lang="zh-CN">中文</a> |
+        <a href="index_ja.html" lang="ja">日本語</a>
     </div>
 
-    <div class="container">
-        <h1>Recharge Monitor &amp; Decay Predictor</h1>
-        <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/recharge-monitor" style="color: #ffce00; text-decoration: none; font-weight: 700;">View this plugin directory on GitHub</a></p>
+    <main class="container">
+        <h1>Recharge Monitor</h1>
+        <p class="intro">A portal watchlist, health monitor, and decay predictor for IITC on Niantic's Ingress Intel Map.</p>
+        <p class="summary"><strong>Recharge Monitor</strong> helps agents track watched portals across different regions, estimate decay timing when portals are out of view, and recover missing deployment history from local COMM and activity records.</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/recharge-monitor">View this plugin directory on GitHub</a> |
+            <a href="https://gongjupal.com/ingress/index.html">See all IITC plugins</a>
+        </p>
 
-        <p>This plugin is an essential utility for agents who manage multiple portals across different regions. It allows you to monitor portal health in real-time and provides intelligent predictions for when a portal will fully decay, even when it's out of your current map view.</p>
-        <p>By integrating with COMM data and other logging plugins, it ensures you never miss a recharge deadline again.</p>
+        <section aria-labelledby="who">
+            <h2 id="who">Who This Plugin Is For</h2>
+            <p>This plugin is ideal for agents who defend multiple portals, maintain anchor networks, or want early warning before important portals decay out. It is especially useful when your monitored portals are spread across areas you are not actively viewing.</p>
+        </section>
 
-        <h2>Features</h2>
-        <ul>
-            <li>
-                <h3>Energy Monitoring Watchlist</h3>
-                <p>Add specific portals to your personal watchlist via the portal details pane. Keep track of their current health, last seen status, and deployment timestamps in a centralized dashboard.</p>
-            </li>
-            <li>
-                <h3>Intelligent Decay Prediction</h3>
-                <p>For portals that are not currently visible on your map, the plugin calculates an <code>Estimated Decay</code> date based on the standard 15% daily energy loss. It provides a reliable "countdown" to when the portal will be neutralized.</p>
-            </li>
-            <li>
-                <h3>Multi-Source History Sync</h3>
-                <p>Recover accurate deployment times automatically using two powerful methods:</p>
-                <ul>
-                    <li><code>COMM Backfilling</code>: Scans IITC's internal chat cache for capture and deployment events.</li>
-                    <li><code>Activity Log Integration</code>: Syncs historical data from the <strong>Player Activity Log</strong> plugin using precise GUID and coordinate matching.</li>
-                </ul>
-            </li>
-            <li>
-                <h3>Visual Recharge Alerts</h3>
-                <p>The "Recharge Mon" button in the IITC toolbox dynamically changes color and displays a warning count (e.g., <code>⚠️ Recharge (3)</code>) when any watched portal drops below 30% health.</p>
-            </li>
-            <li>
-                <h3>Localization &amp; Ease of Use</h3>
-                <p>Displays all timestamps in your <strong>local time zone</strong>. Includes a user-friendly interface for manually correcting deployment times if needed.</p>
-            </li>
-        </ul>
+        <section aria-labelledby="features">
+            <h2 id="features">Key Features</h2>
+            <ul class="feature-list">
+                <li><strong>Watchlist dashboard:</strong> Add portals from the details pane and manage them from one central monitor.</li>
+                <li><strong>Portal health tracking:</strong> Review current energy, last-seen status, and deployment timing signals for watched portals.</li>
+                <li><strong>Decay prediction:</strong> Estimate when an out-of-view portal will neutralize based on the standard 15% daily decay pattern.</li>
+                <li><strong>History recovery:</strong> Recover deploy timing from COMM backfill and from <strong>Player Activity Log</strong> integration.</li>
+                <li><strong>Recharge alerts:</strong> Show warning counts in the toolbox when watched portals fall below the health threshold.</li>
+            </ul>
+        </section>
 
-        <h2>How to Use</h2>
-        <ol style="padding-left: 30px;">
-            <li>Select any portal on the map to open its details pane.</li>
-            <li>Click <strong>"🛡️ Add to Watchlist"</strong> to start monitoring that portal.</li>
-            <li>Launch the main dashboard by clicking the <strong>"Recharge Mon"</strong> button in the toolbox.</li>
-            <li>Inside the dashboard, use the <strong>"🔄 Sync History"</strong> button to pull historical data from COMM or logs to improve time accuracy.</li>
-            <li>If the toolbox button turns <strong>orange/red</strong>, it's time to head out or use some Hypercubes!</li>
-        </ol>
+        <section aria-labelledby="history">
+            <h2 id="history">History Sync and Time Recovery</h2>
+            <p>Recharge Monitor becomes much more accurate when it can recover the original deployment time of a portal. To do that, it supports two local history sources.</p>
+            <ul class="feature-list">
+                <li><strong>COMM backfilling:</strong> Scans IITC&apos;s local chat cache for relevant capture and deploy events.</li>
+                <li><strong>Player Activity Log integration:</strong> Reads compatible activity history using GUID and coordinate matching.</li>
+            </ul>
+            <p>Because the plugin works from local records, the estimated decay value is only as complete as the local history your client has already seen and stored.</p>
+        </section>
+
+        <section aria-labelledby="usage">
+            <h2 id="usage">How to Use Recharge Monitor</h2>
+            <ol>
+                <li>Select a portal and use the details pane to add it to the watchlist.</li>
+                <li>Open the main dashboard from the <strong>Recharge Mon</strong> toolbox button.</li>
+                <li>Use <strong>Sync History</strong> when you want to improve deployment-time accuracy from local history sources.</li>
+                <li>Watch for orange or red toolbox warnings when portal energy falls into dangerous territory.</li>
+            </ol>
+        </section>
+
+        <section aria-labelledby="whats-new">
+            <h2 id="whats-new">What&apos;s New</h2>
+            <h3>Version 0.3.1</h3>
+            <ul class="feature-list">
+                <li>Unified terminology to <strong>Decay</strong> to better match official Ingress wording.</li>
+                <li>Improved health calculation robustness to reduce accidental data overwrites.</li>
+            </ul>
+            <h3>Version 0.3.0</h3>
+            <ul class="feature-list">
+                <li>Added real-time COMM monitoring and retroactive history sync.</li>
+                <li>Added history recovery from <strong>Player Activity Log</strong>.</li>
+                <li>Added an <strong>Est. Decay</strong> column to the watchlist.</li>
+                <li>Switched time displays to local time format.</li>
+            </ul>
+        </section>
 
         <div class="note">
-            <p><strong>Pro Tip:</strong> Using this plugin alongside the <strong>Player Activity Log</strong> is highly recommended. The monitor will automatically "vacuum" deployment times from your activity history whenever you add a new portal to your list.</p>
+            <p><strong>Pro tip:</strong> Recharge Monitor works especially well with <a href="https://gongjupal.com/ingress/player-activity-log/index.html" style="color:#ffce00;">Player Activity Log</a>, because it can automatically pull deployment timing from your activity history when you add a portal to the watchlist.</p>
+        </div>
+        <div class="note">
+            <p><strong>Important:</strong> Time recovery and decay prediction are based on local data sources. If the relevant events were never seen by your client, the estimate may be incomplete.</p>
+        </div>
+        <div class="note note-danger">
+            <p><strong>Reminder:</strong> This is a local planning and monitoring tool. It does not create perfect historical truth, and it should not be treated as an authoritative server-side record.</p>
         </div>
 
-        <h2>Changelog</h2>
-        <div class="changelog-entry">
-            <h3>Version 0.3.1</h3>
-            <ul>
-                <li>UPD: Unified terminology to "Decay" to align with official Ingress standards.</li>
-                <li>FIX: Improved robustness of health calculation to prevent data overwriting.</li>
+        <section aria-labelledby="faq">
+            <h2 id="faq">FAQ</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">Can this predict decay for portals outside my current view?</span> Yes, as long as the plugin has enough local history to estimate the portal&apos;s deployment timing and current state.</li>
+                <li><span class="faq-q">Why is Player Activity Log recommended?</span> It provides another local data source for capture and deploy timing, which helps Recharge Monitor produce better estimates.</li>
+                <li><span class="faq-q">Why can predictions still be wrong?</span> The plugin depends on locally recorded COMM and history data. Missing local events mean missing context.</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>Version 0.3.0</h3>
-            <ul>
-                <li>NEW: Added real-time COMM monitoring and retroactive history sync.</li>
-                <li>NEW: Integrated history recovery from "Player Activity Log" via GUID matching.</li>
-                <li>NEW: Added "Est. Decay" column to the watchlist.</li>
-                <li>UPD: Switched all time displays to local time format.</li>
-                <li>UPD: Fully translated UI and comments to English.</li>
+        </section>
+
+        <section aria-labelledby="related">
+            <h2 id="related">Related Plugins</h2>
+            <ul class="related-list">
+                <li><a href="https://gongjupal.com/ingress/player-activity-log/index.html" style="color:#ffce00;">Player Activity Log</a> improves deploy-time recovery and activity history matching.</li>
+                <li><a href="https://gongjupal.com/ingress/portal-db/index.html" style="color:#ffce00;">Portal DB</a> is useful if your workflow also depends on strong local portal data infrastructure.</li>
+                <li><a href="https://gongjupal.com/ingress/portal-afterimage/index.html" style="color:#ffce00;">Portal Afterimage</a> complements monitoring with portal-memory visualization on the Intel Map.</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>Version 0.2.0</h3>
-            <ul>
-                <li>FIX: Major structural refactoring for better loading stability.</li>
-                <li>NEW: Added manual "Edit Deploy Time" feature.</li>
-            </ul>
-        </div>
-    </div>
+        </section>
+    </main>
 
 </body>
 </html>

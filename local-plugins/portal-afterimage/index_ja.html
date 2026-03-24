@@ -1,256 +1,156 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC プラグイン: Portal Afterimage</title>
+    <title>Portal Afterimage for IITC | Ingress Intel のポータル記憶レイヤー</title>
+    <meta name="description" content="Portal Afterimage は Niantic Ingress Intel マップ向けの IITC プラグインで、ローカル既知 Portal を理論上は任意ズームで表示できます。既定では性能のため表示を制限し、上級者は手動で上書きできます。">
+    <link rel="canonical" href="https://gongjupal.com/ingress/portal-afterimage/index_ja.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/portal-afterimage/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/portal-afterimage/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/portal-afterimage/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/portal-afterimage/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Ingress Intel マップ用プラグイン一覧">
+    <meta property="og:title" content="Portal Afterimage for IITC | Ingress Intel のポータル記憶レイヤー">
+    <meta property="og:description" content="Portal Afterimage はローカル既知 Portal を任意ズームで表示できる記憶レイヤープラグインで、既定設定では性能のため描画数を抑えます。">
+    <meta property="og:url" content="https://gongjupal.com/ingress/portal-afterimage/index_ja.html">
+    <meta property="og:locale" content="ja_JP">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Portal Afterimage for IITC | Ingress Intel のポータル記憶レイヤー">
+    <meta name="twitter:description" content="Portal DB のローカルデータを使って既知 Portal を任意ズームで表示可能で、追加の Intel サーバー取得は強制しません。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Portal Afterimage",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Portal Afterimage は Niantic Ingress Intel マップ向けの IITC プラグインで、Portal DB のローカルデータを使って既知 Portal を任意ズームで表示でき、既定では性能のため描画制限を設けています。",
+      "url": "https://gongjupal.com/ingress/portal-afterimage/index_ja.html",
+      "softwareVersion": "0.1.6",
+      "inLanguage": "ja",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-afterimage"
+    }
+    </script>
     <style>
-        body {
-            background-color: #0e1111;
-            color: #eee;
-            font-family: 'Roboto', 'Noto Sans JP', sans-serif;
-            font-size: 16px;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
-        .lang-switch {
-            position: fixed;
-            top: 20px;
-            right: 30px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #0ff;
-        }
-        .lang-switch a {
-            color: #ffce00;
-            text-decoration: none;
-            font-family: 'Coda', cursive;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background-color: rgba(10, 25, 30, 0.85);
-            border: 1px solid #0ff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            padding: 25px 40px;
-            border-radius: 5px;
-        }
-        h1, h2, h3 {
-            font-family: 'Coda', 'Noto Sans JP', cursive;
-            color: #0ff;
-            text-transform: uppercase;
-            text-shadow: 0 0 5px #0ff;
-        }
-        h1 {
-            text-align: center;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-        h2 {
-            font-size: 1.8em;
-            border-bottom: 1px solid #0aa;
-            padding-bottom: 10px;
-            margin-top: 30px;
-        }
-        h3 {
-             font-size: 1.2em;
-             color: #ffce00;
-             margin-top: 20px;
-        }
-        p, li {
-            color: #ccc;
-        }
-        strong {
-            color: #ffce00;
-        }
-        code {
-            background-color: #000;
-            padding: 2px 5px;
-            border: 1px solid #333;
-            border-radius: 3px;
-            color: #fada5e;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        ul li {
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 8px;
-            padding-left: 25px;
-            margin-bottom: 10px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        th, td {
-            border-bottom: 1px solid #233;
-            padding: 8px 6px;
-            text-align: left;
-            vertical-align: top;
-        }
-        th {
-            color: #ffce00;
-        }
-        .note {
-            background-color: rgba(255, 206, 0, 0.1);
-            border: 1px solid #ffce00;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 4px;
-        }
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', 'Noto Sans JP', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', cursive; margin: 0 5px; }
+        .container { max-width: 900px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', 'Noto Sans JP', cursive; text-shadow: 0 0 5px #0ff; }
+        h1 { color: #0ff; text-align: center; font-size: 2.5em; margin-bottom: 18px; }
+        h2 { color: #0ff; font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 34px; }
+        h3 { font-size: 1.15em; color: #ffce00; margin-top: 20px; }
+        p, li { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; font-family: 'Courier New', Courier, monospace; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { margin-bottom: 10px; color: #bbb; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list, .settings-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li, .settings-list li { margin-bottom: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border-bottom: 1px solid #233; padding: 8px 6px; text-align: left; vertical-align: top; }
+        th { color: #ffce00; }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 15px; margin-top: 20px; border-radius: 4px; }
+        .warning { border-color: #f66; background-color: rgba(255, 100, 100, 0.1); }
+        .warning strong { color: #f66; }
+        .faq-q { color: #ffce00; font-weight: 700; }
     </style>
 </head>
 <body>
-
     <div class="lang-switch">
-        <a href="index.html">English</a> | <a href="index_zh-cn.html">中文</a>
+        <a href="index.html" lang="en">English</a> |
+        <a href="index_zh-cn.html" lang="zh-CN">中文</a>
     </div>
-
-    <div class="container">
+    <main class="container">
         <h1>Portal Afterimage</h1>
-        <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-afterimage" style="color: #ffce00; text-decoration: none; font-weight: 700;">GitHub でこのプラグインのディレクトリを見る</a></p>
-
-        <p><strong>Portal Afterimage</strong> は「記憶レイヤー」を描画するプラグインです。公式の Portal 表示がズームで消える場合に、過去に見た Portal を淡く表示します。推測や補完は一切行いません。</p>
-        <p>座標と lastSeen は <strong>Portal DB</strong> から取得します。Afterimage 側は GUID と名称のみ保存します。</p>
-
-        <h2>主な機能</h2>
-        <ul>
-            <li>
-                <h3>メモリーレイヤー専用</h3>
-                <p>公式 Portal 表示が消えるズームでのみ描画。公式描画の置き換えはしません。</p>
-            </li>
-            <li>
-                <h3>ローカル保存</h3>
-                <p>データはブラウザ内にのみ保存され、共有やアップロードは行いません。</p>
-            </li>
-            <li>
-                <h3>S2 Cell 抽象化</h3>
-                <p>S2 セルでグルーピングし、セル内の表示数を制限して負荷を抑えます。</p>
-            </li>
-            <li>
-                <h3>負荷上限</h3>
-                <p><code>MAX_DRAWN_ELEMENTS</code> により密集地でも安定動作を確保します。</p>
-            </li>
-        </ul>
-
-        <h2>設定項目</h2>
-        <ul>
-            <li><strong>S2 Level (15–18)：</strong> レベルが高いほどセルが小さく、より詳細。</li>
-            <li><strong>Per Cell (1–3)：</strong> 1セルあたりの表示 Portal 数。</li>
-            <li><strong>選択ルール：</strong> Portal DB の <code>lastSeen</code> を基準に選択（新しい順）。</li>
-        </ul>
-
-        <h2>S2 Level 参考表 (L15–L19)</h2>
-        <p>以下は平均的な近似値です。実際の形状や面積は緯度で変化します。Ingress での設定選びの目安としてご利用ください。</p>
-        <table>
-            <thead>
-                <tr>
-                    <th>Level</th>
-                    <th>おおよその辺長</th>
-                    <th>おおよその面積</th>
-                    <th>Ingressでの使い分け</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>L15</td>
-                    <td>≈281 m</td>
-                    <td>≈79,000 m&sup2; (0.079 km&sup2;)</td>
-                    <td>近隣エリアのまとまり。都市の密集 Portal を大きく圧縮。</td>
-                </tr>
-                <tr>
-                    <td>L16</td>
-                    <td>≈141 m</td>
-                    <td>≈19,800 m&sup2; (0.020 km&sup2;)</td>
-                    <td>大きめの街区や公園区画。バランス重視。</td>
-                </tr>
-                <tr>
-                    <td>L17</td>
-                    <td>≈70 m</td>
-                    <td>≈4,950 m&sup2; (0.0049 km&sup2;)</td>
-                    <td>街区の片側規模。高密度エリアの Portal 間隔に近い。</td>
-                </tr>
-                <tr>
-                    <td>L18</td>
-                    <td>≈35 m</td>
-                    <td>≈1,240 m&sup2; (0.0012 km&sup2;)</td>
-                    <td>建物クラスター単位。細かい記憶に向く。</td>
-                </tr>
-                <tr>
-                    <td>L19</td>
-                    <td>≈18 m</td>
-                    <td>≈309 m&sup2; (0.00031 km&sup2;)</td>
-                    <td>非常に細かい単位。単独 Portal の分離に向く。</td>
-                </tr>
-            </tbody>
-        </table>
-
+        <p class="intro">Niantic Ingress Intel マップ向けの IITC ポータル記憶レイヤープラグインです。</p>
+        <p class="summary"><strong>Portal Afterimage</strong> は、<strong>Portal DB</strong> のローカルデータを使って、既知 Portal を実質的には任意ズームで表示できるプラグインです。既定設定では性能と可読性のため描画を控えめにしていますが、上級者はコード変更や console コマンドでより積極的な「全表示」に近い動作へ強制できます。</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-afterimage">GitHub でこのプラグインのディレクトリを見る</a> |
+            <a href="https://gongjupal.com/ingress/index_ja.html">すべての IITC プラグインを見る</a>
+        </p>
+        <div class="note warning">
+            <p><strong>前提条件:</strong> Portal Afterimage を使うには <a href="https://gongjupal.com/ingress/portal-db/index_ja.html" style="color: #ffce00;">Portal DB</a> が必要です。座標と最終確認時刻は Portal DB から取得されます。</p>
+        </div>
+        <section aria-labelledby="who">
+            <h2 id="who">どんなユーザー向けか</h2>
+            <p>縮小表示時に公式 Portal マーカーが消えてしまい、Ingress Intel マップ上の位置感覚を保ちにくいエージェントに向いています。既に探索した場所の記憶を、穏やかな視覚レイヤーとして補いたい場合に有効です。</p>
+        </section>
+        <section aria-labelledby="features">
+            <h2 id="features">主な機能</h2>
+            <ul class="feature-list">
+                <li><strong>任意ズームで表示可能:</strong> 実装上はローカル既知 Portal を任意ズームで表示できますが、既定 UI では性能と視認性のため制限しています。</li>
+                <li><strong>ローカルかつ非公開:</strong> データはブラウザ内に保存され、アップロードや端末間共有は行いません。</li>
+                <li><strong>S2 セル抽象化:</strong> S2 セル単位でポータルをまとめ、1セルあたりの描画数を制限します。</li>
+                <li><strong>安全な負荷制御:</strong> 描画数上限により、密集地でもマップが極端に重くなるのを防ぎます。</li>
+                <li><strong>Portal DB 連携:</strong> 座標や時刻は Portal DB を唯一の参照元として使用します。</li>
+            </ul>
+        </section>
+        <section aria-labelledby="settings">
+            <h2 id="settings">設定項目</h2>
+            <ul class="settings-list">
+                <li><strong>S2 Level (15–18):</strong> 数値が高いほどセルが小さくなり、より細かい表示になります。</li>
+                <li><strong>Per Cell (1–3):</strong> 各 S2 セル内に表示できる Portal 数を制御します。</li>
+                <li><strong>選択ルール:</strong> Portal DB の <code>lastSeen</code> を基準に、最近見た Portal を優先表示します。</li>
+            </ul>
+        </section>
+        <section aria-labelledby="how-it-works">
+            <h2 id="how-it-works">仕組み</h2>
+            <p>Portal Afterimage は既定では、ローカル既知 Portal をそのまま全件描くのではなく、S2 セル単位にまとめて各セルから限られた数だけを描画します。これは性能と視認性のための方針であり、能力上の絶対的な制限ではありません。</p>
+            <p>そのため、コード変更や console コマンドで既定の描画制限を上書きすれば、実質的に「任意ズームでローカル既知 Portal をすべて表示する」方向へ寄せることができます。プラグイン自身は GUID と名称のみを保持し、座標や時刻は Portal DB から取得します。</p>
+            <p>重要なのは、この表示はクライアントがすでに受信したローカルデータに基づくという点です。Intel サーバーへ追加取得を強制しないため、追加のサーバー収集を前提とする動きではありません。</p>
+        </section>
+        <section aria-labelledby="s2-reference">
+            <h2 id="s2-reference">S2 Level 参考</h2>
+            <p>以下は Ingress Intel マップ上で表示密度を調整する際の目安です。実際の寸法は緯度によって変化します。</p>
+            <table>
+                <thead><tr><th>Level</th><th>東西辺長</th><th>南北辺長</th><th>概算面積</th><th>典型用途</th></tr></thead>
+                <tbody>
+                    <tr><td>L15</td><td>~509 m</td><td>~637 m</td><td>~0.32 km&sup2;</td><td>広域の概観</td></tr>
+                    <tr><td>L16</td><td>~254 m</td><td>~318 m</td><td>~0.08 km&sup2;</td><td>描画精度のバランス</td></tr>
+                    <tr><td>L17</td><td>~127 m</td><td>~159 m</td><td>~0.02 km&sup2;</td><td>密集地の詳細表示</td></tr>
+                    <tr><td>L18</td><td>~63 m</td><td>~79 m</td><td>~0.005 km&sup2;</td><td>細かな地理区分</td></tr>
+                    <tr><td>L19</td><td>~32 m</td><td>~40 m</td><td>~1,280 m&sup2;</td><td>極細粒度の判定</td></tr>
+                </tbody>
+            </table>
+        </section>
         <div class="note">
-            <p><strong>ヒント：</strong> まずは L18 / Per Cell = 1 から始め、密度に応じて Level や数を調整すると分かりやすいです。</p>
+            <p><strong>ヒント:</strong> まずは <strong>L18</strong> と <strong>Per Cell = 1</strong> から始め、Portal 密度と端末性能に応じて少しずつ細かくするのがおすすめです。</p>
         </div>
-
-        <h2>変更履歴</h2>
-        <div class="changelog-entry">
-            <h3>バージョン 0.1.6</h3>
-            <ul>
-                <li>更新: 暗いベースマップと明るい/グレーのベースマップ（Googleマップ、高徳グレーなど）の両方で視認性を向上させるため、Portal残影のスタイルを再設計しました。</li>
+        <section aria-labelledby="faq">
+            <h2 id="faq">よくある質問</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">Portal Afterimage は存在しない Portal を表示しますか？</span> いいえ。クライアントが実際に見たことのある Portal だけをローカル残像として表示します。</li>
+                <li><span class="faq-q">本当に任意ズームですべての Portal を表示できますか？</span> 実装上は可能です。既定の描画制限を、コード変更や console コマンドで手動上書きした場合に、ほぼその動作へ近づけられます。</li>
+                <li><span class="faq-q">それは Niantic のルール違反になりますか？</span> ここで前提にしているのは、Intel サーバーへ追加取得を強制せず、クライアントが既に受け取ったローカルデータだけを使うことです。その範囲なら、ローカル可視化の延長として説明できます。</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>バージョン 0.1.5</h3>
-            <ul>
-                <li>リファクタリング: ローカルの名称ストレージを削除しました。現在はPortal名を完全にPortal DBに依存しています。</li>
-                <li>更新: 名称のスキャベンジング（回収）は、ローカルストレージではなくPortal DBを直接更新するようになりました。</li>
+        </section>
+        <section aria-labelledby="related">
+            <h2 id="related">関連プラグイン</h2>
+            <ul class="related-list">
+                <li><a href="https://gongjupal.com/ingress/portal-db/index_ja.html" style="color: #ffce00;">Portal DB</a> は必須依存であり、座標と時刻データを提供します。</li>
+                <li><a href="https://gongjupal.com/ingress/player-activity-log/index_ja.html" style="color: #ffce00;">プレイヤー活動ログ</a> は COMM 履歴という別の視点から情報を補完します。</li>
+                <li><a href="https://gongjupal.com/ingress/recharge-monitor/index_ja.html" style="color: #ffce00;">Recharge Monitor</a> は Portal 状態監視によって防衛面を補強します。</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>バージョン 0.1.4</h3>
-            <ul>
-                <li>新規: 地図メモリからの名称自動回収機能。メンテナンスリストを開いた際に名称が欠落していても、そのPortalが現在地図上に表示されていれば自動的に復元されます。</li>
-                <li>更新: Portalジャンプ時の名称解決の堅牢性を向上させました。</li>
-            </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>バージョン 0.1.3</h3>
-            <ul>
-                <li>新規: Portal DBが欠落している場合、ツールボックスボタンが警告を表示し、依存関係がロードされると自動更新されるようになりました。</li>
-                <li>新規: Portal DBが有効になっていない場合、メンテナンスダイアログに明示的な依存関係の注記を追加しました。</li>
-                <li>修正: 再試行メカニズムを備えた、より堅牢なPortal DB依存関係検出を追加しました。</li>
-            </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>バージョン 0.1.2</h3>
-            <ul>
-                <li>新規: メンテナンスUIに、S2レベルとセルごとの数（Per Cell）のレンダリング設定を追加しました。</li>
-                <li>新規: 選択ルールと設定を説明するAboutダイアログを追加しました。</li>
-                <li>更新: メンテナンスフィルターは、オープン時にデフォルトで整数の日数を使用するようになりました。</li>
-                <li>更新: 小数の日数でメンテナンスリストを更新するためのコンソールヘルパーを追加しました。</li>
-            </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>バージョン 0.1.1</h3>
-            <ul>
-                <li>更新: Portalの座標と最終確認日時の取得にPortal DB APIを使用するようになりました。</li>
-                <li>更新: AfterimageデータベースにはGUIDとPortal名のみを保存するようになりました。</li>
-                <li>更新: メンテナンスリストは、Portal DBを介して座標と最終確認日時を解決するようになりました。</li>
-            </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>バージョン 0.1.0</h3>
-            <ul>
-                <li>新規: 初回リリース。</li>
-            </ul>
-        </div>
-    </div>
-
+        </section>
+        <section aria-labelledby="changelog">
+            <h2 id="changelog">変更履歴</h2>
+            <h3>バージョン 0.1.6</h3><ul class="feature-list"><li>暗色・灰色ベースマップでも見やすいよう、残像スタイルを再設計しました。</li></ul>
+            <h3>バージョン 0.1.5</h3><ul class="feature-list"><li>名称のローカル保存を廃止し、Portal 名は Portal DB に完全依存するよう変更しました。</li><li>名称回収処理は Portal DB を直接更新する方式に変更しました。</li></ul>
+            <h3>バージョン 0.1.4</h3><ul class="feature-list"><li>現在の地図メモリから名称を自動回収する機能を追加しました。</li><li>Portal ジャンプ時の名称解決の安定性を改善しました。</li></ul>
+            <h3>バージョン 0.1.3</h3><ul class="feature-list"><li>Portal DB 未導入時のツールボックス・メンテナンス警告を追加しました。</li><li>依存検知と再試行処理を改善しました。</li></ul>
+            <h3>バージョン 0.1.2</h3><ul class="feature-list"><li>S2 Level と Per Cell の描画設定を追加しました。</li><li>選択ルールと設定を説明するダイアログを追加しました。</li></ul>
+            <h3>バージョン 0.1.1</h3><ul class="feature-list"><li>座標と lastSeen を Portal DB API から取得する方式に変更しました。</li><li>ローカル保存内容を GUID と名称のみに整理しました。</li></ul>
+            <h3>バージョン 0.1.0</h3><ul class="feature-list"><li>初回リリース。</li></ul>
+        </section>
+    </main>
 </body>
 </html>
-

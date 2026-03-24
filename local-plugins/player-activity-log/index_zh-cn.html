@@ -3,53 +3,142 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IITC 插件: Player Activity Log</title>
+  <title>Player Activity Log for IITC | COMM 历史与行动轨迹回顾</title>
+  <meta name="description" content="Player Activity Log 是适用于 Niantic Ingress Intel 地图的 IITC 插件，可记录公开 COMM 活动、可视化玩家行动轨迹，并支持本地导入导出。">
+  <link rel="canonical" href="https://gongjupal.com/ingress/player-activity-log/index_zh-cn.html">
+  <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/player-activity-log/index.html">
+  <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/player-activity-log/index_ja.html">
+  <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/player-activity-log/index_zh-cn.html">
+  <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/player-activity-log/index.html">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="IITC Ingress Intel 地图插件目录">
+  <meta property="og:title" content="Player Activity Log for IITC | COMM 历史与行动轨迹回顾">
+  <meta property="og:description" content="记录公开 COMM 活动、回顾玩家轨迹，并在 Niantic Ingress Intel 地图上管理本地活动历史。">
+  <meta property="og:url" content="https://gongjupal.com/ingress/player-activity-log/index_zh-cn.html">
+  <meta property="og:locale" content="zh_CN">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Player Activity Log for IITC | COMM 历史与行动轨迹回顾">
+  <meta name="twitter:description" content="适用于 Ingress Intel 的 IITC 活动日志插件，支持 COMM 记录、轨迹回顾，以及本地导入导出与合并。">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Player Activity Log",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Web Browser",
+    "description": "Player Activity Log 是适用于 Niantic Ingress Intel 地图的 IITC 插件，可记录公开 COMM 活动、可视化玩家行动轨迹，并支持本地导入导出。",
+    "url": "https://gongjupal.com/ingress/player-activity-log/index_zh-cn.html",
+    "softwareVersion": "0.8.3",
+    "inLanguage": "zh-CN",
+    "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/player-activity-log"
+  }
+  </script>
   <style>
     body { background:#0e1111; color:#eee; font-family:'Roboto','Noto Sans SC',sans-serif; margin:0; padding:20px; line-height:1.6; }
-    .lang-switch { position:fixed; top:20px; right:30px; background:rgba(0,0,0,.5); border:1px solid #0ff; padding:10px; border-radius:5px; }
+    .lang-switch { position:fixed; top:20px; right:30px; background:rgba(0,0,0,.5); border:1px solid #0ff; padding:10px; border-radius:5px; z-index:1000; }
     .lang-switch a { color:#ffce00; text-decoration:none; margin:0 4px; }
-    .container { max-width:900px; margin:0 auto; background:rgba(10,25,30,.85); border:1px solid #0ff; box-shadow:0 0 20px rgba(0,255,255,.5); padding:24px 36px; border-radius:6px; }
+    .container { max-width:900px; margin:0 auto; background:rgba(10,25,30,.85); border:1px solid #0ff; box-shadow:0 0 20px rgba(0,255,255,.5); padding:25px 40px; border-radius:6px; }
     h1,h2,h3 { color:#0ff; text-shadow:0 0 5px #0ff; }
-    h1 { text-align:center; }
-    h3 { color:#ffce00; }
+    h1 { text-align:center; font-size:2.4em; margin-bottom:18px; }
+    h2 { font-size:1.6em; border-bottom:1px solid #0aa; padding-bottom:10px; margin-top:28px; }
+    h3 { font-size:1.1em; color:#ffce00; margin-bottom:8px; }
+    p,li { color:#ccc; }
+    strong { color:#ffce00; }
     code { background:#000; border:1px solid #333; border-radius:3px; padding:2px 5px; color:#fada5e; }
-    .note { background:rgba(255,206,0,.1); border:1px solid #ffce00; padding:12px; border-radius:4px; margin-top:16px; }
+    .intro,.summary { text-align:center; max-width:760px; margin-left:auto; margin-right:auto; }
+    .intro { color:#bbb; margin-bottom:10px; }
+    .summary { margin-bottom:22px; }
+    .resource-links { text-align:center; margin:0 0 28px 0; }
+    .resource-links a { color:#ffce00; text-decoration:none; font-weight:700; }
+    .feature-list,.faq-list,.related-list { padding-left:20px; }
+    .feature-list li,.faq-list li,.related-list li { margin-bottom:12px; }
+    .note { background:rgba(255,206,0,.1); border:1px solid #ffce00; padding:15px; border-radius:4px; margin-top:18px; }
+    .note-danger { border-color:#f88; background:rgba(255,80,80,.08); }
+    .note-danger strong { color:#f88; }
+    .faq-q { color:#ffce00; font-weight:700; }
   </style>
 </head>
 <body>
   <div class="lang-switch">
-    <a href="index.html">English</a> | <a href="index_ja.html">日本語</a>
+    <a href="index.html" lang="en">English</a> |
+    <a href="index_ja.html" lang="ja">日本語</a>
   </div>
+  <main class="container">
+    <h1>玩家活动日志</h1>
+    <p class="intro">面向 Niantic Ingress Intel 地图的 IITC 本地 COMM 历史与轨迹回顾插件。</p>
+    <p class="summary"><strong>Player Activity Log</strong> 会监听公开 COMM，将支持的活动事件记录在浏览器本地，帮助你回顾特工行动历史、查看移动轨迹，并管理本地导入导出数据。</p>
+    <p class="resource-links">
+      <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/player-activity-log">在 GitHub 上查看此插件目录</a> |
+      <a href="https://gongjupal.com/ingress/index_zh-cn.html">查看全部 IITC 插件</a>
+    </p>
 
-  <div class="container">
-    <h1>玩家活动日志 (Player Activity Log)</h1>
-    <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/player-activity-log" style="color: #ffce00; text-decoration: none; font-weight: 700;">在 GitHub 上查看此插件目录</a></p>
-    <p>该插件会监听公开 COMM，并将解析后的玩家活动记录在浏览器本地。</p>
+    <section aria-labelledby="who">
+      <h2 id="who">适合哪些用户</h2>
+      <p>如果你希望回顾公开 COMM 中出现过的特工活动、检查某段时间内的行动轨迹，或者在可信用户之间合并本地活动记录，这个插件会很有用。</p>
+    </section>
 
-    <h2>0.8.3 更新</h2>
-    <ul>
-      <li>新增：toolbox 显示选中 Portal 的占领时长，格式为 <code>Activity Log（xxD）</code>。</li>
-      <li>修复：切换 Portal 时占领时长显示更新更稳定；中立 Portal 不再显示时长。</li>
-      <li>新增：插件窗口和介绍页面均加入免责声明。</li>
-    </ul>
+    <section aria-labelledby="features">
+      <h2 id="features">核心功能</h2>
+      <ul class="feature-list">
+        <li><strong>自动记录公开 COMM：</strong>被动监听公开 COMM，并记录支持的活动类型，如 capture、deploy、link、field 等。MACHINA 会被忽略。</li>
+        <li><strong>交互式活动查看器：</strong>可从工具箱打开，在左侧查看玩家列表，在右侧查看详细活动记录，并支持名称或 ID 搜索。</li>
+        <li><strong>行动轨迹回顾：</strong>把玩家行动可视化为地图轨迹，便于复盘和分析本地活动流向。</li>
+        <li><strong>Portal Held Time：</strong>对于你拥有的 Portal，工具箱可显示 <code>Activity Log（xxD）</code> 形式的占领时长。</li>
+        <li><strong>导入与导出：</strong>支持 JSON、CSV 导出，以及带去重逻辑的导入合并。</li>
+      </ul>
+    </section>
 
-    <h2>Portal Held Time（占领时长显示）</h2>
-    <ul>
-      <li>当你选中一个当前被占领的 Portal 时，toolbox 链接会显示为 <code>Activity Log（xxD）</code>。</li>
-      <li><code>xxD</code> 表示该 Portal 距离本地记录中的最近一次 capture 经过的天数（向下取整）。</li>
-      <li>如果本地没有对应 capture 记录，或该 Portal 当前是中立状态，则保持显示 <code>Activity Log</code>。</li>
-    </ul>
+    <section aria-labelledby="held-time">
+      <h2 id="held-time">Portal Held Time（占领时长）</h2>
+      <p>当你选中一个当前归属自己的 Portal 时，工具箱链接可以显示为 <code>Activity Log（xxD）</code>。其中 <code>xxD</code> 表示从本地记录里最近一次 capture 事件开始，到当前为止经过的整天数。</p>
+      <p>如果本地没有对应 capture 记录，或者该 Portal 当前是中立状态，则仍显示普通的 <code>Activity Log</code>。</p>
+    </section>
+
+    <section aria-labelledby="how-it-works">
+      <h2 id="how-it-works">工作原理</h2>
+      <p>Player Activity Log 只解析你的客户端已经看到的公开 COMM 消息，并把支持的事件写入本地历史。因此它适合做时间线回顾和本地分析，但并不意味着它拥有完整的全局历史。</p>
+      <p>换句话说，它更适合作为“本地观察日志”，而不是绝对完整的权威数据库。</p>
+    </section>
+
+    <section aria-labelledby="whats-new">
+      <h2 id="whats-new">0.8.3 更新</h2>
+      <ul class="feature-list">
+        <li>新增工具箱占领时长显示，格式为 <code>Activity Log（xxD）</code>。</li>
+        <li>改进切换 Portal 时的更新逻辑，并对中立 Portal 隐藏持有时长。</li>
+        <li>在插件窗口与文档中补充免责声明文本。</li>
+      </ul>
+    </section>
 
     <div class="note">
-      数据仅保存在本地，不会跨设备自动同步。请定期导出备份。
+      <p><strong>重要提示：</strong>所有数据都只保存在当前浏览器本地，不会在设备或账号之间自动同步。如果历史记录对你重要，请定期导出备份。</p>
+    </div>
+    <div class="note">
+      <p><strong>免责声明：</strong>插件基于本地记录到的 COMM 历史工作，因此数据可能不完整，也可能存在偏差。</p>
+    </div>
+    <div class="note note-danger">
+      <p><strong>兼容性说明：</strong>轨迹绘制会与官方 <strong>Player activity tracker</strong> 图层产生重叠。如果不希望重复显示，请关闭其中一个。</p>
     </div>
 
-    <div class="note">
-      <strong>免责声明：</strong>该功能基于本地记录数据推断，数据可能不完整或不准确，仅供参考。
-    </div>
-  </div>
+    <section aria-labelledby="faq">
+      <h2 id="faq">常见问题</h2>
+      <ul class="faq-list">
+        <li><span class="faq-q">它会读取私有或隐藏数据吗？</span> 不会。它只处理你的客户端已经看到的公开 COMM 活动。</li>
+        <li><span class="faq-q">我能把历史迁移到另一台设备吗？</span> 可以，但需要手动导出再导入。插件不会自动同步。</li>
+        <li><span class="faq-q">为什么占领时长有时会缺失或不准确？</span> 因为这个计算依赖你本地记录到的 capture 历史。如果当时你的客户端没有看到相应事件，结果就可能不完整。</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="related">
+      <h2 id="related">相关插件</h2>
+      <ul class="related-list">
+        <li><a href="https://gongjupal.com/ingress/recharge-monitor/index_zh-cn.html" style="color:#ffce00;">充电监控器</a> 可从 Portal 健康与衰减角度补充活动历史。</li>
+        <li><a href="https://gongjupal.com/ingress/portal-db/index_zh-cn.html" style="color:#ffce00;">Portal DB</a> 适合与活动日志一起使用，提供更强的本地 Portal 数据基础设施。</li>
+        <li><a href="https://gongjupal.com/ingress/portal-afterimage/index_zh-cn.html" style="color:#ffce00;">Portal Afterimage</a> 负责 Portal 可视化记忆层，而 Activity Log 聚焦玩家和事件历史。</li>
+      </ul>
+    </section>
+  </main>
 </body>
 </html>

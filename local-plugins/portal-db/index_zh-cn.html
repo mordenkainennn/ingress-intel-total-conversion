@@ -3,160 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC 插件: Portal DB</title>
+    <title>Portal DB for IITC | Ingress Intel 本地 Portal 数据库插件</title>
+    <meta name="description" content="Portal DB 是适用于 Niantic Ingress Intel 地图的 IITC 插件，可建立持久化本地 Portal 数据库、检测 Portal 位移，并为其它插件提供数据支持。">
+    <link rel="canonical" href="https://gongjupal.com/ingress/portal-db/index_zh-cn.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/portal-db/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/portal-db/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/portal-db/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/portal-db/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Ingress Intel 地图插件目录">
+    <meta property="og:title" content="Portal DB for IITC | Ingress Intel 本地 Portal 数据库插件">
+    <meta property="og:description" content="Portal DB 会在本地保存 Portal 记录、检测位移 Portal，并为其它 IITC 插件提供可靠的 Ingress Intel 数据层。">
+    <meta property="og:url" content="https://gongjupal.com/ingress/portal-db/index_zh-cn.html">
+    <meta property="og:locale" content="zh_CN">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Portal DB for IITC | Ingress Intel 本地 Portal 数据库插件">
+    <meta name="twitter:description" content="适用于 Niantic Ingress Intel 地图的 IITC 本地 Portal 数据库插件，支持 IndexedDB 存储、Portal 位移检测与插件间数据调用。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Portal DB",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Portal DB 是适用于 Niantic Ingress Intel 地图的 IITC 插件，可在本地保存 Portal 数据、检测位移 Portal，并为其它插件提供持久化 Portal 记录。",
+      "url": "https://gongjupal.com/ingress/portal-db/index_zh-cn.html",
+      "softwareVersion": "0.3.0",
+      "inLanguage": "zh-CN",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-db"
+    }
+    </script>
     <style>
-        body {
-            background-color: #0e1111;
-            color: #eee;
-            font-family: 'Roboto', 'Noto Sans SC', sans-serif;
-            font-size: 16px;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
-        .lang-switch {
-            position: fixed;
-            top: 20px;
-            right: 30px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #0ff;
-        }
-        .lang-switch a {
-            color: #ffce00;
-            text-decoration: none;
-            font-family: 'Coda', cursive;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background-color: rgba(10, 25, 30, 0.85);
-            border: 1px solid #0ff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            padding: 25px 40px;
-            border-radius: 5px;
-        }
-        h1, h2, h3 {
-            font-family: 'Coda', 'Noto Sans SC', cursive;
-            color: #0ff;
-            text-transform: uppercase;
-            text-shadow: 0 0 5px #0ff;
-        }
-        h1 {
-            text-align: center;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-        h2 {
-            font-size: 1.8em;
-            border-bottom: 1px solid #0aa;
-            padding-bottom: 10px;
-            margin-top: 30px;
-        }
-        h3 {
-             font-size: 1.2em;
-             color: #ffce00;
-             margin-top: 20px;
-        }
-        h4 {
-             color: #ccc;
-             margin-bottom: 5px;
-        }
-        p, li {
-            color: #ccc;
-        }
-        strong {
-            color: #ffce00;
-        }
-        code {
-            background-color: #000;
-            padding: 2px 5px;
-            border: 1px solid #333;
-            border-radius: 3px;
-            color: #fada5e;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        pre {
-            background-color: #1a1a1a;
-            border: 1px solid #333;
-            padding: 10px;
-            border-radius: 4px;
-            overflow-x: auto;
-        }
-        pre code {
-            background-color: transparent;
-            border: none;
-            padding: 0;
-            color: #aaddff;
-        }
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        ul li {
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 8px;
-            padding-left: 25px;
-            margin-bottom: 10px;
-        }
-        .note {
-            background-color: rgba(255, 206, 0, 0.1);
-            border: 1px solid #ffce00;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 4px;
-        }
-        .note strong {
-            color: #ffce00;
-        }
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', 'Noto Sans SC', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', cursive; margin: 0 5px; }
+        .container { max-width: 900px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', 'Noto Sans SC', cursive; text-shadow: 0 0 5px #0ff; }
+        h1 { color: #0ff; text-align: center; font-size: 2.5em; margin-bottom: 18px; }
+        h2 { color: #0ff; font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 34px; }
+        h3 { font-size: 1.15em; color: #ffce00; margin-top: 20px; }
+        p, li { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; font-family: 'Courier New', Courier, monospace; }
+        pre { background-color: #1a1a1a; border: 1px solid #333; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        pre code { background-color: transparent; border: none; padding: 0; color: #aaddff; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { margin-bottom: 10px; color: #bbb; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li { margin-bottom: 12px; }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 15px; margin-top: 20px; border-radius: 4px; }
+        .faq-q { color: #ffce00; font-weight: 700; }
     </style>
 </head>
 <body>
 
     <div class="lang-switch">
-        <a href="index.html">English</a> | <a href="index_ja.html">日本語</a>
+        <a href="index.html" lang="en">English</a> |
+        <a href="index_ja.html" lang="ja">日本語</a>
     </div>
 
-    <div class="container">
+    <main class="container">
         <h1>Portal DB</h1>
-        <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-db" style="color: #ffce00; text-decoration: none; font-weight: 700;">在 GitHub 上查看此插件目录</a></p>
+        <p class="intro">面向 Niantic Ingress Intel 地图的 IITC 本地 Portal 数据库插件。</p>
+        <p class="summary"><strong>Portal DB</strong> 会在你浏览 Intel 地图时被动收集 Portal 记录，存入 IndexedDB，检测 Portal 位移，并为其它 IITC 插件提供可靠的坐标与阵营数据来源。</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-db">在 GitHub 上查看此插件目录</a> |
+            <a href="https://gongjupal.com/ingress/index_zh-cn.html">查看全部 IITC 插件</a>
+        </p>
 
-        <p><strong>Portal DB</strong> 是 IITC 生态系统的一个基础架构插件。它的设计目的是在您的浏览器中构建一个<strong>本地化、持久化的 Portal 基础信息数据库</strong>。</p>
-        <p>通过在您浏览地图时自动收集数据，它能够为其他需要屏幕外 Portal 坐标和阵营信息的插件提供可靠的“单一事实来源 (Single Source of Truth)”。</p>
+        <section aria-labelledby="who">
+            <h2 id="who">适合哪些用户</h2>
+            <p>Portal DB 特别适合需要在屏幕之外继续引用 Portal 信息的特工与插件开发者。如果你的工作流依赖 Portal 历史、位移检测，或需要稳定的本地数据层来支持规划和分析，这个插件会非常有用。</p>
+        </section>
 
-        <h2>功能特性</h2>
-        <ul>
-            <li>
-                <h3>持久化本地存储</h3>
-                <p>使用 <strong>IndexedDB</strong> 永久存储 Portal 数据（GUID、经纬度、阵营、最后可见时间）。这些数据在不同会话和浏览器重启后依然保留。</p>
-            </li>
-            <li>
-                <h3>被动数据采集</h3>
-                <p>在您浏览地图时自动捕获 Portal 信息。它直接拦截原始游戏实体数据，确保高性能和广泛的数据覆盖，无需任何手动操作。</p>
-            </li>
-            <li>
-                <h3>Portal 移动检测 🛡️</h3>
-                <p>自动检测 Portal 的坐标变动。如果某个 Portal 的移动距离超过 <strong>3 米</strong>，插件会记录其原始位置、新位置以及发现时间。这对于防御通过申请移动 Portal 来破坏 Block Link 的战术非常有效。</p>
-            </li>
-            <li>
-                <h3>视觉预警提醒</h3>
-                <p>当检测到新的 Portal 移动时，侧边栏工具箱中的 <strong>"Portal DB"</strong> 链接会变为橙红色并显示警告数量（例如：<code>⚠️ Portal Moved (3)</code>）。</p>
-            </li>
-            <li>
-                <h3>更新统计 (Debug)</h3>
-                <p>内置详细的小时桶统计系统，记录数据的更新原因（新增、变更、刷新、跳过）。支持实时查看过滤效率。</p>
-            </li>
-        </ul>
+        <section aria-labelledby="features">
+            <h2 id="features">核心功能</h2>
+            <ul class="feature-list">
+                <li><strong>持久化本地存储：</strong>使用 <strong>IndexedDB</strong> 保存 Portal GUID、坐标、阵营和最后可见时间，并可跨浏览器会话保留。</li>
+                <li><strong>被动数据采集：</strong>在浏览 Ingress Intel 地图时自动积累 Portal 数据，无需手动录入。</li>
+                <li><strong>Portal 位移检测：</strong>当 Portal 移动超过 <strong>3 米</strong> 时记录旧位置和新位置，帮助识别战术性地图变化。</li>
+                <li><strong>视觉提醒：</strong>当发现新的位移 Portal 时，高亮侧边栏中的 <strong>Portal DB</strong> 项目。</li>
+                <li><strong>更新统计：</strong>记录数据被写入或跳过的原因，便于调试和评估过滤效果。</li>
+            </ul>
+        </section>
 
-        <h2>API 参考</h2>
-        <p>此插件通过全局对象 <code>window.plugin.portalDB</code> 暴露其功能。所有数据访问方法均为异步并返回 <strong>Promise</strong>。</p>
-        
-        <h3><code>getPortal(guid)</code></h3>
-        <p>通过 GUID 获取单个 Portal 记录。</p>
-        <pre><code>// 示例：检查 Portal 是否存在并打印其坐标
+        <section aria-labelledby="how-it-works">
+            <h2 id="how-it-works">工作原理</h2>
+            <p>这个插件会拦截 Intel 地图中的原始实体数据，并将其转化为本地 Portal 记录集合。随后，其他插件就可以把这层持久化数据当作 Portal 查询服务，即便目标 Portal 当前不在视野中也能调用。</p>
+            <p>因此，Portal DB 在 IITC 生态里更像一个后端型基础设施插件，而不只是单独的可视化工具。</p>
+        </section>
+
+        <section aria-labelledby="api-reference">
+            <h2 id="api-reference">API 参考</h2>
+            <p>Portal DB 通过 <code>window.plugin.portalDB</code> 暴露功能。所有访问方法都是异步的，并返回 <strong>Promise</strong>。</p>
+            <h3><code>getPortal(guid)</code></h3>
+            <p>根据 GUID 获取单个 Portal 记录。</p>
+            <pre><code>// 示例：检查 Portal 是否存在并输出坐标
 window.plugin.portalDB.getPortal('your-portal-guid')
   .then(portal => {
     if (portal) {
@@ -165,63 +113,78 @@ window.plugin.portalDB.getPortal('your-portal-guid')
       console.log('本地数据库中未找到该 Portal');
     }
   });</code></pre>
-
-        <h3><code>getPortalsInBounds(bounds)</code></h3>
-        <p>获取指定地理范围内的所有 Portal。用于查找特定区域（例如当前地图视图）内的所有 Portal。</p>
-        <pre><code>// 示例：查找当前地图视图内的所有已存储 Portal
-const bounds = map.getBounds(); // Leaflet LatLngBounds 对象
+            <h3><code>getPortalsInBounds(bounds)</code></h3>
+            <p>获取指定地图范围内的全部已存储 Portal。</p>
+            <pre><code>// 示例：查找当前视野内的所有已存储 Portal
+const bounds = map.getBounds(); // Leaflet LatLngBounds
 window.plugin.portalDB.getPortalsInBounds(bounds)
   .then(results => {
     console.log(`在此区域找到 ${results.length} 个 Portal。`);
     results.forEach(p => console.log(p.guid, p.team));
   });</code></pre>
-
-        <h3>返回值对象结构</h3>
-        <p>所有方法均返回符合以下标准格式的 Portal 对象：</p>
-        <pre><code>{
-  "guid": "...",           // 字符串: Portal 的 GUID
-  "latE6": 35689500,       // 数字: 纬度 * 1,000,000
-  "lngE6": 139691700,      // 数字: 经度 * 1,000,000
-  "team": "E",             // 字符串: 'E' (启), 'R' (蓝), 'N' (白), 'M' (红)
-  "lastSeen": 1707000000   // 数字: 最后更新的时间戳 (毫秒)
+            <h3>返回对象结构</h3>
+            <p>方法会返回如下标准格式的 Portal 对象：</p>
+            <pre><code>{
+  "guid": "...",
+  "latE6": 35689500,
+  "lngE6": 139691700,
+  "team": "E",
+  "lastSeen": 1707000000
 }</code></pre>
+        </section>
 
-        <h2>如何使用</h2>
-        <ol style="padding-left: 30px;">
-            <li>只需浏览 Intel 地图！插件会在后台静默运行，收集 Portal 数据并检测其移动。</li>
-            <li>如果侧边栏链接变红，说明有 Portal 被移动了。点击 <strong>"Portal DB"</strong> 查看详情。</li>
-            <li>在弹出的对话框中，<strong>"Moved Portals"</strong> 列表会展示所有移动记录。点击列表项可直接在地图上跳转到该 Portal。</li>
-            <li>使用 <strong>Export</strong> (导出) 和 <strong>Import</strong> (导入) 按钮来备份或迁移您的数据。</li>
-        </ol>
+        <section aria-labelledby="usage">
+            <h2 id="usage">如何使用</h2>
+            <ol>
+                <li>像平时一样浏览 Intel 地图，让插件在后台自动收集 Portal 数据。</li>
+                <li>当你需要查看位移 Portal 或审阅本地记录时，打开工具箱中的 <strong>Portal DB</strong>。</li>
+                <li>使用 <strong>Export</strong> 和 <strong>Import</strong> 进行本地数据库的备份与迁移。</li>
+                <li>如果你在开发其它 IITC 插件，可以直接调用暴露出的 API 来查询视野外的 Portal。</li>
+            </ol>
+        </section>
 
         <div class="note">
-            <p><strong>开发者须知:</strong> 此插件主要作为后端服务使用。如果您正在开发一个插件，需要知道某个当前未渲染 GUID 的“位置在哪里？”，Portal DB 就是解决方案。</p>
+            <p><strong>开发者提示：</strong> 如果你的 IITC 插件需要回答“这个 GUID 对应的 Portal 在哪里”，而它当前又没有渲染在屏幕上，那么 Portal DB 就是最合适的本地数据源。</p>
         </div>
 
-        <h2>更新日志</h2>
-        <div class="changelog-entry">
+        <section aria-labelledby="faq">
+            <h2 id="faq">常见问题</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">Portal DB 只能处理当前屏幕里的 Portal 吗？</span> 不是。它会在你浏览时逐步积累数据，并保存在本地，因此这些记录在离开当前视野后仍然可以使用。</li>
+                <li><span class="faq-q">为什么要检测 Portal 位移？</span> Portal 位移会影响链接、Block Link 和规划判断。及时发现这些变化可以让地图情报保持准确。</li>
+                <li><span class="faq-q">这个插件更适合普通用户还是开发者？</span> 两者都适合。特工可以利用界面检查位移 Portal，开发者则可以把 API 当成持久化 Portal 数据层来调用。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="related">
+            <h2 id="related">相关插件</h2>
+            <ul class="related-list">
+                <li><a href="https://gongjupal.com/ingress/recharge-monitor/index_zh-cn.html" style="color: #ffce00;">充电监控器</a> 会利用 Portal 状态与时间信息来辅助防守规划。</li>
+                <li><a href="https://gongjupal.com/ingress/player-activity-log/index_zh-cn.html" style="color: #ffce00;">玩家活动日志</a> 能与 Portal DB 一起提供基于 COMM 的活动历史。</li>
+                <li><a href="https://gongjupal.com/ingress/portal-afterimage/index_zh-cn.html" style="color: #ffce00;">Portal Afterimage</a> 也是围绕 Portal 可见性与地图记忆的 Ingress Intel 增强工具。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="changelog">
+            <h2 id="changelog">更新日志</h2>
             <h3>版本 0.3.0</h3>
-            <ul>
-                <li>新增: Portal 移动检测功能。自动追踪移动超过 3 米的 Portal。</li>
-                <li>新增: 工具箱视觉提醒。当检测到移动时，侧边栏链接变色并显示数量。</li>
-                <li>新增: 移动记录仪表盘。支持查看历史、一键跳转及名称自动解析。</li>
+            <ul class="feature-list">
+                <li>新增 Portal 位移检测，追踪超过 3 米的移动。</li>
+                <li>新增工具箱视觉提醒，发现新的位移 Portal 时高亮显示。</li>
+                <li>新增位移 Portal 面板，可查看历史并快速跳转。</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
             <h3>版本 0.2.0</h3>
-            <ul>
-                <li>新增: 基于小时桶的数据更新统计系统。</li>
-                <li>新增: 使用 localStorage 持久化统计数据。</li>
-                <li>新增: 管理界面实时统计仪表盘。</li>
+            <ul class="feature-list">
+                <li>新增按小时统计的数据更新桶。</li>
+                <li>新增基于 localStorage 的统计持久化。</li>
+                <li>新增实时统计面板。</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
             <h3>版本 0.1.2</h3>
-            <ul>
-                <li>更新: 引入更新阈值机制。仅在数据变更或超过 24 小时后写入，极大减轻 I/O 压力。</li>
+            <ul class="feature-list">
+                <li>加入更新阈值机制，减少不必要的写入与 I/O。</li>
             </ul>
-        </div>
-    </div>
+        </section>
+    </main>
 
 </body>
 </html>

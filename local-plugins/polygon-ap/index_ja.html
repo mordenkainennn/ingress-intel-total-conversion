@@ -1,198 +1,159 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC プラグイン: Polygon AP Counter</title>
+    <title>Polygon AP Counter for IITC | Ingress エリア AP 分析プラグイン</title>
+    <meta name="description" content="Polygon AP Counter は Niantic Ingress Intel Map 向けの IITC プラグインで、Draw Tools 多角形内の Portal、Link、Field、両陣営 AP を分析できます。">
+    <link rel="canonical" href="https://gongjupal.com/ingress/polygon-ap/index_ja.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/polygon-ap/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/polygon-ap/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/polygon-ap/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/polygon-ap/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
+    <meta property="og:title" content="Polygon AP Counter for IITC | Ingress エリア AP 分析プラグイン">
+    <meta property="og:description" content="Niantic Ingress Intel Map 上で、Draw Tools 多角形内の Portal、Link、Field、ENL / RES AP を見積もれます。">
+    <meta property="og:url" content="https://gongjupal.com/ingress/polygon-ap/index_ja.html">
+    <meta property="og:locale" content="ja_JP">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Polygon AP Counter for IITC | Ingress エリア AP 分析プラグイン">
+    <meta name="twitter:description" content="Ingress エージェント向けの IITC 分析プラグイン。ユーザーが描いた多角形内の ENL / RES AP を計算します。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Polygon AP Counter",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Polygon AP Counter は Niantic Ingress Intel Map 向けの IITC プラグインで、ユーザーが描いた多角形内の Portal、Link、Field、および ENL / RES の潜在 AP を分析します。",
+      "url": "https://gongjupal.com/ingress/polygon-ap/index_ja.html",
+      "softwareVersion": "1.0",
+      "inLanguage": "ja",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/polygon-ap"
+    }
+    </script>
     <style>
-        body {
-            background-color: #0e1111;
-            color: #eee;
-            font-family: 'Roboto', sans-serif;
-            font-size: 16px;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .lang-switch {
-            position: fixed;
-            top: 20px;
-            right: 30px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #0ff;
-            z-index: 1000;
-        }
-
-        .lang-switch a {
-            color: #ffce00;
-            text-decoration: none;
-            font-family: 'Coda', cursive;
-        }
-
-        .lang-switch span {
-            color: #fff;
-            font-family: 'Coda', cursive;
-        }
-
-        .container {
-            max-width: 980px;
-            margin: 0 auto;
-            background-color: rgba(10, 25, 30, 0.85);
-            border: 1px solid #0ff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            padding: 25px 40px;
-            border-radius: 5px;
-        }
-
-        h1,
-        h2,
-        h3 {
-            font-family: 'Coda', cursive;
-            color: #0ff;
-            text-transform: uppercase;
-            text-shadow: 0 0 5px #0ff;
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 2.2em;
-            margin-bottom: 20px;
-        }
-
-        h2 {
-            font-size: 1.7em;
-            border-bottom: 1px solid #0aa;
-            padding-bottom: 10px;
-            margin-top: 32px;
-        }
-
-        h3 {
-            font-size: 1.1em;
-            color: #ffce00;
-            margin-top: 20px;
-        }
-
-        p,
-        li {
-            color: #ccc;
-        }
-
-        strong {
-            color: #ffce00;
-        }
-
-        code {
-            background-color: #000;
-            padding: 2px 5px;
-            border: 1px solid #333;
-            border-radius: 3px;
-            color: #fada5e;
-            font-family: 'Courier New', Courier, monospace;
-        }
-
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-
-        ul li {
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
-            padding-left: 25px;
-            margin-bottom: 10px;
-        }
-
-        .note {
-            background-color: rgba(255, 206, 0, 0.1);
-            border: 1px solid #ffce00;
-            padding: 14px;
-            border-radius: 4px;
-            margin: 16px 0;
-        }
-
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', 'Noto Sans JP', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', 'Noto Sans JP', cursive; margin: 0 5px; }
+        .container { max-width: 980px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', 'Noto Sans JP', cursive; text-shadow: 0 0 5px #0ff; }
+        h1 { color: #0ff; text-align: center; font-size: 2.2em; margin-bottom: 18px; }
+        h2 { color: #0ff; font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 32px; }
+        h3 { font-size: 1.1em; color: #ffce00; margin-top: 20px; }
+        p, li { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; font-family: 'Courier New', Courier, monospace; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { margin-bottom: 10px; color: #bbb; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li { margin-bottom: 12px; }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 14px; border-radius: 4px; margin: 16px 0; }
         .pac-enl { color: #03dc03; font-weight: bold; }
         .pac-res { color: #0492d0; font-weight: bold; }
-
+        .faq-q { color: #ffce00; font-weight: 700; }
         @media (max-width: 900px) {
-            .lang-switch {
-                position: static;
-                margin: 0 auto 12px auto;
-                width: fit-content;
-            }
-
-            .container {
-                padding: 20px;
-            }
+            .lang-switch { position: static; margin: 0 auto 12px auto; width: fit-content; }
+            .container { padding: 20px; }
         }
     </style>
 </head>
-
 <body>
     <div class="lang-switch">
-        <a href="index.html">English</a> | <a href="index_zh-cn.html">简体中文</a> | <span>日本語</span>
+        <a href="https://gongjupal.com/ingress/polygon-ap/index.html" lang="en">English</a> |
+        <a href="https://gongjupal.com/ingress/polygon-ap/index_zh-cn.html" lang="zh-CN">简体中文</a>
     </div>
 
-    <div class="container">
+    <main class="container">
         <h1>Polygon AP Counter</h1>
-        <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/polygon-ap" style="color: #ffce00; text-decoration: none; font-weight: 700;">GitHub でこのプラグインのディレクトリを見る</a></p>
-
-        <p>
-            <strong>Polygon AP Counter</strong> は、Intel Map 上で作成したポリゴン（多角形）内のポータル、リンク、フィールドを分析するための IITC プラグインです。 
-            両陣営（ENL および RES）がそのエリア内で獲得可能な <strong>AP (Action Points)</strong> とポータル総数を素早く確認することができます。
+        <p class="intro">Niantic Ingress Intel Map 向けのエリア分析プラグインです。</p>
+        <p class="summary"><strong>Polygon AP Counter</strong> は、Draw Tools で描いた閉じた多角形内の Portal、Link、Field を分析するためのプラグインです。Ingress エージェントが、<span class="pac-enl">ENL</span> と <span class="pac-res">RES</span> の両陣営について、そのエリアで見込める <strong>AP</strong> をすばやく比較できるようにします。</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/polygon-ap">GitHub でこのプラグインのディレクトリを見る</a> |
+            <a href="https://gongjupal.com/ingress/index_ja.html">すべての IITC プラグインを見る</a>
         </p>
 
         <div class="note">
-            <p>
-                <strong>クレジット：</strong> オリジナルの "Polygon Portal Counter" は 57Cell 氏によって作成されました。 
-                AP 統計機能の追加およびメンテナンスは <strong>Cloverjune</strong> によって行われています。
-            </p>
+            <p><strong>クレジット：</strong> 元の <strong>Polygon Portal Counter</strong> は <strong>57Cell</strong> によって作られ、AP 統計機能は <strong>Cloverjune</strong> により追加・保守されています。</p>
         </div>
 
-        <h2>主な機能</h2>
-        <ul>
-            <li><strong>ポータル分析：</strong> Draw Tools 描画ツールで作成されたポリゴン内のすべてのポータルを自動的に抽出します。</li>
-            <li><strong>AP 計算：</strong> キャプチャ、レゾネーターのデプロイ、および敵リンクやフィールドの破壊によって得られる潜在的な AP を算出します。</li>
-            <li><strong>陣営別統計：</strong> <span class="pac-enl">Enlightened</span> と <span class="pac-res">Resistance</span> それぞれの独立した AP 統計を表示します。</li>
-            <li><strong>マップ上の情報表示：</strong> ポータル数と各陣営の獲得可能 AP をコンパクトなラベルでマップ上に直接表示します。</li>
-            <li><strong>サマリーテーブル：</strong> すべてのポリゴンの詳細な統計リストと合計値をダイアログに表示します。</li>
-        </ul>
+        <section aria-labelledby="who">
+            <h2 id="who">このプラグインが向いている人</h2>
+            <p>ファーム、クリア、再構築の前に対象エリアを評価したいエージェント向けです。複数の候補地について、Portal 数や Link / Field、両陣営の AP 期待値を手動で数えずに比較したいときに便利です。</p>
+        </section>
 
-        <h2>使用方法</h2>
-        <ol style="padding-left: 28px; color: #ccc;">
-            <li><strong>Draw Tools</strong> プラグインがインストールされ、有効であることを確認してください。</li>
-            <li>Draw Tools を使用して、マップ上に 1 つ以上の <strong>ポリゴン (Polygon)</strong> を描画します。</li>
-            <li>サイドバーの Toolbox から <strong>Polygon AP Counter</strong> をクリックします。</li>
-            <li>描画された各ポリゴンの統計データを含むダイアログが表示されます。</li>
-            <li>マップを移動したりポリゴンを編集した場合は、<strong>Refresh</strong> ボタンを押してデータを更新してください。</li>
-            <li>テーブル内の <strong>View</strong> をクリックすると、そのポリゴンがマップの中心になるよう移動します。</li>
-        </ol>
+        <section aria-labelledby="features">
+            <h2 id="features">主な機能</h2>
+            <ul class="feature-list">
+                <li><strong>多角形ベースの Portal 分析：</strong> <strong>Draw Tools</strong> で描いたポリゴン内の Portal を自動抽出します。</li>
+                <li><strong>陣営別 AP 計算：</strong> <span class="pac-enl">Enlightened</span> と <span class="pac-res">Resistance</span> の潜在 AP を個別に計算します。</li>
+                <li><strong>地図上ラベル：</strong> 各ポリゴンの簡易統計をマップ上に表示します。</li>
+                <li><strong>サマリーテーブル：</strong> ポリゴンごとの統計と総計を一覧で比較できます。</li>
+                <li><strong>Refresh / View 操作：</strong> 多角形編集後の再計算や、対象ポリゴンへのジャンプが可能です。</li>
+            </ul>
+        </section>
 
-        <h2>AP 計算のロジック</h2>
-        <p>計算ルールは、<em>Available AP Statistics</em> プラグインと同様に、標準的な Ingress の AP 付与ルールに基づいています：</p>
-        <ul>
-            <li><strong>キャプチャとデプロイ：</strong> 中立ポータルのキャプチャおよび 8 本のレゾネーターのフルデプロイによる AP。</li>
-            <li><strong>破壊：</strong> 敵のレゾネーター、リンク、フィールドの破壊による AP。</li>
-            <li><strong>Machina ポータル：</strong> Machina ポータルのリクレイム（再確保）による AP も含まれます。</li>
-            <li><strong>リンクとフィールド：</strong> リンクまたはフィールドの頂点の少なくとも 1 つがポリゴン内にある場合にカウントされます。</li>
-        </ul>
+        <section aria-labelledby="usage">
+            <h2 id="usage">使い方</h2>
+            <ol>
+                <li><strong>Draw Tools</strong> が有効であることを確認します。</li>
+                <li>地図上に 1 つ以上の閉じた多角形を描きます。</li>
+                <li>IITC toolbox から <strong>Polygon AP Counter</strong> を開きます。</li>
+                <li>各ポリゴンの統計をダイアログで確認します。</li>
+                <li>地図やポリゴンを変更したら <strong>Refresh</strong> で再計算します。</li>
+                <li><strong>View</strong> を押すと、その多角形が地図中央に来ます。</li>
+            </ol>
+        </section>
 
-        <h2>必要なプラグイン</h2>
-        <p>
-            このプラグインは <strong>Draw Tools</strong> プラグインを必要とします。ポリゴンが描画されていない場合、データは表示されません。
-        </p>
+        <section aria-labelledby="logic">
+            <h2 id="logic">AP 計算ロジック</h2>
+            <ul class="feature-list">
+                <li><strong>キャプチャとデプロイ：</strong> 中立 Portal の確保と <strong>8 本フルデプロイ</strong> の AP を含みます。</li>
+                <li><strong>破壊：</strong> 敵 Resonator、Link、Field の破壊 AP を含みます。</li>
+                <li><strong>Machina 回収：</strong> Machina 支配 Portal の回収 AP も含まれます。</li>
+                <li><strong>Link / Field 判定：</strong> 頂点の少なくとも 1 つが多角形内にある Link / Field をカウントします。</li>
+            </ul>
+            <p>計算の考え方は、標準的な Ingress AP ルールにできるだけ沿っており、<em>Available AP Statistics</em> に近い発想です。</p>
+        </section>
 
-        <h2>作者</h2>
-        <ul>
-            <li>オリジナル・コンセプト：<strong>57Cell</strong></li>
-            <li>現在のメンテナ / AP 機能開発：<a href="https://gongjupal.com/ingress/" target="_blank">Cloverjune</a></li>
-        </ul>
-    </div>
+        <section aria-labelledby="requirements">
+            <h2 id="requirements">必要条件と制限</h2>
+            <p>このプラグインには <strong>Draw Tools</strong> が必要です。多角形が描かれていなければ分析対象がないため、有効な結果は表示されません。</p>
+            <p>また、IITC クライアントが現在保持している Portal、Link、Field データに基づく推定なので、結果は実運用向けの目安として扱うのが適切です。</p>
+        </section>
+
+        <section aria-labelledby="faq">
+            <h2 id="faq">FAQ</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">Draw Tools がなくても使えますか？</span> いいえ。ユーザーが描いた多角形に依存しています。</li>
+                <li><span class="faq-q">なぜ ENL と RES を分けて表示するのですか？</span> エリア内の Portal、Link、Field の所有陣営によって得られる AP が変わるためです。</li>
+                <li><span class="faq-q">地図を動かしたら数字は変わりますか？</span> はい。可視データや多角形が変わったら、<strong>Refresh</strong> で再計算してください。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="related">
+            <h2 id="related">関連プラグイン</h2>
+            <ul class="related-list">
+                <li><a href="https://gongjupal.com/ingress/all-portal-names/index_ja.html" style="color:#ffce00;">All Portal Names</a> は、密集した多角形エリアの確認をしやすくします。</li>
+                <li><a href="https://gongjupal.com/ingress/player-activity-log/index_ja.html" style="color:#ffce00;">Player Activity Log</a> は、エリア分析に行動履歴の視点を加えられます。</li>
+                <li><a href="https://gongjupal.com/ingress/recharge-monitor/index_ja.html" style="color:#ffce00;">Recharge Monitor</a> は、防衛や減衰タイミングも絡むエリア計画で役立ちます。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="authors">
+            <h2 id="authors">作者</h2>
+            <ul class="feature-list">
+                <li>オリジナル構想：<strong>57Cell</strong></li>
+                <li>現メンテナおよび AP 機能：<a href="https://gongjupal.com/ingress/" target="_blank" rel="noopener" style="color:#ffce00;">Cloverjune</a></li>
+            </ul>
+        </section>
+    </main>
 </body>
-
 </html>

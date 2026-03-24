@@ -3,10 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC 插件目录</title>
+    <title>IITC Ingress Intel 地图插件目录 | 特工自定义工具</title>
+    <meta name="description" content="浏览适用于 Niantic Ingress Intel 地图的 IITC 自定义插件，涵盖 Portal 追踪、无人机路线规划、扇形场规划、充电监控与特工工具。">
+    <link rel="canonical" href="https://gongjupal.com/ingress/index_zh-cn.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/index.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="IITC Ingress Intel 地图插件目录">
+    <meta property="og:title" content="IITC Ingress Intel 地图插件目录 | 特工自定义工具">
+    <meta property="og:description" content="探索适用于 Niantic Ingress Intel 地图的 IITC 插件，包括 Portal 数据库、残影图层、无人机规划、场规划和充电监控工具。">
+    <meta property="og:url" content="https://gongjupal.com/ingress/index_zh-cn.html">
+    <meta property="og:locale" content="zh_CN">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="IITC Ingress Intel 地图插件目录 | 特工自定义工具">
+    <meta name="twitter:description" content="浏览适用于 Niantic Ingress Intel 地图的 IITC 插件，覆盖 Portal 追踪、场规划、无人机路线与特工日常工具。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "IITC Ingress Intel 地图插件目录",
+      "description": "面向 Niantic Ingress Intel 地图的 IITC 自定义插件目录，包含 Portal 追踪、规划、可视化与特工效率工具。",
+      "url": "https://gongjupal.com/ingress/index_zh-cn.html",
+      "inLanguage": "zh-CN"
+    }
+    </script>
     <style>
         body {
             background-color: #0e1111;
@@ -42,14 +67,37 @@
             padding: 25px 40px;
             border-radius: 5px;
         }
-        h1 {
+        h1, h2 {
             font-family: 'Coda', 'Noto Sans SC', cursive;
             color: #0ff;
-            text-transform: uppercase;
             text-shadow: 0 0 5px #0ff;
+        }
+        h1 {
             text-align: center;
             font-size: 2.5em;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.5em;
+            margin: 34px 0 16px 0;
+            border-bottom: 1px solid #0aa;
+            padding-bottom: 8px;
+        }
+        .intro {
+            text-align: center;
+            color: #bbb;
+            margin: 0 auto 16px auto;
+            max-width: 760px;
+        }
+        .summary {
+            text-align: center;
+            color: #ccc;
+            margin: 0 auto 26px auto;
+            max-width: 760px;
+        }
+        .section-copy {
+            color: #ccc;
+            margin: 0 0 18px 0;
         }
         .plugin-grid {
             display: grid;
@@ -72,6 +120,10 @@
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
         }
+        .plugin-card:focus {
+            outline: 2px solid #ffce00;
+            outline-offset: 2px;
+        }
         .plugin-card h3 {
             font-family: 'Coda', 'Noto Sans SC', cursive;
             color: #ffce00;
@@ -83,6 +135,19 @@
             font-size: 0.9em;
             margin: 0;
             flex-grow: 1;
+        }
+        .resource-list,
+        .faq-list {
+            padding-left: 20px;
+            color: #ccc;
+        }
+        .resource-list li,
+        .faq-list li {
+            margin-bottom: 10px;
+        }
+        .faq-q {
+            color: #ffce00;
+            font-weight: 700;
         }
         .footer {
             text-align: center;
@@ -97,62 +162,97 @@
 <body>
 
     <div class="lang-switch">
-        <a href="index.html">English</a> | <a href="index_ja.html">日本語</a>
+        <a href="https://gongjupal.com/ingress/index.html" lang="en">English</a> |
+        <a href="https://gongjupal.com/ingress/index_ja.html" lang="ja">日本語</a>
     </div>
 
-    <div class="container">
+    <main class="container">
         <h1>IITC 插件目录</h1>
-        
-        <p style="text-align: center; color: #888; margin-bottom: 18px;">
-            专为 Ingress 特工设计的自定义及增强插件集合。
+
+        <p class="intro">
+            面向 Niantic Ingress Intel 地图的 IITC 自定义与增强插件集合。
+        </p>
+        <p class="summary">
+            这个目录汇集了适合 Ingress 特工的地图增强工具，包括 Portal 追踪、场规划、无人机路线规划、活动分析、充电监控，以及其它围绕 Intel 地图的 IITC 实用插件。
         </p>
         <p style="text-align: center; margin: 0 0 40px 0;">
             <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion" style="color: #ffce00; text-decoration: none; font-weight: 700;">查看 GitHub 仓库</a>
         </p>
 
-        <div class="plugin-grid">
-            <a href="portal-db/index_zh-cn.html" class="plugin-card">
-                <h3>Portal DB</h3>
-                <p>核心基础架构。提供持久化数据库、移动检测和更新原因统计。</p>
-            </a>
-            <a href="portal-afterimage/index_zh-cn.html" class="plugin-card">
-                <h3>Portal Afterimage</h3>
-                <p>在地图缩小导致官方标记消失时，绘制已见 Portal 的“残影”记忆层。</p>
-            </a>
-            <a href="player-activity-log/index_zh-cn.html" class="plugin-card">
-                <h3>玩家活动日志</h3>
-                <p>记录 COMM 信息中的玩家行为，并在地图上可视化展示移动轨迹。</p>
-            </a>
-            <a href="recharge-monitor/index_zh-cn.html" class="plugin-card">
-                <h3>充电监控器</h3>
-                <p>实时监控 Portal 健康度，提供智能的能量衰减预测和预警。</p>
-            </a>
-            <a href="uniques-tools/index_zh-cn.html" class="plugin-card">
-                <h3>Uniques Tools</h3>
-                <p>增强的 Unique 追踪，支持无人机位置记录和官方历史数据导入。</p>
-            </a>
-            <a href="homogeneous-fields/index_zh-cn.html" class="plugin-card">
-                <h3>Homogeneous Fields</h3>
-                <p>用于规划和可视化同质控制场（Homogeneous Field）的高级工具。</p>
-            </a>
-            <a href="drone-flight-planner/index_zh-cn.html" class="plugin-card">
-                <h3>Drone Flight Planner</h3>
-                <p>规划 S2 机制下的无人机路线，支持关键跳转约束及 JSON 导入导出。</p>
-            </a>
-            <a href="fanfield-planner/index_zh-cn.html" class="plugin-card">
-                <h3>扇形场规划器</h3>
-                <p>用于规划双阶段扇形场：第一阶段搭建无交叉底边，第二阶段从顶点反射并显示分阶段统计。</p>
-            </a>
-            <a href="all-portal-names/index_zh-cn.html" class="plugin-card">
-                <h3>All Portal Names</h3>
-                <p>在任意缩放等级强制显示所有 Portal 名称，绕过重叠隐藏机制。</p>
-            </a>
-        </div>
+        <section aria-labelledby="plugin-directory">
+            <h2 id="plugin-directory">插件目录</h2>
+            <p class="section-copy">
+                下方每个页面都会说明插件的用途、适合的使用场景，以及它如何帮助你在 Ingress Intel 地图上进行规划、分析或日常操作。
+            </p>
+            <div class="plugin-grid">
+                <a href="https://gongjupal.com/ingress/portal-db/index_zh-cn.html" class="plugin-card">
+                    <h3>Portal DB</h3>
+                    <p>为 IITC 建立持久化的本地 Portal 数据库，支持坐标变动检测和更新统计，适合 Ingress Intel 数据分析。</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/portal-afterimage/index_zh-cn.html" class="plugin-card">
+                    <h3>Portal Afterimage</h3>
+                    <p>当官方标记因缩放而隐藏时，为已见过的 Portal 绘制记忆残影图层。</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/player-activity-log/index_zh-cn.html" class="plugin-card">
+                    <h3>玩家活动日志</h3>
+                    <p>记录 COMM 中的特工活动，并在地图上可视化展示移动轨迹，便于回顾 Ingress 行动。</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/recharge-monitor/index_zh-cn.html" class="plugin-card">
+                    <h3>充电监控器</h3>
+                    <p>实时监控 Portal 健康度，并为防守规划预测衰减时间窗口。</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/uniques-tools/index_zh-cn.html" class="plugin-card">
+                    <h3>Uniques Tools</h3>
+                    <p>增强访问、占领和无人机移动记录，支持官方历史导入，适合长期追踪 Ingress 进度。</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/homogeneous-fields/index_zh-cn.html" class="plugin-card">
+                    <h3>Homogeneous Fields</h3>
+                    <p>帮助规划与可视化同质控制场，适用于结构化的 Ingress 场作业。</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/drone-flight-planner/index_zh-cn.html" class="plugin-card">
+                    <h3>Drone Flight Planner</h3>
+                    <p>基于 S2 机制规划无人机路线，并支持钥匙跳转限制与 JSON 导入导出。</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/fanfield-planner/index_zh-cn.html" class="plugin-card">
+                    <h3>扇形场规划器</h3>
+                    <p>规划双阶段扇形场，处理无交叉底边、锚点反射，并输出分阶段总结。</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/all-portal-names/index_zh-cn.html" class="plugin-card">
+                    <h3>All Portal Names</h3>
+                    <p>在指定缩放等级强制显示 Portal 名称，让 Intel 地图标签即使重叠也尽量可见。</p>
+                </a>
+                <a href="https://gongjupal.com/ingress/polygon-ap/index_zh-cn.html" class="plugin-card">
+                    <h3>多边形 AP 统计</h3>
+                    <p>分析用户绘制多边形内的 Portal 数量、Link、Field 和启蒙军或抵抗军的潜在 AP。</p>
+                </a>
+            </div>
+        </section>
+
+        <section aria-labelledby="why-use">
+            <h2 id="why-use">为什么使用这些 IITC 插件</h2>
+            <p class="section-copy">
+                这些工具面向希望扩展 Ingress Intel 地图能力的特工，重点覆盖 Portal 记忆、行动规划、场构建、COMM 回顾和日常操作效率提升。
+            </p>
+            <ul class="resource-list">
+                <li>通过 Portal 追踪和本地数据存储提升地图感知能力。</li>
+                <li>为无人机跳跃、扇形场和同质场提供更强的规划支持。</li>
+                <li>把 Intel 地图上的活动记录转换为更易操作的情报信息。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="faq">
+            <h2 id="faq">常见问题</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">什么是 IITC？</span> IITC 是 Ingress Intel 地图的增强界面，适合希望获得更多控制能力、可视化信息和规划工具的特工。</li>
+                <li><span class="faq-q">这些插件是给 Niantic 的 Ingress 用的吗？</span> 是的。这个目录专门介绍适用于 Niantic Ingress Intel 地图的 IITC 插件，而不是 Kubernetes 或网络软件相关的 Ingress。</li>
+                <li><span class="faq-q">在哪里查看源码和插件文件？</span> 你可以通过上方的 GitHub 仓库链接查看源代码、插件脚本和更新记录。</li>
+            </ul>
+        </section>
 
         <div class="footer">
             注：这些插件仅基于本地接收的数据，不与服务器额外交互，不违反 Niantic 的服务条款。
         </div>
-    </div>
+    </main>
 
 </body>
 </html>

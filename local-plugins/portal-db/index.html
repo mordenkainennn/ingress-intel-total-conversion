@@ -3,160 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC Plugin: Portal DB</title>
+    <title>Portal DB for IITC | Local Portal Database Plugin for Ingress Intel</title>
+    <meta name="description" content="Portal DB is an IITC plugin for Niantic's Ingress Intel Map that builds a persistent local portal database, detects portal moves, and supplies data for other plugins.">
+    <link rel="canonical" href="https://gongjupal.com/ingress/portal-db/index.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/portal-db/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/portal-db/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/portal-db/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/portal-db/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
+    <meta property="og:title" content="Portal DB for IITC | Local Portal Database Plugin for Ingress Intel">
+    <meta property="og:description" content="Portal DB stores portal data locally, detects moved portals, and provides a reliable data layer for other IITC plugins on the Ingress Intel Map.">
+    <meta property="og:url" content="https://gongjupal.com/ingress/portal-db/index.html">
+    <meta property="og:locale" content="en_US">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Portal DB for IITC | Local Portal Database Plugin for Ingress Intel">
+    <meta name="twitter:description" content="A local portal database plugin for IITC on Niantic's Ingress Intel Map, with move detection, IndexedDB storage, and plugin-to-plugin data support.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Portal DB",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Portal DB is an IITC plugin for Niantic's Ingress Intel Map that stores portal data locally, detects moved portals, and supports other plugins with persistent portal records.",
+      "url": "https://gongjupal.com/ingress/portal-db/index.html",
+      "softwareVersion": "0.3.0",
+      "inLanguage": "en",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-db"
+    }
+    </script>
     <style>
-        body {
-            background-color: #0e1111;
-            color: #eee;
-            font-family: 'Roboto', sans-serif;
-            font-size: 16px;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
-        .lang-switch {
-            position: fixed;
-            top: 20px;
-            right: 30px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #0ff;
-        }
-        .lang-switch a {
-            color: #ffce00;
-            text-decoration: none;
-            font-family: 'Coda', cursive;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background-color: rgba(10, 25, 30, 0.85);
-            border: 1px solid #0ff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            padding: 25px 40px;
-            border-radius: 5px;
-        }
-        h1, h2, h3 {
-            font-family: 'Coda', cursive;
-            color: #0ff;
-            text-transform: uppercase;
-            text-shadow: 0 0 5px #0ff;
-        }
-        h1 {
-            text-align: center;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-        h2 {
-            font-size: 1.8em;
-            border-bottom: 1px solid #0aa;
-            padding-bottom: 10px;
-            margin-top: 30px;
-        }
-        h3 {
-             font-size: 1.2em;
-             color: #ffce00;
-             margin-top: 20px;
-        }
-        h4 {
-             color: #ccc;
-             margin-bottom: 5px;
-        }
-        p, li {
-            color: #ccc;
-        }
-        strong {
-            color: #ffce00;
-        }
-        code {
-            background-color: #000;
-            padding: 2px 5px;
-            border: 1px solid #333;
-            border-radius: 3px;
-            color: #fada5e;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        pre {
-            background-color: #1a1a1a;
-            border: 1px solid #333;
-            padding: 10px;
-            border-radius: 4px;
-            overflow-x: auto;
-        }
-        pre code {
-            background-color: transparent;
-            border: none;
-            padding: 0;
-            color: #aaddff;
-        }
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        ul li {
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
-            padding-left: 25px;
-            margin-bottom: 10px;
-        }
-        .note {
-            background-color: rgba(255, 206, 0, 0.1);
-            border: 1px solid #ffce00;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 4px;
-        }
-        .note strong {
-            color: #ffce00;
-        }
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', cursive; margin: 0 5px; }
+        .container { max-width: 900px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', cursive; text-shadow: 0 0 5px #0ff; }
+        h1 { color: #0ff; text-align: center; font-size: 2.5em; margin-bottom: 18px; text-transform: uppercase; }
+        h2 { color: #0ff; font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 34px; }
+        h3 { font-size: 1.15em; color: #ffce00; margin-top: 20px; }
+        p, li { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; font-family: 'Courier New', Courier, monospace; }
+        pre { background-color: #1a1a1a; border: 1px solid #333; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        pre code { background-color: transparent; border: none; padding: 0; color: #aaddff; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { margin-bottom: 10px; color: #bbb; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li { margin-bottom: 12px; }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 15px; margin-top: 20px; border-radius: 4px; }
+        .faq-q { color: #ffce00; font-weight: 700; }
     </style>
 </head>
 <body>
 
     <div class="lang-switch">
-        <a href="index_zh-cn.html">中文</a> | <a href="index_ja.html">日本語</a>
+        <a href="index_zh-cn.html" lang="zh-CN">中文</a> |
+        <a href="index_ja.html" lang="ja">日本語</a>
     </div>
 
-    <div class="container">
+    <main class="container">
         <h1>Portal DB</h1>
-        <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-db" style="color: #ffce00; text-decoration: none; font-weight: 700;">View this plugin directory on GitHub</a></p>
+        <p class="intro">A local portal database plugin for IITC on Niantic's Ingress Intel Map.</p>
+        <p class="summary"><strong>Portal DB</strong> passively collects portal records while you browse the Intel Map, stores them in IndexedDB, detects moved portals, and gives other IITC plugins a dependable source of portal coordinates and team state.</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-db">View this plugin directory on GitHub</a> |
+            <a href="https://gongjupal.com/ingress/index.html">See all IITC plugins</a>
+        </p>
 
-        <p><strong>Portal DB</strong> is a foundational infrastructure plugin for the IITC ecosystem. It is designed to create a <strong>local, persistent database of Portal basic information</strong> within your browser.</p>
-        <p>By automatically collecting data as you browse the map, it serves as a reliable "Single Source of Truth" for other plugins that require portal coordinates and team information, even when those portals are not currently visible on the screen.</p>
+        <section aria-labelledby="who">
+            <h2 id="who">Who This Plugin Is For</h2>
+            <p>Portal DB is mainly useful for agents and plugin authors who need a durable local record of portals that are not currently visible on screen. It is especially valuable for workflows that depend on portal history, moved portal detection, or reliable background data for planning and analysis.</p>
+        </section>
 
-        <h2>Features</h2>
-        <ul>
-            <li>
-                <h3>Persistent Local Storage</h3>
-                <p>Uses <strong>IndexedDB</strong> to store Portal data (GUID, Latitude, Longitude, Team, Last Seen Time) permanently. This data persists across sessions and browser restarts.</p>
-            </li>
-            <li>
-                <h3>Passive Data Collection</h3>
-                <p>Automatically captures portal information from the map as you browse. It intercepts raw game entities to ensure high performance and extensive coverage without requiring manual action.</p>
-            </li>
-            <li>
-                <h3>Portal Move Detection 🛡️</h3>
-                <p>Automatically detects if a portal has been moved. If a coordinate change greater than <strong>3 meters</strong> is detected, the plugin records the old and new positions. This helps identify tactical portal movements intended to break block links.</p>
-            </li>
-            <li>
-                <h3>Visual Alerts</h3>
-                <p>When new portal movements are detected, the <strong>"Portal DB"</strong> link in the IITC toolbox sidebar turns orange and displays a warning count (e.g., <code>⚠️ Portal Moved (3)</code>).</p>
-            </li>
-            <li>
-                <h3>Update Statistics (Debug)</h3>
-                <p>Features an hourly bucket statistics system to monitor data update reasons (New, Changed, Refreshed, Skipped). Useful for verifying filter efficiency.</p>
-            </li>
-        </ul>
+        <section aria-labelledby="features">
+            <h2 id="features">Key Features</h2>
+            <ul class="feature-list">
+                <li><strong>Persistent local storage:</strong> Uses <strong>IndexedDB</strong> to store portal GUID, coordinates, team, and last-seen time across browser sessions.</li>
+                <li><strong>Passive data collection:</strong> Builds the database automatically while you browse the Ingress Intel Map, without requiring manual input.</li>
+                <li><strong>Portal move detection:</strong> Records old and new positions when a portal shifts by more than <strong>3 meters</strong>, which helps identify tactical map changes.</li>
+                <li><strong>Visual alerts:</strong> Highlights the <strong>Portal DB</strong> toolbox entry when new moved portals are detected.</li>
+                <li><strong>Update statistics:</strong> Tracks why data was written or skipped, which is useful for debugging and performance review.</li>
+            </ul>
+        </section>
 
-        <h2>API Reference</h2>
-        <p>This plugin exposes its functionality via the global object <code>window.plugin.portalDB</code>. All data access methods are asynchronous and return a <strong>Promise</strong>.</p>
-        
-        <h3><code>getPortal(guid)</code></h3>
-        <p>Retrieves a single portal record by its GUID.</p>
-        <pre><code>// Example: Check if a portal exists and log its coordinates
+        <section aria-labelledby="how-it-works">
+            <h2 id="how-it-works">How It Works</h2>
+            <p>The plugin intercepts raw entity data from the Intel Map and turns it into a local portal record set. Other plugins can then use this persistent layer as a portal lookup service, even when the requested portal is outside the current viewport.</p>
+            <p>This makes Portal DB a backend-style utility inside the IITC ecosystem rather than only a standalone visual tool.</p>
+        </section>
+
+        <section aria-labelledby="api-reference">
+            <h2 id="api-reference">API Reference</h2>
+            <p>Portal DB exposes its functionality through <code>window.plugin.portalDB</code>. All access methods are asynchronous and return a <strong>Promise</strong>.</p>
+            <h3><code>getPortal(guid)</code></h3>
+            <p>Retrieves one portal record by GUID.</p>
+            <pre><code>// Example: Check if a portal exists and log its coordinates
 window.plugin.portalDB.getPortal('your-portal-guid')
   .then(portal => {
     if (portal) {
@@ -165,63 +113,78 @@ window.plugin.portalDB.getPortal('your-portal-guid')
       console.log('Portal not found in local DB');
     }
   });</code></pre>
-
-        <h3><code>getPortalsInBounds(bounds)</code></h3>
-        <p>Retrieves all portals within a given geographical boundary. Useful for finding portals in a specific area (e.g., current map view).</p>
-        <pre><code>// Example: Find all stored portals in the current map view
+            <h3><code>getPortalsInBounds(bounds)</code></h3>
+            <p>Retrieves all stored portals inside a map boundary.</p>
+            <pre><code>// Example: Find all stored portals in the current map view
 const bounds = map.getBounds(); // Leaflet LatLngBounds
 window.plugin.portalDB.getPortalsInBounds(bounds)
   .then(results => {
     console.log(`Found ${results.length} portals in this area.`);
     results.forEach(p => console.log(p.guid, p.team));
   });</code></pre>
-
-        <h3>Return Object Structure</h3>
-        <p>Methods return portal objects in the following standardized format:</p>
-        <pre><code>{
-  "guid": "...",           // String: The Portal's GUID
-  "latE6": 35689500,       // Number: Latitude * 1,000,000
-  "lngE6": 139691700,      // Number: Longitude * 1,000,000
-  "team": "E",             // String: 'E' (Enl), 'R' (Res), 'N' (Neutral), 'M' (Machina)
-  "lastSeen": 1707000000   // Number: Timestamp (ms) of last update
+            <h3>Return Object Structure</h3>
+            <p>Methods return portal objects in the following standardized format:</p>
+            <pre><code>{
+  "guid": "...",
+  "latE6": 35689500,
+  "lngE6": 139691700,
+  "team": "E",
+  "lastSeen": 1707000000
 }</code></pre>
+        </section>
 
-        <h2>How to Use</h2>
-        <ol style="padding-left: 30px;">
-            <li>Just browse the Intel Map! The plugin runs silently in the background, collecting data and detecting portal moves.</li>
-            <li>If the toolbox link turns red, it means portals have moved. Click <strong>"Portal DB"</strong> to view details.</li>
-            <li>In the management dialog, the <strong>"Moved Portals"</strong> list shows all detected changes. Click an entry to jump to that portal on the map.</li>
-            <li>Use the <strong>Export</strong> and <strong>Import</strong> buttons to backup or transfer your data.</li>
-        </ol>
+        <section aria-labelledby="usage">
+            <h2 id="usage">How to Use Portal DB</h2>
+            <ol>
+                <li>Browse the Intel Map normally and let the plugin collect portal data in the background.</li>
+                <li>Open the <strong>Portal DB</strong> toolbox entry when you want to inspect moved portals or review stored data.</li>
+                <li>Use the <strong>Export</strong> and <strong>Import</strong> actions to back up or transfer your local database.</li>
+                <li>If you build other IITC tools, call the exposed API methods to query portals outside the current viewport.</li>
+            </ol>
+        </section>
 
         <div class="note">
-            <p><strong>Note for Developers:</strong> This plugin is primarily intended as a backend service. If you are developing a plugin that needs to know "where is this portal?" for a GUID that isn't currently rendered, Portal DB is the solution.</p>
+            <p><strong>Note for developers:</strong> If your IITC plugin needs to answer “where is this portal?” for a GUID that is not currently rendered, Portal DB is the recommended local data source.</p>
         </div>
 
-        <h2>Changelog</h2>
-        <div class="changelog-entry">
+        <section aria-labelledby="faq">
+            <h2 id="faq">FAQ</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">Does Portal DB work only on screen-visible portals?</span> No. It collects data while you browse, then keeps those records locally so they remain useful even when the portals are no longer visible.</li>
+                <li><span class="faq-q">Why is moved portal detection important?</span> Portal movement can affect links, block links, and planning assumptions. Detecting those shifts helps agents and tools keep map intelligence accurate.</li>
+                <li><span class="faq-q">Is this plugin mainly for users or developers?</span> Both. Agents can use the UI for moved portal review, while developers can use the API as a persistent portal data layer.</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="related">
+            <h2 id="related">Related Plugins</h2>
+            <ul class="related-list">
+                <li><a href="https://gongjupal.com/ingress/recharge-monitor/index.html" style="color: #ffce00;">Recharge Monitor</a> uses portal state and timing signals for defensive planning.</li>
+                <li><a href="https://gongjupal.com/ingress/player-activity-log/index.html" style="color: #ffce00;">Player Activity Log</a> complements Portal DB with COMM-based agent activity history.</li>
+                <li><a href="https://gongjupal.com/ingress/portal-afterimage/index.html" style="color: #ffce00;">Portal Afterimage</a> is another Intel Map enhancement focused on portal visibility and recall.</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="changelog">
+            <h2 id="changelog">Changelog</h2>
             <h3>Version 0.3.0</h3>
-            <ul>
-                <li>NEW: Portal Move Detection feature. Tracks portals moved > 3 meters.</li>
-                <li>NEW: Toolbox visual alerts. Link changes color and shows count when moves are detected.</li>
-                <li>NEW: Moved Portals dashboard. View history, jump to location, and auto-resolve names.</li>
+            <ul class="feature-list">
+                <li>Added portal move detection for shifts greater than 3 meters.</li>
+                <li>Added toolbox visual alerts for newly detected moved portals.</li>
+                <li>Added a moved portal dashboard with history and jump-to-location support.</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
             <h3>Version 0.2.0</h3>
-            <ul>
-                <li>NEW: Hourly bucket statistics system.</li>
-                <li>NEW: Persistent stats using localStorage.</li>
-                <li>NEW: Real-time stats dashboard in management UI.</li>
+            <ul class="feature-list">
+                <li>Added hourly bucket statistics for database updates.</li>
+                <li>Added persistent stats storage with localStorage.</li>
+                <li>Added a real-time statistics dashboard.</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
             <h3>Version 0.1.2</h3>
-            <ul>
-                <li>UPD: Implemented update threshold mechanism. Only writes to DB if data changed or 24h passed, reducing I/O.</li>
+            <ul class="feature-list">
+                <li>Added an update threshold mechanism to reduce unnecessary writes and I/O.</li>
             </ul>
-        </div>
-    </div>
+        </section>
+    </main>
 
 </body>
 </html>

@@ -3,185 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC 插件: All Portal Names</title>
+    <title>All Portal Names for IITC | Ingress Portal 名称显示插件</title>
+    <meta name="description" content="All Portal Names 是 Niantic Ingress Intel Map 的 IITC 插件，可绕过标签碰撞隐藏规则，并通过缩放阈值控制何时显示全部 Portal 名称。">
+    <link rel="canonical" href="https://gongjupal.com/ingress/all-portal-names/index_zh-cn.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/all-portal-names/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/all-portal-names/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/all-portal-names/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/all-portal-names/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
+    <meta property="og:title" content="All Portal Names for IITC | Ingress Portal 名称显示插件">
+    <meta property="og:description" content="在 Niantic Ingress Intel Map 上强制显示 Portal 名称，并通过缩放阈值控制高密度区域的文字拥挤程度。">
+    <meta property="og:url" content="https://gongjupal.com/ingress/all-portal-names/index_zh-cn.html">
+    <meta property="og:locale" content="zh_CN">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="All Portal Names for IITC | Ingress Portal 名称显示插件">
+    <meta name="twitter:description" content="面向 Ingress 特工的 IITC 可视化插件，可绕过标签碰撞隐藏，并配置何时显示全部 Portal 名称。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "All Portal Names",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "All Portal Names 是 Niantic Ingress Intel Map 的 IITC 插件，可绕过默认标签碰撞隐藏规则，让更多 Portal 名称持续显示。",
+      "url": "https://gongjupal.com/ingress/all-portal-names/index_zh-cn.html",
+      "softwareVersion": "0.5.0",
+      "inLanguage": "zh-CN",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/all-portal-names"
+    }
+    </script>
     <style>
-        body {
-            background-color: #0e1111;
-            color: #eee;
-            font-family: 'Roboto', 'Noto Sans SC', sans-serif;
-            font-size: 16px;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
-        .lang-switch {
-            position: fixed;
-            top: 20px;
-            right: 30px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #0ff;
-            z-index: 1000;
-        }
-        .lang-switch a {
-            color: #ffce00;
-            text-decoration: none;
-            font-family: 'Coda', cursive;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background-color: rgba(10, 25, 30, 0.85);
-            border: 1px solid #0ff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            padding: 25px 40px;
-            border-radius: 5px;
-        }
-        h1, h2, h3 {
-            font-family: 'Coda', 'Noto Sans SC', cursive;
-            color: #0ff;
-            text-transform: uppercase;
-            text-shadow: 0 0 5px #0ff;
-        }
-        h1 {
-            text-align: center;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-        h2 {
-            font-size: 1.8em;
-            border-bottom: 1px solid #0aa;
-            padding-bottom: 10px;
-            margin-top: 30px;
-        }
-        h3 {
-             font-size: 1.2em;
-             color: #ffce00;
-             margin-top: 20px;
-        }
-        p, li {
-            color: #ccc;
-        }
-        strong {
-            color: #ffce00;
-        }
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        ul li {
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 8px;
-            padding-left: 25px;
-            margin-bottom: 10px;
-        }
-        .zoom-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background: rgba(0, 0, 0, 0.3);
-        }
-        .zoom-table th, .zoom-table td {
-            border: 1px solid #333;
-            padding: 10px;
-            text-align: left;
-        }
-        .zoom-table th {
-            color: #ffce00;
-            background: rgba(255, 206, 0, 0.1);
-        }
-        .note {
-            background-color: rgba(255, 206, 0, 0.1);
-            border: 1px solid #ffce00;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 4px;
-        }
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', 'Noto Sans SC', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', 'Noto Sans SC', cursive; margin: 0 5px; }
+        .container { max-width: 900px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', 'Noto Sans SC', cursive; text-shadow: 0 0 5px #0ff; }
+        h1 { color: #0ff; text-align: center; font-size: 2.5em; margin-bottom: 18px; }
+        h2 { color: #0ff; font-size: 1.8em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 30px; }
+        h3 { font-size: 1.2em; color: #ffce00; margin-top: 20px; }
+        p, li, td, th { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; font-family: 'Courier New', Courier, monospace; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { margin-bottom: 10px; color: #bbb; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li { margin-bottom: 12px; }
+        .zoom-table { width: 100%; border-collapse: collapse; margin: 20px 0; background: rgba(0, 0, 0, 0.3); }
+        .zoom-table th, .zoom-table td { border: 1px solid #333; padding: 10px; text-align: left; }
+        .zoom-table th { color: #ffce00; background: rgba(255, 206, 0, 0.1); }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 15px; margin-top: 20px; border-radius: 4px; }
+        .faq-q { color: #ffce00; font-weight: 700; }
     </style>
 </head>
 <body>
 
     <div class="lang-switch">
-        <a href="index.html">English</a> | <a href="index_ja.html">日本語</a>
+        <a href="https://gongjupal.com/ingress/all-portal-names/index.html" lang="en">English</a> |
+        <a href="https://gongjupal.com/ingress/all-portal-names/index_ja.html" lang="ja">日本語</a>
     </div>
 
-    <div class="container">
+    <main class="container">
         <h1>All Portal Names</h1>
-        <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/all-portal-names" style="color: #ffce00; text-decoration: none; font-weight: 700;">在 GitHub 上查看此插件目录</a></p>
+        <p class="intro">适用于 Niantic Ingress Intel Map 的 Portal 名称可视化插件。</p>
+        <p class="summary"><strong>All Portal Names</strong> 是对原始 <strong>Portal Names</strong> 行为的增强。它可以绕过默认的标签碰撞隐藏机制，让更多 Portal 名称持续显示出来，特别适合在规划密集区域时保留更高的可读性。</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/all-portal-names">在 GitHub 上查看此插件目录</a> |
+            <a href="https://gongjupal.com/ingress/index_zh-cn.html">查看全部 IITC 插件</a>
+        </p>
 
-        <p><strong>All Portal Names</strong> 是对原始 "Portal Names" 插件的增强款。它允许用户在地图上强制显示所有 Portal 名称，绕过默认的碰撞检测机制（该机制在大范围 Portal 密集分布时会自动隐藏重叠的标签）。</p>
-        
-        <h2>功能特性</h2>
-        <ul>
-            <li><strong>碰撞检测绕过：</strong> 开启后，无论区域内 Portal 有多密集，都会显示每一个名称。</li>
-            <li><strong>缩放等级门槛：</strong> 设置特定的缩放等级来触发“显示全部”行为，防止在远距离视角下地图被文字淹没。</li>
-            <li><strong>设置持久化：</strong> 您的偏好设置将自动保存到浏览器的 <code>localStorage</code> 中。</li>
-            <li><strong>快速开关：</strong> 直接在 IITC 侧边栏（Toolbox）中访问设置对话框。</li>
-        </ul>
+        <section aria-labelledby="who">
+            <h2 id="who">适合哪些用户</h2>
+            <p>这个插件适合经常在高密度 Portal 区域作图、规划控场，或者只是希望地图上保留更多名称标签的玩家。尤其当默认碰撞隐藏机制把你仍然想看的 Portal 名称遮掉时，这个插件就很有价值。</p>
+        </section>
 
-        <h2>理解缩放等级 (Zoom Levels)</h2>
-        <p>Ingress Intel (及 IITC) 的缩放等级代表了地图的放大倍率。数字越大，表示您距离地面越近。</p>
-        
-        <table class="zoom-table">
-            <thead>
-                <tr>
-                    <th>缩放等级</th>
-                    <th>Intel 数据详情</th>
-                    <th>视觉语境描述</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>13 - 14</td>
-                    <td>主要的 Link/Field</td>
-                    <td>城市视图。远距离。</td>
-                </tr>
-                <tr>
-                    <td>15</td>
-                    <td>L4+ Portal</td>
-                    <td>社区/邻里级别。</td>
-                </tr>
-                <tr>
-                    <td>16</td>
-                    <td>所有 Portal</td>
-                    <td>街道视图。<strong>默认</strong>推荐的门槛等级。</td>
-                </tr>
-                <tr>
-                    <td>17 - 18</td>
-                    <td>详细数据</td>
-                    <td>街区视图。极其拥挤的区域。</td>
-                </tr>
-                <tr>
-                    <td>20+</td>
-                    <td>微观数据</td>
-                    <td>单个 Portal 的精确位置。</td>
-                </tr>
-            </tbody>
-        </table>
+        <section aria-labelledby="features">
+            <h2 id="features">核心功能</h2>
+            <ul class="feature-list">
+                <li><strong>绕过标签碰撞隐藏：</strong> 启用后，在拥挤区域也会尽量显示所有 Portal 名称。</li>
+                <li><strong>缩放等级阈值：</strong> 可以设置“从哪个缩放等级开始显示全部名称”。</li>
+                <li><strong>设置持久化：</strong> 偏好设置保存到浏览器 <code>localStorage</code> 中。</li>
+                <li><strong>Toolbox 快速入口：</strong> 可直接从 IITC 侧边栏打开设置。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="zoom">
+            <h2 id="zoom">理解缩放等级</h2>
+            <p>Ingress Intel 和 IITC 的缩放等级数字越大，表示地图越接近地面。合适的阈值取决于你本地 Portal 密度，以及你愿意接受多少文字拥挤。</p>
+            <table class="zoom-table">
+                <thead>
+                    <tr>
+                        <th>缩放等级</th>
+                        <th>Intel 数据细节</th>
+                        <th>视觉语境</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>13 - 14</td>
+                        <td>主要 Link 和 Field</td>
+                        <td>城市级远距离视图。</td>
+                    </tr>
+                    <tr>
+                        <td>15</td>
+                        <td>L4+ Portal</td>
+                        <td>社区级视图。</td>
+                    </tr>
+                    <tr>
+                        <td>16</td>
+                        <td>所有 Portal</td>
+                        <td>街道视图，也是默认推荐阈值。</td>
+                    </tr>
+                    <tr>
+                        <td>17 - 18</td>
+                        <td>高细节</td>
+                        <td>高密度街区级规划区域。</td>
+                    </tr>
+                    <tr>
+                        <td>20+</td>
+                        <td>微观细节</td>
+                        <td>单个 Portal 精细定位。</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
 
         <div class="note">
-            <p><strong>为什么要设置门槛？</strong> 在缩放等级为 13 或 14 时，地图上可能出现数以千计的 Portal。如果强制显示全部名称，不仅会导致地图被文字完全覆盖，还可能显著拖慢您的浏览器性能。建议将门槛设置为 <strong>16 或更高</strong>。</p>
+            <p><strong>为什么需要阈值？</strong> 在 <strong>13</strong> 或 <strong>14</strong> 这种缩放等级下，地图上可能同时出现成千上万个 Portal。强制显示全部名称不仅会让地图被文字覆盖，还可能拖慢浏览器。通常建议把阈值设在 <strong>16 或更高</strong>。</p>
         </div>
 
-        <h2>如何使用</h2>
-        <ol>
-            <li>在 IITC 侧边栏（Toolbox）中找到 <strong>"All Portal Names"</strong> 链接并点击。</li>
-            <li>勾选 <strong>"Enable showing ALL portal names"</strong> (显示所有 Portal 名称)。</li>
-            <li>设置 <strong>Minimum Zoom Level</strong> (最小缩放等级，例如：16)。</li>
-            <li>点击 <strong>Save</strong> (保存)。地图会立即刷新并按照新规则显示标签。</li>
-        </ol>
+        <section aria-labelledby="usage">
+            <h2 id="usage">如何使用</h2>
+            <ol>
+                <li>从 IITC toolbox 打开 <strong>All Portal Names</strong>。</li>
+                <li>启用 <strong>显示全部 Portal 名称</strong> 选项。</li>
+                <li>设置 <strong>Minimum Zoom Level</strong>，例如 <code>16</code>。</li>
+                <li>保存设置并让地图刷新。</li>
+            </ol>
+        </section>
 
-        <h2>更新日志</h2>
-        <h3>版本 0.5.0</h3>
-        <ul>
-            <li>首个独立发布版本。</li>
-            <li>新增设置对话框（包含启用/禁用开关）。</li>
-            <li>新增缩放等级门槛控制。</li>
-            <li>优化了不同缩放行为下的碰撞逻辑处理。</li>
-        </ul>
-    </div>
+        <section aria-labelledby="faq">
+            <h2 id="faq">常见问题</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">为什么不直接在所有缩放等级都显示全部名称？</span> 因为大范围视图会变得难以阅读，而且会明显拖慢页面性能。</li>
+                <li><span class="faq-q">最合适的默认阈值是多少？</span> 对大多数玩家来说，<code>16</code> 是最稳妥的起点，既能显示所有 Portal，又不至于让城市视图过载。</li>
+                <li><span class="faq-q">设置会一直保留吗？</span> 会，除非你清除了浏览器的本地站点数据。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="related">
+            <h2 id="related">相关插件</h2>
+            <ul class="related-list">
+                <li><a href="https://gongjupal.com/ingress/homogeneous-fields/index_zh-cn.html" style="color:#ffce00;">Homogeneous Fields</a> 在高密度控场三角区域中，会受益于更清晰的 Portal 标签显示。</li>
+                <li><a href="https://gongjupal.com/ingress/fanfield-planner/index_zh-cn.html" style="color:#ffce00;">Fanfield Planner</a> 在底边点较多时，也会因为 Portal 名称持续可见而更容易操作。</li>
+                <li><a href="https://gongjupal.com/ingress/portal-afterimage/index_zh-cn.html" style="color:#ffce00;">Portal Afterimage</a> 则从另一种角度提升 Portal 可见性，它保留的是本地已知 Portal 的可视记忆。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="changelog">
+            <h2 id="changelog">更新日志</h2>
+            <h3>版本 0.5.0</h3>
+            <ul class="feature-list">
+                <li>首个独立发布版本。</li>
+                <li>加入了带启用 / 禁用开关的设置对话框。</li>
+                <li>加入缩放等级阈值配置。</li>
+                <li>调整了不同缩放行为下的标签碰撞逻辑。</li>
+            </ul>
+        </section>
+    </main>
 </body>
 </html>
