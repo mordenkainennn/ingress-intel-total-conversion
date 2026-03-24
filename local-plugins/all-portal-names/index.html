@@ -3,185 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC Plugin: All Portal Names</title>
+    <title>All Portal Names for IITC | Ingress Label Visibility Plugin</title>
+    <meta name="description" content="All Portal Names is an IITC plugin for Niantic's Ingress Intel Map that forces portal name labels to stay visible past collision limits, with a configurable zoom threshold.">
+    <link rel="canonical" href="https://gongjupal.com/ingress/all-portal-names/index.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/all-portal-names/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/all-portal-names/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/all-portal-names/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/all-portal-names/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
+    <meta property="og:title" content="All Portal Names for IITC | Ingress Label Visibility Plugin">
+    <meta property="og:description" content="Force portal names to stay visible on Niantic's Ingress Intel Map, with a zoom threshold that helps control clutter in dense areas.">
+    <meta property="og:url" content="https://gongjupal.com/ingress/all-portal-names/index.html">
+    <meta property="og:locale" content="en_US">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="All Portal Names for IITC | Ingress Label Visibility Plugin">
+    <meta name="twitter:description" content="An IITC visibility plugin for Ingress agents that bypasses label collision hiding and lets you configure when all portal names appear.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "All Portal Names",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "All Portal Names is an IITC plugin for Niantic's Ingress Intel Map that forces portal name labels to remain visible beyond the default collision detection rules.",
+      "url": "https://gongjupal.com/ingress/all-portal-names/index.html",
+      "softwareVersion": "0.5.0",
+      "inLanguage": "en",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/all-portal-names"
+    }
+    </script>
     <style>
-        body {
-            background-color: #0e1111;
-            color: #eee;
-            font-family: 'Roboto', sans-serif;
-            font-size: 16px;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
-        .lang-switch {
-            position: fixed;
-            top: 20px;
-            right: 30px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #0ff;
-            z-index: 1000;
-        }
-        .lang-switch a {
-            color: #ffce00;
-            text-decoration: none;
-            font-family: 'Coda', cursive;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background-color: rgba(10, 25, 30, 0.85);
-            border: 1px solid #0ff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            padding: 25px 40px;
-            border-radius: 5px;
-        }
-        h1, h2, h3 {
-            font-family: 'Coda', cursive;
-            color: #0ff;
-            text-transform: uppercase;
-            text-shadow: 0 0 5px #0ff;
-        }
-        h1 {
-            text-align: center;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-        h2 {
-            font-size: 1.8em;
-            border-bottom: 1px solid #0aa;
-            padding-bottom: 10px;
-            margin-top: 30px;
-        }
-        h3 {
-             font-size: 1.2em;
-             color: #ffce00;
-             margin-top: 20px;
-        }
-        p, li {
-            color: #ccc;
-        }
-        strong {
-            color: #ffce00;
-        }
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        ul li {
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 8px;
-            padding-left: 25px;
-            margin-bottom: 10px;
-        }
-        .zoom-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background: rgba(0, 0, 0, 0.3);
-        }
-        .zoom-table th, .zoom-table td {
-            border: 1px solid #333;
-            padding: 10px;
-            text-align: left;
-        }
-        .zoom-table th {
-            color: #ffce00;
-            background: rgba(255, 206, 0, 0.1);
-        }
-        .note {
-            background-color: rgba(255, 206, 0, 0.1);
-            border: 1px solid #ffce00;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 4px;
-        }
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', cursive; margin: 0 5px; }
+        .container { max-width: 900px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', cursive; text-shadow: 0 0 5px #0ff; }
+        h1 { color: #0ff; text-align: center; font-size: 2.5em; margin-bottom: 18px; text-transform: uppercase; }
+        h2 { color: #0ff; font-size: 1.8em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 30px; }
+        h3 { font-size: 1.2em; color: #ffce00; margin-top: 20px; }
+        p, li, td, th { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; font-family: 'Courier New', Courier, monospace; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { margin-bottom: 10px; color: #bbb; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li { margin-bottom: 12px; }
+        .zoom-table { width: 100%; border-collapse: collapse; margin: 20px 0; background: rgba(0, 0, 0, 0.3); }
+        .zoom-table th, .zoom-table td { border: 1px solid #333; padding: 10px; text-align: left; }
+        .zoom-table th { color: #ffce00; background: rgba(255, 206, 0, 0.1); }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 15px; margin-top: 20px; border-radius: 4px; }
+        .faq-q { color: #ffce00; font-weight: 700; }
     </style>
 </head>
 <body>
 
     <div class="lang-switch">
-        <a href="index_zh-cn.html">简体中文</a> | <a href="index_ja.html">日本語</a>
+        <a href="https://gongjupal.com/ingress/all-portal-names/index_zh-cn.html" lang="zh-CN">简体中文</a> |
+        <a href="https://gongjupal.com/ingress/all-portal-names/index_ja.html" lang="ja">日本語</a>
     </div>
 
-    <div class="container">
+    <main class="container">
         <h1>All Portal Names</h1>
-        <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/all-portal-names" style="color: #ffce00; text-decoration: none; font-weight: 700;">View this plugin directory on GitHub</a></p>
+        <p class="intro">A portal label visibility plugin for IITC on Niantic&apos;s Ingress Intel Map.</p>
+        <p class="summary"><strong>All Portal Names</strong> enhances the original <strong>Portal Names</strong> behavior by forcing portal labels to remain visible even when the default collision system would hide overlapping names. It is useful for agents who want more readable portal identification in planning-heavy map views.</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/all-portal-names">View this plugin directory on GitHub</a> |
+            <a href="https://gongjupal.com/ingress/index.html">See all IITC plugins</a>
+        </p>
 
-        <p><strong>All Portal Names</strong> is an enhancement for the original "Portal Names" plugin. It allows users to force display all portal names on the map, bypassing the default collision detection that hides overlapping labels.</p>
-        
-        <h2>Features</h2>
-        <ul>
-            <li><strong>Anti-Collision Bypass:</strong> When enabled, shows every portal name regardless of how crowded the area is.</li>
-            <li><strong>Zoom-Level Threshold:</strong> Set a specific zoom level to trigger the "Show All" behavior, preventing map clutter at far distances.</li>
-            <li><strong>Persistent Settings:</strong> Your preferences are saved in your browser's <code>localStorage</code>.</li>
-            <li><strong>Quick Toggle:</strong> Access settings directly from the IITC sidebar (Toolbox).</li>
-        </ul>
+        <section aria-labelledby="who">
+            <h2 id="who">Who This Plugin Is For</h2>
+            <p>This plugin is best for agents who work in dense portal areas, compare field plans, or simply want more labels visible while browsing the Intel Map. It is especially helpful when default collision hiding removes names you still want to inspect.</p>
+        </section>
 
-        <h2>Understanding Zoom Levels</h2>
-        <p>Zoom levels in Ingress Intel (and IITC) represent the magnification of the map. Higher numbers mean you are zoomed in closer to the ground.</p>
-        
-        <table class="zoom-table">
-            <thead>
-                <tr>
-                    <th>Zoom Level</th>
-                    <th>Intel Data Detail</th>
-                    <th>Visibility Context</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>13 - 14</td>
-                    <td>Major Link/Fields</td>
-                    <td>City view. Far distance.</td>
-                </tr>
-                <tr>
-                    <td>15</td>
-                    <td>L4+ Portals</td>
-                    <td>Neighborhood view.</td>
-                </tr>
-                <tr>
-                    <td>16</td>
-                    <td>All Portals</td>
-                    <td>Street view. This is the <strong>default</strong> recommended threshold.</td>
-                </tr>
-                <tr>
-                    <td>17 - 18</td>
-                    <td>High Detail</td>
-                    <td>Block view. Extremely crowded areas.</td>
-                </tr>
-                <tr>
-                    <td>20+</td>
-                    <td>Micro Detail</td>
-                    <td>Individual portal precision.</td>
-                </tr>
-            </tbody>
-        </table>
+        <section aria-labelledby="features">
+            <h2 id="features">Key Features</h2>
+            <ul class="feature-list">
+                <li><strong>Collision bypass:</strong> Shows every portal name once the feature is active, even in crowded map views.</li>
+                <li><strong>Zoom-level threshold:</strong> Lets you choose the minimum zoom at which the “show all names” behavior starts.</li>
+                <li><strong>Persistent settings:</strong> Saves your preferences in browser <code>localStorage</code>.</li>
+                <li><strong>Toolbox access:</strong> Opens directly from the IITC sidebar for quick changes.</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="zoom">
+            <h2 id="zoom">Understanding Zoom Levels</h2>
+            <p>Ingress Intel and IITC use higher zoom numbers for closer map detail. The right threshold depends on how dense your local portal map is and how much text clutter you can tolerate.</p>
+            <table class="zoom-table">
+                <thead>
+                    <tr>
+                        <th>Zoom Level</th>
+                        <th>Intel Data Detail</th>
+                        <th>Visibility Context</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>13 - 14</td>
+                        <td>Major links and fields</td>
+                        <td>City-scale overview with far-distance visibility.</td>
+                    </tr>
+                    <tr>
+                        <td>15</td>
+                        <td>L4+ portals</td>
+                        <td>Neighborhood view.</td>
+                    </tr>
+                    <tr>
+                        <td>16</td>
+                        <td>All portals</td>
+                        <td>Street view and the default recommended threshold.</td>
+                    </tr>
+                    <tr>
+                        <td>17 - 18</td>
+                        <td>High detail</td>
+                        <td>Dense block-level planning areas.</td>
+                    </tr>
+                    <tr>
+                        <td>20+</td>
+                        <td>Micro detail</td>
+                        <td>Individual portal precision.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
 
         <div class="note">
-            <p><strong>Why use a threshold?</strong> At zoom levels like 13 or 14, thousands of portals may be visible. Showing all names would cover the entire map in text and potentially slow down your browser. We recommend setting the threshold to <strong>16 or higher</strong>.</p>
+            <p><strong>Why use a threshold?</strong> At zoom levels like <strong>13</strong> or <strong>14</strong>, thousands of portals can be visible at once. Forcing every label to appear can cover the map in text and slow your browser. A threshold of <strong>16 or higher</strong> is usually the safest choice.</p>
         </div>
 
-        <h2>How to Use</h2>
-        <ol>
-            <li>Find the <strong>"All Portal Names"</strong> link in the sidebar (Toolbox) and click it.</li>
-            <li>Check <strong>"Enable showing ALL portal names"</strong>.</li>
-            <li>Set the <strong>Minimum Zoom Level</strong> (e.g., 16).</li>
-            <li>Click <strong>Save</strong>. The map will refresh and labels will appear according to your rules.</li>
-        </ol>
+        <section aria-labelledby="usage">
+            <h2 id="usage">How to Use All Portal Names</h2>
+            <ol>
+                <li>Open the <strong>All Portal Names</strong> link from the IITC toolbox.</li>
+                <li>Enable <strong>showing all portal names</strong>.</li>
+                <li>Set a <strong>Minimum Zoom Level</strong>, such as <code>16</code>.</li>
+                <li>Save the setting and let the map refresh.</li>
+            </ol>
+        </section>
 
-        <h2>Changelog</h2>
-        <h3>Version 0.5.0</h3>
-        <ul>
-            <li>Initial standalone release.</li>
-            <li>Added Settings dialog with enable/disable toggle.</li>
-            <li>Added Zoom Level threshold control.</li>
-            <li>Fixed collision logic for various zoom behaviors.</li>
-        </ul>
-    </div>
+        <section aria-labelledby="faq">
+            <h2 id="faq">FAQ</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">Why not always show all names at every zoom?</span> Because large-scale views can become unreadable and slow when every visible portal label is forced onto the map.</li>
+                <li><span class="faq-q">What is the best default threshold?</span> For most agents, <code>16</code> is the best starting point because it reveals all portals without overwhelming city-scale views.</li>
+                <li><span class="faq-q">Does this plugin store settings permanently?</span> It stores them in your browser&apos;s localStorage, so they persist until you clear local site data.</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="related">
+            <h2 id="related">Related Plugins</h2>
+            <ul class="related-list">
+                <li><a href="https://gongjupal.com/ingress/homogeneous-fields/index.html" style="color:#ffce00;">Homogeneous Fields</a> benefits from clearer label visibility in dense planning triangles.</li>
+                <li><a href="https://gongjupal.com/ingress/fanfield-planner/index.html" style="color:#ffce00;">Fanfield Planner</a> becomes easier to use when crowded base portals remain labeled.</li>
+                <li><a href="https://gongjupal.com/ingress/portal-afterimage/index.html" style="color:#ffce00;">Portal Afterimage</a> improves portal visibility in a different way by preserving locally known portal markers.</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="changelog">
+            <h2 id="changelog">Changelog</h2>
+            <h3>Version 0.5.0</h3>
+            <ul class="feature-list">
+                <li>Initial standalone release.</li>
+                <li>Added a settings dialog with enable and disable controls.</li>
+                <li>Added zoom-level threshold configuration.</li>
+                <li>Adjusted collision logic for different zoom behaviors.</li>
+            </ul>
+        </section>
+    </main>
 </body>
 </html>

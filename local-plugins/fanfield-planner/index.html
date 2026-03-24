@@ -3,144 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC Plugin: Fanfield Planner</title>
+    <title>Fanfield Planner for IITC | Ingress Fanfield Planning Plugin</title>
+    <meta name="description" content="Fanfield Planner is an IITC plugin for Niantic's Ingress Intel Map that plans anchor-based fanfields with two-phase execution, triangle scanning, SBUL limits, and map overlays.">
+    <link rel="canonical" href="https://gongjupal.com/ingress/fanfield-planner/index.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/fanfield-planner/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/fanfield-planner/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/fanfield-planner/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/fanfield-planner/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
+    <meta property="og:title" content="Fanfield Planner for IITC | Ingress Fanfield Planning Plugin">
+    <meta property="og:description" content="Plan anchor-based fanfields on Niantic's Ingress Intel Map with triangle scanning, two-phase execution logic, SBUL-aware limits, and dedicated overlays.">
+    <meta property="og:url" content="https://gongjupal.com/ingress/fanfield-planner/index.html">
+    <meta property="og:locale" content="en_US">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Fanfield Planner for IITC | Ingress Fanfield Planning Plugin">
+    <meta name="twitter:description" content="An IITC planning plugin for Ingress agents that builds fanfields with Included/Excluded portal curation, Phase 1 and Phase 2 logic, and SBUL caps.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Fanfield Planner",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Fanfield Planner is an IITC plugin for Niantic's Ingress Intel Map that plans anchor-based fanfields with triangle scanning, two-phase execution, and optional SBUL limits.",
+      "url": "https://gongjupal.com/ingress/fanfield-planner/index.html",
+      "softwareVersion": "2.3.1",
+      "inLanguage": "en",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/fanfield-planner"
+    }
+    </script>
     <style>
         body { background-color: #0e1111; color: #eee; font-family: 'Roboto', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
         .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
-        .lang-switch a, .lang-switch span { color: #ffce00; text-decoration: none; font-family: 'Coda', cursive; }
-        .lang-switch span { color: #fff; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', cursive; margin: 0 5px; }
         .container { max-width: 980px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
-        h1, h2, h3 { font-family: 'Coda', cursive; color: #0ff; text-transform: uppercase; text-shadow: 0 0 5px #0ff; }
-        h1 { text-align: center; font-size: 2.4em; margin-bottom: 20px; }
-        h2 { font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 32px; }
+        h1, h2, h3 { font-family: 'Coda', cursive; text-shadow: 0 0 5px #0ff; }
+        h1 { color: #0ff; text-align: center; font-size: 2.4em; margin-bottom: 18px; text-transform: uppercase; }
+        h2 { color: #0ff; font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 32px; }
         h3 { font-size: 1.1em; color: #ffce00; margin-top: 20px; }
         p, li { color: #ccc; }
         strong { color: #ffce00; }
         code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; font-family: 'Courier New', Courier, monospace; }
-        ul { list-style-type: none; padding-left: 0; }
-        ul li { background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px; padding-left: 25px; margin-bottom: 10px; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { margin-bottom: 10px; color: #bbb; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li { margin-bottom: 12px; }
         .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 14px; border-radius: 4px; margin: 16px 0; }
         .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .panel { background: rgba(0, 0, 0, 0.25); border: 1px solid #244; border-radius: 4px; padding: 12px; }
-        .changelog-item { margin-bottom: 18px; }
+        .faq-q { color: #ffce00; font-weight: 700; }
         @media (max-width: 900px) { .lang-switch { position: static; margin: 0 auto 12px auto; width: fit-content; } .container { padding: 20px; } .panel-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <div class="lang-switch">
-        <span>English</span> | <a href="index_zh-cn.html">简体中文</a> | <a href="index_ja.html">日本語</a>
+        <a href="https://gongjupal.com/ingress/fanfield-planner/index_zh-cn.html" lang="zh-CN">简体中文</a> |
+        <a href="https://gongjupal.com/ingress/fanfield-planner/index_ja.html" lang="ja">日本語</a>
     </div>
-    <div class="container">
+    <main class="container">
         <h1>Fanfield Planner</h1>
-        <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/fanfield-planner" style="color: #ffce00; text-decoration: none; font-weight: 700;">View this plugin directory on GitHub</a></p>
-        <p><strong>Fanfield Planner</strong> is an IITC plugin for planning anchor-based fanfields and pincushion-style builds. It lets you define a triangle, scan candidate portals inside it, curate the base set, and generate a two-phase execution plan with overlays and text instructions.</p>
+        <p class="intro">An anchor-based fanfield planning plugin for IITC on Niantic&apos;s Ingress Intel Map.</p>
+        <p class="summary"><strong>Fanfield Planner</strong> helps Ingress agents build anchor-based fanfields and pincushion-style operations. It scans portals inside a planning triangle, lets you curate the base portal set, and generates a two-phase execution plan with overlays, route summaries, and optional SBUL-aware limits.</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/fanfield-planner">View this plugin directory on GitHub</a> |
+            <a href="https://gongjupal.com/ingress/index.html">See all IITC plugins</a>
+        </p>
+
+        <section aria-labelledby="who">
+            <h2 id="who">Who This Plugin Is For</h2>
+            <p>This plugin is useful for agents who plan structured anchor-based fielding rather than ad hoc link throwing. It is especially helpful when you want a curated fanfield base, a clear split between setup and reflection phases, and a plan that respects outgoing link budgets.</p>
+        </section>
+
         <div class="note">
             <p><strong>Current focus:</strong> Phase 1 builds a non-crossing base graph from the curated portal list. Phase 2 returns to the anchor and reflects into that graph. You can either ignore outgoing-link limits, or enable SBUL cap mode and let the planner maximize fields within the configured limit.</p>
         </div>
 
-        <h2>What It Does</h2>
-        <ul>
-            <li>Select one anchor and two outer corners to define the planning triangle.</li>
-            <li>Scan all loaded portals inside the triangle and manage them through Included and Excluded lists.</li>
-            <li>Lock triangle vertices while reviewing candidates or selecting items from the lists.</li>
-            <li>Highlight a candidate portal from either list directly on the map.</li>
-            <li>Generate a Phase 1 route that builds a non-crossing base structure.</li>
-            <li>Generate a Phase 2 reflection plan from the anchor against the actual Phase 1 base graph.</li>
-            <li>Optionally cap Phase 2 by SBUL count from 0 to 4, using the available outgoing-link budget to maximize fields.</li>
-            <li>Draw links and fields on dedicated IITC layers and export readable step-by-step text.</li>
-        </ul>
+        <section aria-labelledby="features">
+            <h2 id="features">Key Features</h2>
+            <ul class="feature-list">
+                <li><strong>Triangle-based planning:</strong> Select one anchor and two outer corners to define the working triangle.</li>
+                <li><strong>Portal curation:</strong> Scan currently loaded portals inside the triangle and move them between <strong>Included</strong> and <strong>Excluded</strong> lists.</li>
+                <li><strong>Phase-based execution:</strong> Generate a non-crossing Phase 1 base graph, then a Phase 2 reflection plan from the anchor.</li>
+                <li><strong>SBUL-aware limits:</strong> Optionally cap Phase 2 with <strong>0 to 4 SBUL</strong> and maximize fields inside the outgoing-link budget.</li>
+                <li><strong>Map overlays:</strong> Draw dedicated Phase 1 and Phase 2 link and field layers, plus highlight layers.</li>
+                <li><strong>Readable output:</strong> Export step-by-step text instructions, route summaries, and key requirements.</li>
+            </ul>
+        </section>
 
-        <h2>Planning Workflow</h2>
-        <ol style="padding-left: 28px;">
-            <li>Open <code>Fanfield Planner</code> from the toolbox.</li>
-            <li>Select the anchor portal and two outer triangle corners.</li>
-            <li>Press <code>Scan Triangle</code> to discover all currently loaded portals inside the triangle.</li>
-            <li>Move portals between <code>Included</code> and <code>Excluded</code> until the candidate set matches the intended base graph.</li>
-            <li>Optionally enable <code>Limit Phase 2 by SBUL</code> and choose a value from 0 to 4.</li>
-            <li>Press <code>Plan Fanfield</code> to generate the route, overlays, summary, and key requirements.</li>
-        </ol>
+        <section aria-labelledby="workflow">
+            <h2 id="workflow">Planning Workflow</h2>
+            <ol>
+                <li>Open <code>Fanfield Planner</code> from the IITC toolbox.</li>
+                <li>Select the anchor portal and two outer triangle corners.</li>
+                <li>Press <code>Scan Triangle</code> to collect all currently loaded portals inside the triangle.</li>
+                <li>Move portals between <code>Included</code> and <code>Excluded</code> until the base set matches your intended fanfield.</li>
+                <li>If needed, enable <code>Limit Phase 2 by SBUL</code> and choose a value from <code>0</code> to <code>4</code>.</li>
+                <li>Press <code>Plan Fanfield</code> to generate overlays, summaries, and key requirements.</li>
+            </ol>
+        </section>
 
-        <h2>Algorithm Overview</h2>
-        <div class="panel-grid">
-            <div class="panel">
-                <h3>Phase 1</h3>
-                <p>Base portals are sorted around the anchor and traversed in the shorter direction. Each visited base links to the anchor and then greedily backlinks to earlier bases while rejecting any crossing link. The resulting graph is the actual structure used by Phase 2.</p>
+        <section aria-labelledby="algorithm">
+            <h2 id="algorithm">Algorithm Overview</h2>
+            <div class="panel-grid">
+                <div class="panel">
+                    <h3>Phase 1</h3>
+                    <p>Base portals are sorted around the anchor and traversed in the shorter direction. Each visited base links to the anchor and then greedily backlinks to earlier bases while rejecting any crossing link. The resulting graph is the actual structure used by Phase 2.</p>
+                </div>
+                <div class="panel">
+                    <h3>Phase 2</h3>
+                    <p>The planner returns to the anchor and reflects links into the Phase 1 graph. In unrestricted mode it throws as many anchor links as possible. In SBUL cap mode it limits outgoing links to <code>8 + 8 * SBUL</code> and greedily picks the subset and order that closes the most supported fields inside that cap.</p>
+                </div>
             </div>
-            <div class="panel">
-                <h3>Phase 2</h3>
-                <p>The planner returns to the anchor and reflects links into the Phase 1 graph. In unrestricted mode it throws as many anchor links as possible. In SBUL cap mode it limits the number of outgoing links to <code>8 + 8 * SBUL</code> and greedily chooses the reflection subset and order that closes the most supported fields within that cap.</p>
-            </div>
-        </div>
+        </section>
 
-        <h2>Map Layers</h2>
-        <ul>
-            <li><code>Fanfield Plan (Links Phase 1)</code></li>
-            <li><code>Fanfield Plan (Fields Phase 1)</code></li>
-            <li><code>Fanfield Plan (Links Phase 2)</code></li>
-            <li><code>Fanfield Plan (Fields Phase 2)</code></li>
-            <li><code>Fanfield Plan (Highlights)</code></li>
-        </ul>
+        <section aria-labelledby="layers">
+            <h2 id="layers">Map Layers</h2>
+            <ul class="feature-list">
+                <li><code>Fanfield Plan (Links Phase 1)</code></li>
+                <li><code>Fanfield Plan (Fields Phase 1)</code></li>
+                <li><code>Fanfield Plan (Links Phase 2)</code></li>
+                <li><code>Fanfield Plan (Fields Phase 2)</code></li>
+                <li><code>Fanfield Plan (Highlights)</code></li>
+            </ul>
+        </section>
 
-        <h2>Changelog</h2>
-        <div class="changelog-item">
+        <section aria-labelledby="faq">
+            <h2 id="faq">FAQ</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">What is the difference between Phase 1 and Phase 2?</span> Phase 1 builds the non-crossing base graph. Phase 2 returns to the anchor and reflects into that finished structure to close fields.</li>
+                <li><span class="faq-q">Why use Included and Excluded lists?</span> They let you refine the exact base portal set without redrawing the whole triangle or manually selecting every portal one by one.</li>
+                <li><span class="faq-q">What does the SBUL limit do?</span> It restricts the available outgoing links from the anchor in Phase 2, and the planner tries to maximize field count inside that budget.</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="related">
+            <h2 id="related">Related Plugins</h2>
+            <ul class="related-list">
+                <li><a href="https://gongjupal.com/ingress/homogeneous-fields/index.html" style="color:#ffce00;">Homogeneous Fields</a> is useful when you want a different structured fielding algorithm and execution style.</li>
+                <li><a href="https://gongjupal.com/ingress/overlay-planner/index.html" style="color:#ffce00;">Overlay Planner</a> helps compare fanfield geometry with other operation drawings.</li>
+                <li><a href="https://gongjupal.com/ingress/all-portal-names/index.html" style="color:#ffce00;">All Portal Names</a> can make dense planning triangles easier to read on the Intel Map.</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="changelog">
+            <h2 id="changelog">Changelog</h2>
             <h3>Version 2.3.1</h3>
-            <ul><li>Expanded the optional Phase 2 SBUL selector from 0-2 to 0-4 for coordinated team setups.</li></ul>
-        </div>
-        <div class="changelog-item">
+            <ul class="feature-list">
+                <li>Expanded the optional Phase 2 SBUL selector from <code>0-2</code> to <code>0-4</code> for coordinated team setups.</li>
+            </ul>
             <h3>Version 2.3.0</h3>
-            <ul><li>Added optional Phase 2 SBUL cap mode that maximizes fields within a configured outgoing-link limit.</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.2.1</h3>
-            <ul><li>Removed the obsolete manual base selection mode and kept Included and Excluded lists as the only base portal input.</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.2.0</h3>
-            <ul><li>Added triangle-based portal discovery with Included and Excluded lists so large fanfields can be curated without manual base selection.</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1.10</h3>
-            <ul><li>Warn when Phase 2 reflection requires SBUL mods for more than 8 outgoing links.</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1.9</h3>
-            <ul><li>Summary now includes total AP from links and fields.</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1.8</h3>
-            <ul><li>Summary now shows separate Phase 1 and Phase 2 link and field counts plus totals.</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1.7</h3>
-            <ul><li>Phase 2 now reflects against the full Phase 1 base graph and creates all closable fields.</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1.6</h3>
-            <ul><li>Phase 1 crosslink checks now validate against all previously planned links, not only anchor rays.</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1.5</h3>
-            <ul><li>Phase 1 now greedily backlinks to as many historical bases as possible with crosslink checks.</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1.4</h3>
-            <ul><li>Restored the 1.9-style planner UI and layer groups while keeping the current safe-mode planning logic.</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1.3</h3>
-            <ul><li>Fixed IITC dialog rendering by targeting the actual <code>#dialog-&lt;id&gt;</code> container.</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1.1</h3>
-            <ul><li>Corrected UserScript update and download URLs to point to the proper <code>master</code> branch.</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1</h3>
-            <ul><li>Initial release for fanfield planning.</li></ul>
-        </div>
-    </div>
+            <ul class="feature-list">
+                <li>Added optional Phase 2 SBUL cap mode that maximizes fields inside a configured outgoing-link limit.</li>
+            </ul>
+            <h3>Version 2.2.0 to 2.2.1</h3>
+            <ul class="feature-list">
+                <li>Added triangle-based portal discovery with Included and Excluded lists.</li>
+                <li>Removed the obsolete manual base selection mode.</li>
+            </ul>
+            <h3>Version 2.1.7 to 2.1.10</h3>
+            <ul class="feature-list">
+                <li>Improved Phase 2 reflection behavior against the full Phase 1 base graph.</li>
+                <li>Added summary improvements and SBUL requirement warnings.</li>
+            </ul>
+            <h3>Version 2.1.3 to 2.1.6</h3>
+            <ul class="feature-list">
+                <li>Fixed IITC dialog rendering and improved crosslink validation logic.</li>
+                <li>Made Phase 1 backlinking more complete while remaining non-crossing.</li>
+            </ul>
+        </section>
+    </main>
 </body>
 </html>

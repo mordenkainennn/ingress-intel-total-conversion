@@ -3,144 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC Plugin: Fanfield Planner</title>
+    <title>Fanfield Planner for IITC | Ingress ファンフィールド計画プラグイン</title>
+    <meta name="description" content="Fanfield Planner は Niantic Ingress Intel Map 向けの IITC プラグインで、三角形スキャン、2 フェーズ実行、SBUL 制限を使ってアンカー型 fanfield を計画できます。">
+    <link rel="canonical" href="https://gongjupal.com/ingress/fanfield-planner/index_ja.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/fanfield-planner/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/fanfield-planner/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/fanfield-planner/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/fanfield-planner/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
+    <meta property="og:title" content="Fanfield Planner for IITC | Ingress ファンフィールド計画プラグイン">
+    <meta property="og:description" content="Niantic Ingress Intel Map 上で、三角形スキャン、2 フェーズ実行、SBUL 上限を使ってアンカー型 fanfield を計画できます。">
+    <meta property="og:url" content="https://gongjupal.com/ingress/fanfield-planner/index_ja.html">
+    <meta property="og:locale" content="ja_JP">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Fanfield Planner for IITC | Ingress ファンフィールド計画プラグイン">
+    <meta name="twitter:description" content="Ingress エージェント向けの IITC 計画プラグイン。Included/Excluded ポータル整理、Phase 1 / Phase 2 ロジック、SBUL 制限に対応します。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Fanfield Planner",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Fanfield Planner は Niantic Ingress Intel Map 向けの IITC プラグインで、三角形スキャン、2 フェーズ実行、任意の SBUL 制限を使ってアンカー型 fanfield を計画します。",
+      "url": "https://gongjupal.com/ingress/fanfield-planner/index_ja.html",
+      "softwareVersion": "2.3.1",
+      "inLanguage": "ja",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/fanfield-planner"
+    }
+    </script>
     <style>
         body { background-color: #0e1111; color: #eee; font-family: 'Roboto', 'Noto Sans JP', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
         .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
-        .lang-switch a, .lang-switch span { color: #ffce00; text-decoration: none; font-family: 'Coda', cursive; }
-        .lang-switch span { color: #fff; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', 'Noto Sans JP', cursive; margin: 0 5px; }
         .container { max-width: 980px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
-        h1, h2, h3 { font-family: 'Coda', 'Noto Sans JP', cursive; color: #0ff; text-transform: uppercase; text-shadow: 0 0 5px #0ff; }
-        h1 { text-align: center; font-size: 2.4em; margin-bottom: 20px; }
-        h2 { font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 32px; }
+        h1, h2, h3 { font-family: 'Coda', 'Noto Sans JP', cursive; text-shadow: 0 0 5px #0ff; }
+        h1 { color: #0ff; text-align: center; font-size: 2.4em; margin-bottom: 18px; }
+        h2 { color: #0ff; font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 32px; }
         h3 { font-size: 1.1em; color: #ffce00; margin-top: 20px; }
         p, li { color: #ccc; }
         strong { color: #ffce00; }
         code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; font-family: 'Courier New', Courier, monospace; }
-        ul { list-style-type: none; padding-left: 0; }
-        ul li { background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px; padding-left: 25px; margin-bottom: 10px; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { margin-bottom: 10px; color: #bbb; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li { margin-bottom: 12px; }
         .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 14px; border-radius: 4px; margin: 16px 0; }
         .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .panel { background: rgba(0, 0, 0, 0.25); border: 1px solid #244; border-radius: 4px; padding: 12px; }
-        .changelog-item { margin-bottom: 18px; }
+        .faq-q { color: #ffce00; font-weight: 700; }
         @media (max-width: 900px) { .lang-switch { position: static; margin: 0 auto 12px auto; width: fit-content; } .container { padding: 20px; } .panel-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <div class="lang-switch">
-        <a href="index.html">English</a> | <a href="index_zh-cn.html">简体中文</a> | <span>日本語</span>
+        <a href="https://gongjupal.com/ingress/fanfield-planner/index.html" lang="en">English</a> |
+        <a href="https://gongjupal.com/ingress/fanfield-planner/index_zh-cn.html" lang="zh-CN">简体中文</a>
     </div>
-    <div class="container">
+    <main class="container">
         <h1>Fanfield Planner</h1>
-        <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/fanfield-planner" style="color: #ffce00; text-decoration: none; font-weight: 700;">GitHub でこのプラグインのディレクトリを見る</a></p>
-        <p><strong>Fanfield Planner</strong> は、IITC 上でアンカー型ファンフィールドや pincushion 構成を計画するためのプラグインです。三角形を定義し、その内部の候補 Portal を走査して整理し、2 フェーズの実行計画、マップオーバーレイ、テキスト手順を生成できます。</p>
+        <p class="intro">Niantic Ingress Intel Map 向けのアンカー型 fanfield 計画プラグインです。</p>
+        <p class="summary"><strong>Fanfield Planner</strong> は、Ingress エージェントがアンカー型 fanfield や pincushion 構成を計画するためのツールです。三角形内の Portal を走査し、ベース集合を整理した上で、2 フェーズの実行手順、集計、オーバーレイ、そして任意の SBUL 上限制御を提供します。</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/fanfield-planner">GitHub でこのプラグインのディレクトリを見る</a> |
+            <a href="https://gongjupal.com/ingress/index_ja.html">すべての IITC プラグインを見る</a>
+        </p>
+
+        <section aria-labelledby="who">
+            <h2 id="who">このプラグインが向いている人</h2>
+            <p>場当たり的にリンクを引くのではなく、アンカー中心の fanfield を段階的に設計したいエージェント向けです。準備フェーズと反射フェーズを分けて考えたい場合や、底辺ポータル集合や外向きリンク上限を細かく管理したい場合に役立ちます。</p>
+        </section>
+
         <div class="note">
             <p><strong>現在の重点:</strong> Phase 1 では、選別した候補から交差しないベースグラフを構築します。Phase 2 ではアンカーへ戻ってそのグラフに反射します。外向きリンク数の制限を無視することも、SBUL 制限モードを有効にして上限内で field 数を最大化することもできます。</p>
         </div>
 
-        <h2>主な機能</h2>
-        <ul>
-            <li>アンカー 1 点と外枠 2 点を選び、計画対象の三角形を定義できます。</li>
-            <li>三角形内で現在読み込まれているすべての Portal を走査し、Included / Excluded リストで候補を整理できます。</li>
-            <li>候補確認中に Anchor や外枠点を誤って変更しないよう、三角形頂点をロックできます。</li>
-            <li>リスト内で選んだ Portal をマップ上でハイライト表示できます。</li>
-            <li>交差しない Phase 1 のベース構築ルートを生成します。</li>
-            <li>実際の Phase 1 ベースグラフに基づく Phase 2 の反射計画を生成します。</li>
-            <li>Phase 2 の SBUL 制限モードを任意で有効化でき、SBUL 0 から 4 の範囲で外向きリンク予算内の field 数最大化を試みます。</li>
-            <li>各フェーズの links / fields を専用レイヤーに描画し、実行しやすいテキスト手順も出力します。</li>
-        </ul>
+        <section aria-labelledby="features">
+            <h2 id="features">主な機能</h2>
+            <ul class="feature-list">
+                <li><strong>三角形ベースの計画:</strong> アンカー 1 点と外枠 2 点を選び、作業三角形を定義します。</li>
+                <li><strong>ポータル整理:</strong> 三角形内の現在読み込み済み Portal を走査し、<strong>Included</strong> / <strong>Excluded</strong> リストでベース候補を調整できます。</li>
+                <li><strong>2 フェーズ実行:</strong> Phase 1 で交差しないベースグラフを作り、Phase 2 でアンカーから反射します。</li>
+                <li><strong>SBUL 対応制限:</strong> <strong>0 から 4 SBUL</strong> の範囲で Phase 2 の外向きリンク上限を設定し、その範囲で field 数最大化を試みます。</li>
+                <li><strong>地図オーバーレイ:</strong> Phase 1 / Phase 2 の links、fields、highlight を専用レイヤーに描画します。</li>
+                <li><strong>読みやすい出力:</strong> 実行手順、集計、キー必要数をテキストで確認できます。</li>
+            </ul>
+        </section>
 
-        <h2>使用手順</h2>
-        <ol style="padding-left: 28px;">
-            <li>toolbox から <code>Fanfield Planner</code> を開きます。</li>
-            <li>Anchor を選択し、続けて外三角の頂点 2 点を選びます。</li>
-            <li><code>Scan Triangle</code> を押して、三角形内の現在読み込み済み Portal を収集します。</li>
-            <li><code>Included</code> と <code>Excluded</code> の間で Portal を移動し、意図したベース集合に調整します。</li>
-            <li>必要なら <code>Limit Phase 2 by SBUL</code> を有効化し、0 から 4 の値を選びます。</li>
-            <li><code>Plan Fanfield</code> を押して、ルート、オーバーレイ、集計、必要キー数を生成します。</li>
-        </ol>
+        <section aria-labelledby="workflow">
+            <h2 id="workflow">使用手順</h2>
+            <ol>
+                <li>IITC toolbox から <code>Fanfield Planner</code> を開きます。</li>
+                <li>Anchor Portal と外三角の頂点 2 点を選びます。</li>
+                <li><code>Scan Triangle</code> を押して、三角形内の読み込み済み Portal を収集します。</li>
+                <li><code>Included</code> と <code>Excluded</code> の間で Portal を移動し、底辺集合を調整します。</li>
+                <li>必要なら <code>Limit Phase 2 by SBUL</code> を有効にして <code>0</code> から <code>4</code> を選びます。</li>
+                <li><code>Plan Fanfield</code> を押して、オーバーレイ、集計、キー必要数を生成します。</li>
+            </ol>
+        </section>
 
-        <h2>アルゴリズム概要</h2>
-        <div class="panel-grid">
-            <div class="panel">
-                <h3>Phase 1</h3>
-                <p>ベース Portal はアンカー周りの角度で並べ替えられ、移動距離が短い向きで訪問されます。各ベース点はまずアンカーへリンクし、その後、交差しない範囲で過去のベース点へできるだけ多くバックリンクします。ここで作られたグラフが、そのまま Phase 2 の反射対象になります。</p>
+        <section aria-labelledby="algorithm">
+            <h2 id="algorithm">アルゴリズム概要</h2>
+            <div class="panel-grid">
+                <div class="panel">
+                    <h3>Phase 1</h3>
+                    <p>ベース Portal はアンカー周りの角度で並び替えられ、より短い方向に巡回します。各ベースはまずアンカーへリンクし、その後、交差しない範囲でできるだけ多く過去ベースへバックリンクします。ここでできたグラフが、そのまま Phase 2 の対象になります。</p>
+                </div>
+                <div class="panel">
+                    <h3>Phase 2</h3>
+                    <p>アンカーへ戻った後、Phase 1 で構築したグラフに向けて反射します。無制限モードでは可能な限り多くアンカーリンクを投げます。SBUL 制限モードでは、最大外向きリンク数を <code>8 + 8 * SBUL</code> に制限し、その枠内でより多くの field を閉じられる反射対象と順序を選びます。</p>
+                </div>
             </div>
-            <div class="panel">
-                <h3>Phase 2</h3>
-                <p>アンカーへ戻った後、Phase 1 で構築したベースグラフに向けて反射します。無制限モードでは可能な限り多くのアンカーリンクを投げます。SBUL 制限モードでは、最大外向きリンク数を <code>8 + 8 * SBUL</code> に制限し、その枠内でより多くの field を閉じられる反射対象と順序を貪欲に選択します。</p>
-            </div>
-        </div>
+        </section>
 
-        <h2>レイヤー</h2>
-        <ul>
-            <li><code>Fanfield Plan (Links Phase 1)</code></li>
-            <li><code>Fanfield Plan (Fields Phase 1)</code></li>
-            <li><code>Fanfield Plan (Links Phase 2)</code></li>
-            <li><code>Fanfield Plan (Fields Phase 2)</code></li>
-            <li><code>Fanfield Plan (Highlights)</code></li>
-        </ul>
+        <section aria-labelledby="layers">
+            <h2 id="layers">レイヤー</h2>
+            <ul class="feature-list">
+                <li><code>Fanfield Plan (Links Phase 1)</code></li>
+                <li><code>Fanfield Plan (Fields Phase 1)</code></li>
+                <li><code>Fanfield Plan (Links Phase 2)</code></li>
+                <li><code>Fanfield Plan (Fields Phase 2)</code></li>
+                <li><code>Fanfield Plan (Highlights)</code></li>
+            </ul>
+        </section>
 
-        <h2>更新履歴</h2>
-        <div class="changelog-item">
+        <section aria-labelledby="faq">
+            <h2 id="faq">FAQ</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">Phase 1 と Phase 2 の違いは何ですか？</span> Phase 1 は交差しないベースグラフを作る工程で、Phase 2 はアンカーからその完成済みグラフへ反射して field を閉じる工程です。</li>
+                <li><span class="faq-q">Included / Excluded リストは何のためにありますか？</span> 三角形を描き直したり、Portal を一つずつ手動選択したりせずに、底辺集合を細かく調整するためです。</li>
+                <li><span class="faq-q">SBUL 制限は何に効きますか？</span> Phase 2 で使える外向きリンク数を制限し、その予算内でより多くの field を作れるようにします。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="related">
+            <h2 id="related">関連プラグイン</h2>
+            <ul class="related-list">
+                <li><a href="https://gongjupal.com/ingress/homogeneous-fields/index_ja.html" style="color:#ffce00;">Homogeneous Fields</a> は、別の構造化フィールド計画アルゴリズムを試したいときに向いています。</li>
+                <li><a href="https://gongjupal.com/ingress/overlay-planner/index_ja.html" style="color:#ffce00;">Overlay Planner</a> は、fanfield の形状を他の作戦図と比較するのに便利です。</li>
+                <li><a href="https://gongjupal.com/ingress/all-portal-names/index_ja.html" style="color:#ffce00;">All Portal Names</a> は、密集した計画三角形でも Portal 名を読みやすく保つ助けになります。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="changelog">
+            <h2 id="changelog">更新履歴</h2>
             <h3>Version 2.3.1</h3>
-            <ul><li>Phase 2 の任意 SBUL 選択範囲を 0-2 から 0-4 に拡張し、チーム運用に対応しました。</li></ul>
-        </div>
-        <div class="changelog-item">
+            <ul class="feature-list">
+                <li>任意の Phase 2 SBUL 選択範囲を <code>0-2</code> から <code>0-4</code> に拡張しました。</li>
+            </ul>
             <h3>Version 2.3.0</h3>
-            <ul><li>指定した外向きリンク上限内で field 数最大化を狙う、任意の Phase 2 SBUL 制限モードを追加しました。</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.2.1</h3>
-            <ul><li>旧式の手動ベース選択モードを削除し、Included / Excluded リストのみをベース Portal の入力方法として残しました。</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.2.0</h3>
-            <ul><li>三角形ベースの Portal 探索と Included / Excluded リストを追加し、大規模 fanfield でも手動選択なしで候補整理できるようにしました。</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1.10</h3>
-            <ul><li>Phase 2 の反射で 8 本を超える外向きリンクが必要な場合、必要な SBUL 数を警告するようにしました。</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1.9</h3>
-            <ul><li>Summary に links と fields から算出した総 AP を追加しました。</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1.8</h3>
-            <ul><li>Summary に Phase 1、Phase 2、および合計の link 数と field 数を表示するようにしました。</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1.7</h3>
-            <ul><li>Phase 2 が Phase 1 の完全なベースグラフに対して反射し、閉じられるすべての field を生成するようになりました。</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1.6</h3>
-            <ul><li>Phase 1 の crosslink 判定を修正し、anchor ray だけでなく、既存の全計画リンクに対して検査するようにしました。</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1.5</h3>
-            <ul><li>Phase 1 で、交差しない範囲で可能な限り多くの過去ベースへバックリンクするよう改良しました。</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1.4</h3>
-            <ul><li>1.9 系の UI とレイヤー構成を復元しつつ、safe-mode の計画ロジックは維持しました。</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1.3</h3>
-            <ul><li>IITC の実際のダイアログコンテナに描画するよう修正し、空白 UI 問題を解消しました。</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1.1</h3>
-            <ul><li>UserScript の update URL と download URL を正しい <code>master</code> ブランチに修正しました。</li></ul>
-        </div>
-        <div class="changelog-item">
-            <h3>Version 2.1</h3>
-            <ul><li>Fanfield Planner の初回リリースです。</li></ul>
-        </div>
-    </div>
+            <ul class="feature-list">
+                <li>指定した外向きリンク上限内で field 数最大化を目指す、任意の Phase 2 SBUL 制限モードを追加しました。</li>
+            </ul>
+            <h3>Version 2.2.0 to 2.2.1</h3>
+            <ul class="feature-list">
+                <li>三角形ベースの Portal 探索と Included / Excluded リストを追加しました。</li>
+                <li>旧式の手動ベース選択モードを削除しました。</li>
+            </ul>
+            <h3>Version 2.1.7 to 2.1.10</h3>
+            <ul class="feature-list">
+                <li>Phase 1 の完全なベースグラフに対する Phase 2 反射を改善しました。</li>
+                <li>集計の改善と SBUL 要求警告を追加しました。</li>
+            </ul>
+            <h3>Version 2.1.3 to 2.1.6</h3>
+            <ul class="feature-list">
+                <li>IITC ダイアログ描画を修正し、crosslink 判定ロジックを改善しました。</li>
+                <li>Phase 1 のバックリンク生成を、交差しない範囲でより完全にしました。</li>
+            </ul>
+        </section>
+    </main>
 </body>
 </html>

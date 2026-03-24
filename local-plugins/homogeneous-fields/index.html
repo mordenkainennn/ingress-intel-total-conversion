@@ -3,223 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC Plugin: 57Cell's Field Planner</title>
+    <title>Homogeneous Fields for IITC | Ingress Field Planning Plugin</title>
+    <meta name="description" content="Homogeneous Fields is an IITC plugin for Niantic's Ingress Intel Map that plans layered fields, general maximum fielding, and cobweb operations from selected anchor portals.">
+    <link rel="canonical" href="https://gongjupal.com/ingress/homogeneous-fields/index.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/homogeneous-fields/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/homogeneous-fields/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/homogeneous-fields/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/homogeneous-fields/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
+    <meta property="og:title" content="Homogeneous Fields for IITC | Ingress Field Planning Plugin">
+    <meta property="og:description" content="Plan homogeneous control fields, general maximum fielding, and cobweb operations on Niantic's Ingress Intel Map with step-by-step output.">
+    <meta property="og:url" content="https://gongjupal.com/ingress/homogeneous-fields/index.html">
+    <meta property="og:locale" content="en_US">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Homogeneous Fields for IITC | Ingress Field Planning Plugin">
+    <meta name="twitter:description" content="An IITC field planning plugin for Ingress agents with layered field algorithms, portal inclusion controls, DrawTools export, and detailed plans.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Homogeneous Fields",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Homogeneous Fields is an IITC plugin for Niantic's Ingress Intel Map that designs layered field plans, maximum fielding plans, and cobweb plans from selected anchor portals.",
+      "url": "https://gongjupal.com/ingress/homogeneous-fields/index.html",
+      "softwareVersion": "2.1.15",
+      "inLanguage": "en",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/homogeneous-fields"
+    }
+    </script>
     <style>
-        body {
-            background-color: #0e1111;
-            color: #eee;
-            font-family: 'Roboto', sans-serif;
-            font-size: 16px;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
-        .lang-switch {
-            position: fixed;
-            top: 20px;
-            right: 30px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #0ff;
-        }
-        .lang-switch a {
-            color: #ffce00;
-            text-decoration: none;
-            font-family: 'Coda', cursive;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background-color: rgba(10, 25, 30, 0.85);
-            border: 1px solid #0ff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            padding: 25px 40px;
-            border-radius: 5px;
-        }
-        h1, h2, h3 {
-            font-family: 'Coda', cursive;
-            color: #0ff;
-            text-transform: uppercase;
-            text-shadow: 0 0 5px #0ff;
-        }
-        h1 {
-            text-align: center;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-        h2 {
-            font-size: 1.8em;
-            border-bottom: 1px solid #0aa;
-            padding-bottom: 10px;
-            margin-top: 30px;
-        }
-        h3 {
-             font-size: 1.2em;
-             color: #ffce00;
-        }
-        p, li {
-            color: #ccc;
-        }
-        strong {
-            color: #ffce00;
-        }
-        code {
-            background-color: #000;
-            padding: 2px 5px;
-            border: 1px solid #333;
-            border-radius: 3px;
-            color: #fada5e;
-        }
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        ul li {
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
-            padding-left: 25px;
-            margin-bottom: 10px;
-        }
-        .note {
-            background-color: rgba(255, 206, 0, 0.1);
-            border: 1px solid #ffce00;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 4px;
-        }
-        .note strong {
-            color: #ffce00;
-        }
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', cursive; margin: 0 5px; }
+        .container { max-width: 900px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', cursive; text-shadow: 0 0 5px #0ff; }
+        h1 { color: #0ff; text-align: center; font-size: 2.5em; margin-bottom: 18px; text-transform: uppercase; }
+        h2 { color: #0ff; font-size: 1.8em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 30px; }
+        h3 { font-size: 1.2em; color: #ffce00; margin-top: 20px; }
+        p, li { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; font-family: 'Courier New', Courier, monospace; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { margin-bottom: 10px; color: #bbb; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li { margin-bottom: 12px; }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 15px; margin-top: 20px; border-radius: 4px; }
+        .faq-q { color: #ffce00; font-weight: 700; }
     </style>
 </head>
 <body>
 
     <div class="lang-switch">
-        <a href="index_zh-cn.html">中文</a> | <a href="index_ja.html">日本語</a>
+        <a href="https://gongjupal.com/ingress/homogeneous-fields/index_zh-cn.html" lang="zh-CN">中文</a> |
+        <a href="https://gongjupal.com/ingress/homogeneous-fields/index_ja.html" lang="ja">日本語</a>
     </div>
 
-    <div class="container">
-        <h1>57Cell's Field Planner</h1>
-        <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/homogeneous-fields" style="color: #ffce00; text-decoration: none; font-weight: 700;">View this plugin directory on GitHub</a></p>
+    <main class="container">
+        <h1>Homogeneous Fields</h1>
+        <p class="intro">An advanced field planning plugin for IITC on Niantic&apos;s Ingress Intel Map.</p>
+        <p class="summary"><strong>Homogeneous Fields</strong>, originally created by <strong>57Cell</strong>, helps Ingress agents design layered field plans from selected anchor portals. It supports classic homogeneous control fields, general maximum fielding, and cobweb-style operations, with both visual overlays and step-by-step textual output.</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/homogeneous-fields">View this plugin directory on GitHub</a> |
+            <a href="https://gongjupal.com/ingress/index.html">See all IITC plugins</a>
+        </p>
 
-        <p>This plugin is an advanced tool for designing and executing complex fielding operations. Originally created by <strong>57Cell</strong>, it has been significantly enhanced by contributors like <strong>Heistergand</strong> and <strong>cloverjune</strong> to become a powerful asset for strategic agents.</p>
-        <p>It allows for the automatic calculation of linking and fielding plans based on selected anchor portals, saving hours of manual planning.</p>
+        <section aria-labelledby="who">
+            <h2 id="who">Who This Plugin Is For</h2>
+            <p>This plugin is for agents who plan structured fielding operations rather than drawing links manually one by one. It is especially useful for layered field projects, portal filtering inside a main triangle, and operation plans that need clear link order, key counts, and travel estimates.</p>
+        </section>
 
-        <h2>Features</h2>
-        <ul>
-            <li>
-                <h3>Multiple Fielding Strategies</h3>
-                <p>Choose between three distinct fielding algorithms to match your strategic goals:</p>
-                <ul>
-                    <li><code>Homogeneous Fields (HCF)</code>: Creates a perfectly layered field with a specified number of layers.</li>
-                    <li><code>General Maximum Fielding</code>: Aims to create the maximum number of fields from a given set of portals.</li>
-                    <li><code>Cobweb Plan</code>: Generates a spiderweb-like field pattern, excellent for area denial.</li>
-                </ul>
-            </li>
-            <li>
-                <h3>Interactive Planning UI</h3>
-                <p>A comprehensive dialog, launched from the toolbox, serves as the command center. From here you can select corner portals, see their image previews, lock them in, and fine-tune your plan.</p>
-            </li>
-            <li>
-                <h3>Portal Management</h3>
-                <p>After selecting three corner portals, the plugin automatically populates a list of all portals inside the main triangle. You can easily move portals between an "Included" and "Excluded" list to control which ones are used in the final plan.</p>
-            </li>
-            <li>
-                <h3>Visual Feedback &amp; Customization</h3>
-                <p>The generated plan is drawn directly onto the map, showing all required links and fields. You can change the color of the plan's overlay in real-time. Selected corner portals get animated highlights for easy identification.</p>
-            </li>
-            <li>
-                <h3>Detailed Step-by-Step Output</h3>
-                <p>The plugin generates a detailed text-based plan that can be copied and shared. The plan includes:</p>
-                 <ul>
-                    <li>The optimal portal visitation order.</li>
-                    <li>A numbered list of links to throw from each portal.</li>
-                    <li>The number of SoftBanks required for each anchor.</li>
-                    <li>A summary of keys needed for each portal.</li>
-                    <li>Total travel distance between portals.</li>
-                </ul>
-            </li>
-            <li>
-                <h3>Integration with Other Plugins</h3>
-                <p>For even greater efficiency, you can export the generated link plan directly to the <strong>DrawTools</strong> and <strong>Arc</strong> plugins with a single click.</p>
-            </li>
-        </ul>
+        <section aria-labelledby="features">
+            <h2 id="features">Key Features</h2>
+            <ul class="feature-list">
+                <li><strong>Multiple planning modes:</strong> Choose between <strong>Homogeneous Fields (HCF)</strong>, <strong>General Maximum Fielding</strong>, and <strong>Cobweb Plan</strong> depending on the operation style.</li>
+                <li><strong>Interactive planning dialog:</strong> Select corner portals, preview anchor images, lock selections, and adjust plan settings from one workspace.</li>
+                <li><strong>Portal inclusion control:</strong> Move portals between included and excluded lists to refine the final plan.</li>
+                <li><strong>Visual overlays:</strong> Draw the planned links and fields directly on the Intel Map and adjust overlay color as needed.</li>
+                <li><strong>Detailed execution output:</strong> Get link order, visitation order, SoftBank counts, key counts, and total travel distance.</li>
+                <li><strong>Plugin integration:</strong> Export the generated link plan to <strong>DrawTools</strong> and <strong>Arc</strong>.</li>
+            </ul>
+        </section>
 
-        <h2>How to Use</h2>
-        <ol style="padding-left: 30px;">
-            <li>Click the <strong>"Plan Fields"</strong> button in the IITC toolbox to get started.</li>
-            <li>Select three portals on the map to serve as your main anchors/corners.</li>
-            <li>The planning dialog will open. Here you can:
-                <ul>
-                    <li>Lock your selected corners.</li>
-                    <li>Choose your desired <strong>Field type</strong> (HCF, General, Cobweb).</li>
-                    <li>Set the number of <strong>Layers</strong> for an HCF plan.</li>
-                    <li>Choose the plan <strong>Geometry</strong> (Random or Perfect).</li>
-                </ul>
-            </li>
-            <li>(Optional) In the right-hand panel, move any portals you don't want to use from the "Included" list to the "Excluded" list.</li>
-            <li>Click the <strong>"Find Fielding Plan"</strong> button.</li>
-            <li>The plugin will calculate the optimal plan and display the visual overlay on the map and the text steps in the dialog.</li>
-        </ol>
+        <section aria-labelledby="modes">
+            <h2 id="modes">Planning Modes</h2>
+            <ul class="feature-list">
+                <li><strong>Homogeneous Fields (HCF):</strong> Builds a layered field structure with a chosen number of layers.</li>
+                <li><strong>General Maximum Fielding:</strong> Tries to maximize the total number of fields from the available portals.</li>
+                <li><strong>Cobweb Plan:</strong> Generates a spiderweb-style structure that is useful for area denial or visual density.</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="workflow">
+            <h2 id="workflow">How to Use Homogeneous Fields</h2>
+            <ol>
+                <li>Click <strong>Plan Fields</strong> in the IITC toolbox.</li>
+                <li>Select three portals on the map as the main anchors or triangle corners.</li>
+                <li>Open the planning dialog and lock the chosen corners if needed.</li>
+                <li>Select the desired field type, layer count, and geometry mode.</li>
+                <li>Optionally move portals between the included and excluded lists.</li>
+                <li>Click <strong>Find Fielding Plan</strong> to generate the final result.</li>
+            </ol>
+        </section>
+
+        <section aria-labelledby="output">
+            <h2 id="output">What the Output Includes</h2>
+            <ul class="feature-list">
+                <li>The optimal order for visiting portals during the operation.</li>
+                <li>A numbered list of links to throw from each portal.</li>
+                <li>SoftBank counts for major anchors.</li>
+                <li>Key counts per portal.</li>
+                <li>Total travel distance and overall plan statistics.</li>
+            </ul>
+        </section>
 
         <div class="note">
-            <p><strong>Origin:</strong> This plugin is an improved version based on the original script by <strong>57Cell</strong>. It is now maintained and enhanced by <strong>mordenkainennn</strong> within this IITC-CE plugin collection.</p>
+            <p><strong>Origin and maintenance:</strong> This is an improved version of the original field planner by <strong>57Cell</strong>, later extended by contributors such as <strong>Heistergand</strong> and <strong>cloverjune</strong> inside this IITC plugin collection.</p>
         </div>
 
-        <h2>Changelog</h2>
-        <div class="changelog-entry">
+        <section aria-labelledby="faq">
+            <h2 id="faq">FAQ</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">Is this plugin only for homogeneous fields?</span> No. Homogeneous fields are one major mode, but the plugin also supports general maximum fielding and cobweb plans.</li>
+                <li><span class="faq-q">Can I exclude portals from the plan?</span> Yes. After choosing the main triangle, you can move portals from the included list to the excluded list.</li>
+                <li><span class="faq-q">Does the plugin only show a visual plan?</span> No. It also produces a detailed text-based plan with link order, keys, SoftBanks, and travel information.</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="related">
+            <h2 id="related">Related Plugins</h2>
+            <ul class="related-list">
+                <li><a href="https://gongjupal.com/ingress/fanfield-planner/index.html" style="color:#ffce00;">Fanfield Planner</a> is useful when you want a different structured fielding style with phase-based execution.</li>
+                <li><a href="https://gongjupal.com/ingress/overlay-planner/index.html" style="color:#ffce00;">Overlay Planner</a> helps compare and review field plans against other map drawings.</li>
+                <li><a href="https://gongjupal.com/ingress/all-portal-names/index.html" style="color:#ffce00;">All Portal Names</a> can make dense planning areas easier to read by forcing more portal labels to stay visible.</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="changelog">
+            <h2 id="changelog">Changelog</h2>
             <h3>Version 2.1.15</h3>
-            <ul>
-                <li>FIX: Cache portal coordinates and names for selected corners and candidate portals so field planning no longer fails after moving the map.</li>
-                <li>FIX: Normalize corner preview data so portal titles no longer render as <code>undefined</code> when details are incomplete.</li>
+            <ul class="feature-list">
+                <li>Cached coordinates and names for selected corners and candidate portals, so planning no longer breaks after moving the map.</li>
+                <li>Normalized corner preview data so incomplete details no longer render portal names as <code>undefined</code>.</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
             <h3>Version 2.1.14</h3>
-            <ul>
-                <li>FIX: Refactored dialog layout to use Flexbox, resolving multiple rendering and resizing issues.</li>
-                <li>UPD: The "Included Portals" and "Excluded Portals" lists now correctly use available vertical space in a 2:1 ratio.</li>
-                <li>UPD: Increased default dialog height for a better initial view.</li>
+            <ul class="feature-list">
+                <li>Refactored dialog layout with Flexbox to fix rendering and resizing issues.</li>
+                <li>Improved the vertical space behavior of included and excluded portal lists.</li>
+                <li>Increased the default dialog height.</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>Version 2.1.2 &ndash; 2.1.7</h3>
-            <ul>
-                <li>NEW: Changelog now visible in IITC's plugin list.</li>
-                <li>NEW: Added portal image previews and animated corners for selected portals.</li>
-                <li>NEW: Added a "Clear" button to the dialog.</li>
-                <li>FIX: Major UI improvements and API compatibility fixes.</li>
+            <h3>Version 2.0.0 to 2.1.0</h3>
+            <ul class="feature-list">
+                <li>Added <strong>General Maximum Fielding</strong> and <strong>Cobweb</strong> planning modes.</li>
+                <li>Added field, link, portal, and distance statistics.</li>
+                <li>Added a field drawing layer on the map.</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>Version 2.0.0 &ndash; 2.1.0</h3>
-            <ul>
-                <li>NEW: Added option for "General Maximum Fielding" and "Cobweb" fielding plans.</li>
-                <li>NEW: Added statistics output (portal/link/field count, distance).</li>
-                <li>NEW: The created control fields are now mentioned in the plan.</li>
-                <li>NEW: Added a field drawing layer to the map.</li>
+            <h3>Version 1.1.0 to 1.2.1</h3>
+            <ul class="feature-list">
+                <li>Added plugin layers, link drawings, and numbered task output.</li>
+                <li>Added DrawTools export support through later contributor work.</li>
+                <li>Added the option to generate geometrically balanced plans.</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>Version 1.1.0 &ndash; 1.2.1</h3>
-            <ul>
-                <li>NEW: Added plugin layer and link drawings.</li>
-                <li>NEW: Added numbers to the task list.</li>
-                <li>NEW: Export to DrawTools functionality added by Heistergand.</li>
-                <li>NEW: User can choose to generate a geometrically perfectly balanced plan.</li>
-                <li>FIX: Code refactoring and UI improvements.</li>
-            </ul>
-        </div>
-         <div class="changelog-entry">
-            <h3>Version 1.0.0</h3>
-            <ul>
-                <li>NEW: Initial release by 57Cell.</li>
-            </ul>
-        </div>
-    </div>
+        </section>
+    </main>
 
 </body>
 </html>

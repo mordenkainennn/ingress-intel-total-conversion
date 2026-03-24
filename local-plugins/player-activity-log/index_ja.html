@@ -3,53 +3,142 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IITC プラグイン: Player Activity Log</title>
+  <title>Player Activity Log for IITC | COMM 履歴と行動軌跡レビュー</title>
+  <meta name="description" content="Player Activity Log は Niantic Ingress Intel マップ向けの IITC プラグインで、公開 COMM 活動を記録し、行動軌跡を可視化し、ローカルの導入・出力に対応します。">
+  <link rel="canonical" href="https://gongjupal.com/ingress/player-activity-log/index_ja.html">
+  <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/player-activity-log/index.html">
+  <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/player-activity-log/index_ja.html">
+  <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/player-activity-log/index_zh-cn.html">
+  <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/player-activity-log/index.html">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="IITC Ingress Intel マップ用プラグイン一覧">
+  <meta property="og:title" content="Player Activity Log for IITC | COMM 履歴と行動軌跡レビュー">
+  <meta property="og:description" content="公開 COMM 活動を記録し、行動軌跡を確認し、Niantic Ingress Intel マップ上でローカル履歴を管理できます。">
+  <meta property="og:url" content="https://gongjupal.com/ingress/player-activity-log/index_ja.html">
+  <meta property="og:locale" content="ja_JP">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Player Activity Log for IITC | COMM 履歴と行動軌跡レビュー">
+  <meta name="twitter:description" content="Ingress Intel 用の IITC 活動ログプラグイン。COMM 記録、軌跡レビュー、ローカルのエクスポートやマージに対応します。">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Player Activity Log",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Web Browser",
+    "description": "Player Activity Log は Niantic Ingress Intel マップ向けの IITC プラグインで、公開 COMM 活動を記録し、行動軌跡を可視化し、ローカルの導入・出力に対応します。",
+    "url": "https://gongjupal.com/ingress/player-activity-log/index_ja.html",
+    "softwareVersion": "0.8.3",
+    "inLanguage": "ja",
+    "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/player-activity-log"
+  }
+  </script>
   <style>
     body { background:#0e1111; color:#eee; font-family:'Roboto','Noto Sans JP',sans-serif; margin:0; padding:20px; line-height:1.6; }
-    .lang-switch { position:fixed; top:20px; right:30px; background:rgba(0,0,0,.5); border:1px solid #0ff; padding:10px; border-radius:5px; }
+    .lang-switch { position:fixed; top:20px; right:30px; background:rgba(0,0,0,.5); border:1px solid #0ff; padding:10px; border-radius:5px; z-index:1000; }
     .lang-switch a { color:#ffce00; text-decoration:none; margin:0 4px; }
-    .container { max-width:900px; margin:0 auto; background:rgba(10,25,30,.85); border:1px solid #0ff; box-shadow:0 0 20px rgba(0,255,255,.5); padding:24px 36px; border-radius:6px; }
+    .container { max-width:900px; margin:0 auto; background:rgba(10,25,30,.85); border:1px solid #0ff; box-shadow:0 0 20px rgba(0,255,255,.5); padding:25px 40px; border-radius:6px; }
     h1,h2,h3 { color:#0ff; text-shadow:0 0 5px #0ff; }
-    h1 { text-align:center; }
-    h3 { color:#ffce00; }
+    h1 { text-align:center; font-size:2.4em; margin-bottom:18px; }
+    h2 { font-size:1.6em; border-bottom:1px solid #0aa; padding-bottom:10px; margin-top:28px; }
+    h3 { font-size:1.1em; color:#ffce00; margin-bottom:8px; }
+    p,li { color:#ccc; }
+    strong { color:#ffce00; }
     code { background:#000; border:1px solid #333; border-radius:3px; padding:2px 5px; color:#fada5e; }
-    .note { background:rgba(255,206,0,.1); border:1px solid #ffce00; padding:12px; border-radius:4px; margin-top:16px; }
+    .intro,.summary { text-align:center; max-width:760px; margin-left:auto; margin-right:auto; }
+    .intro { color:#bbb; margin-bottom:10px; }
+    .summary { margin-bottom:22px; }
+    .resource-links { text-align:center; margin:0 0 28px 0; }
+    .resource-links a { color:#ffce00; text-decoration:none; font-weight:700; }
+    .feature-list,.faq-list,.related-list { padding-left:20px; }
+    .feature-list li,.faq-list li,.related-list li { margin-bottom:12px; }
+    .note { background:rgba(255,206,0,.1); border:1px solid #ffce00; padding:15px; border-radius:4px; margin-top:18px; }
+    .note-danger { border-color:#f88; background:rgba(255,80,80,.08); }
+    .note-danger strong { color:#f88; }
+    .faq-q { color:#ffce00; font-weight:700; }
   </style>
 </head>
 <body>
   <div class="lang-switch">
-    <a href="index.html">English</a> | <a href="index_zh-cn.html">简体中文</a>
+    <a href="index.html" lang="en">English</a> |
+    <a href="index_zh-cn.html" lang="zh-CN">简体中文</a>
   </div>
-
-  <div class="container">
+  <main class="container">
     <h1>Player Activity Log</h1>
-    <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/player-activity-log" style="color: #ffce00; text-decoration: none; font-weight: 700;">GitHub でこのプラグインのディレクトリを見る</a></p>
-    <p>このプラグインは公開 COMM を監視し、解析したプレイヤー行動ログをブラウザに保存します。</p>
+    <p class="intro">Niantic Ingress Intel マップ向けの IITC ローカル COMM 履歴・行動軌跡レビュー用プラグインです。</p>
+    <p class="summary"><strong>Player Activity Log</strong> は公開 COMM を監視し、対応する活動イベントをブラウザに記録し、エージェント履歴の確認、行動軌跡の可視化、ローカル履歴の導出入を可能にします。</p>
+    <p class="resource-links">
+      <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/player-activity-log">GitHub でこのプラグインのディレクトリを見る</a> |
+      <a href="https://gongjupal.com/ingress/index_ja.html">すべての IITC プラグインを見る</a>
+    </p>
 
-    <h2>0.8.3 の更新</h2>
-    <ul>
-      <li>NEW: 選択中 Portal の保持日数を toolbox に表示（<code>Activity Log（xxD）</code>）。</li>
-      <li>FIX: Portal 切替時の表示更新を改善し、中立 Portal では保持日数を非表示化。</li>
-      <li>NEW: プラグイン画面と紹介ページに免責事項を追加。</li>
-    </ul>
+    <section aria-labelledby="who">
+      <h2 id="who">どんなユーザー向けか</h2>
+      <p>公開 COMM に現れたエージェント活動を後から振り返りたい場合や、ある時間帯の動線を確認したい場合、あるいは信頼できる利用者同士でローカル履歴をマージしたい場合に役立ちます。</p>
+    </section>
 
-    <h2>Portal Held Time（保持日数表示）</h2>
-    <ul>
-      <li>現在占領中の Portal を選択すると、toolbox のリンクは <code>Activity Log（xxD）</code> と表示されます。</li>
-      <li><code>xxD</code> は、その Portal の最新 capture 記録から経過した日数（切り捨て）です。</li>
-      <li>ローカルに capture 記録がない場合、または中立 Portal の場合は <code>Activity Log</code> のままです。</li>
-    </ul>
+    <section aria-labelledby="features">
+      <h2 id="features">主な機能</h2>
+      <ul class="feature-list">
+        <li><strong>公開 COMM の自動記録:</strong> capture、deploy、link、field など対応する公開 COMM 活動を受動的に記録します。MACHINA は無視されます。</li>
+        <li><strong>インタラクティブな閲覧画面:</strong> ツールボックスから開いて、プレイヤー一覧、詳細履歴、名前や ID による検索を利用できます。</li>
+        <li><strong>行動軌跡レビュー:</strong> プレイヤーの移動を地図上の軌跡として可視化し、現地活動の流れを見直せます。</li>
+        <li><strong>Portal Held Time:</strong> 自分の Portal を選択すると、ツールボックスに <code>Activity Log（xxD）</code> の形式で保持日数を表示できます。</li>
+        <li><strong>インポートとエクスポート:</strong> JSON・CSV 出力と、重複除去付きのマージ型インポートに対応します。</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="held-time">
+      <h2 id="held-time">Portal Held Time（保持日数）</h2>
+      <p>現在自分の所有する Portal を選択すると、ツールボックスのリンクが <code>Activity Log（xxD）</code> に変わります。ここで <code>xxD</code> は、その Portal に対する最新のローカル capture 記録から経過した日数を表します。</p>
+      <p>対応する capture 記録がローカルに存在しない場合、または Portal が中立状態の場合は、通常の <code>Activity Log</code> 表示のままになります。</p>
+    </section>
+
+    <section aria-labelledby="how-it-works">
+      <h2 id="how-it-works">仕組み</h2>
+      <p>Player Activity Log は、クライアントに既に表示された公開 COMM メッセージだけを解析し、対応するイベントをローカル履歴に書き込みます。そのため、タイムラインの再構成やローカル分析には有効ですが、グローバルで完全な履歴を保証するものではありません。</p>
+      <p>つまり、このプラグインは「ローカル観測ログ」として使うのが正しく、完全な基準データベースとして扱うべきではありません。</p>
+    </section>
+
+    <section aria-labelledby="whats-new">
+      <h2 id="whats-new">0.8.3 の更新</h2>
+      <ul class="feature-list">
+        <li>ツールボックスに <code>Activity Log（xxD）</code> 形式の保持日数表示を追加。</li>
+        <li>Portal 切り替え時の更新挙動を改善し、中立 Portal では保持日数を非表示化。</li>
+        <li>プラグイン画面とドキュメントに免責事項を追加。</li>
+      </ul>
+    </section>
 
     <div class="note">
-      データはローカル保存です。端末間同期はありません。定期的にエクスポートしてバックアップしてください。
+      <p><strong>重要:</strong> データはすべて現在のブラウザにのみ保存され、端末やアカウント間で自動同期されません。必要なら定期的にエクスポートしてバックアップしてください。</p>
+    </div>
+    <div class="note">
+      <p><strong>免責事項:</strong> このプラグインはローカルに記録された COMM 履歴に基づくため、データが不完全または不正確な場合があります。</p>
+    </div>
+    <div class="note note-danger">
+      <p><strong>互換性メモ:</strong> 軌跡描画は公式の <strong>Player activity tracker</strong> レイヤーと重なります。重複表示を避けたい場合はどちらかを無効化してください。</p>
     </div>
 
-    <div class="note">
-      <strong>免責事項：</strong>この表示はローカル記録データに基づく推定であり、完全性や正確性は保証されません。
-    </div>
-  </div>
+    <section aria-labelledby="faq">
+      <h2 id="faq">よくある質問</h2>
+      <ul class="faq-list">
+        <li><span class="faq-q">このプラグインは非公開データや隠しデータを読みますか？</span> いいえ。クライアントに表示された公開 COMM 活動だけを扱います。</li>
+        <li><span class="faq-q">履歴を別の端末へ移せますか？</span> はい。ただし手動のみです。エクスポートしてからインポートしてください。</li>
+        <li><span class="faq-q">保持日数が欠けたりズレたりするのはなぜですか？</span> 計算はローカル capture 履歴に依存するため、必要なイベントを見ていなければ結果は欠落または不完全になります。</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="related">
+      <h2 id="related">関連プラグイン</h2>
+      <ul class="related-list">
+        <li><a href="https://gongjupal.com/ingress/recharge-monitor/index_ja.html" style="color:#ffce00;">Recharge Monitor</a> は Portal の健康状態と減衰情報で活動履歴を補完します。</li>
+        <li><a href="https://gongjupal.com/ingress/portal-db/index_ja.html" style="color:#ffce00;">Portal DB</a> は COMM 履歴と合わせて使うと、より強力なローカル Portal 基盤になります。</li>
+        <li><a href="https://gongjupal.com/ingress/portal-afterimage/index_ja.html" style="color:#ffce00;">Portal Afterimage</a> は Portal の視覚記憶を補い、Activity Log はプレイヤーとイベント履歴に集中します。</li>
+      </ul>
+    </section>
+  </main>
 </body>
 </html>

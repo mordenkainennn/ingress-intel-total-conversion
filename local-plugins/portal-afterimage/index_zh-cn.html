@@ -1,260 +1,156 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC 插件: Portal Afterimage</title>
+    <title>Portal Afterimage for IITC | Ingress Intel Portal 记忆残影层</title>
+    <meta name="description" content="Portal Afterimage 是适用于 Niantic Ingress Intel 地图的 IITC 插件，本质上可用本地数据在任意缩放级别显示已见 Portal；默认配置为保证性能而限制显示，高级用户可手动覆盖。">
+    <link rel="canonical" href="https://gongjupal.com/ingress/portal-afterimage/index_zh-cn.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/portal-afterimage/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/portal-afterimage/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/portal-afterimage/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/portal-afterimage/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Ingress Intel 地图插件目录">
+    <meta property="og:title" content="Portal Afterimage for IITC | Ingress Intel Portal 记忆残影层">
+    <meta property="og:description" content="Portal Afterimage 可基于本地已见 Portal 数据在任意缩放级别显示记忆层，默认设置出于性能考虑保守限制显示数量。">
+    <meta property="og:url" content="https://gongjupal.com/ingress/portal-afterimage/index_zh-cn.html">
+    <meta property="og:locale" content="zh_CN">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Portal Afterimage for IITC | Ingress Intel Portal 记忆残影层">
+    <meta name="twitter:description" content="使用 Portal DB 的本地数据在任意缩放级别显示已见 Portal，并且不会强制额外请求 Intel 服务器数据。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Portal Afterimage",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Portal Afterimage 是适用于 Niantic Ingress Intel 地图的 IITC 插件，可基于 Portal DB 的本地数据在任意缩放级别显示已见 Portal，并在默认配置下控制绘制数量以保证性能。",
+      "url": "https://gongjupal.com/ingress/portal-afterimage/index_zh-cn.html",
+      "softwareVersion": "0.1.6",
+      "inLanguage": "zh-CN",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-afterimage"
+    }
+    </script>
     <style>
-        body {
-            background-color: #0e1111;
-            color: #eee;
-            font-family: 'Roboto', 'Noto Sans SC', sans-serif;
-            font-size: 16px;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
-        .lang-switch {
-            position: fixed;
-            top: 20px;
-            right: 30px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #0ff;
-        }
-        .lang-switch a {
-            color: #ffce00;
-            text-decoration: none;
-            font-family: 'Coda', cursive;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background-color: rgba(10, 25, 30, 0.85);
-            border: 1px solid #0ff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            padding: 25px 40px;
-            border-radius: 5px;
-        }
-        h1, h2, h3 {
-            font-family: 'Coda', 'Noto Sans SC', cursive;
-            color: #0ff;
-            text-transform: uppercase;
-            text-shadow: 0 0 5px #0ff;
-        }
-        h1 {
-            text-align: center;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-        h2 {
-            font-size: 1.8em;
-            border-bottom: 1px solid #0aa;
-            padding-bottom: 10px;
-            margin-top: 30px;
-        }
-        h3 {
-             font-size: 1.2em;
-             color: #ffce00;
-             margin-top: 20px;
-        }
-        p, li {
-            color: #ccc;
-        }
-        strong {
-            color: #ffce00;
-        }
-        code {
-            background-color: #000;
-            padding: 2px 5px;
-            border: 1px solid #333;
-            border-radius: 3px;
-            color: #fada5e;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        ul li {
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 8px;
-            padding-left: 25px;
-            margin-bottom: 10px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        th, td {
-            border-bottom: 1px solid #233;
-            padding: 8px 6px;
-            text-align: left;
-            vertical-align: top;
-        }
-        th {
-            color: #ffce00;
-        }
-        .note {
-            background-color: rgba(255, 206, 0, 0.1);
-            border: 1px solid #ffce00;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 4px;
-        }
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', 'Noto Sans SC', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', cursive; margin: 0 5px; }
+        .container { max-width: 900px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', 'Noto Sans SC', cursive; text-shadow: 0 0 5px #0ff; }
+        h1 { color: #0ff; text-align: center; font-size: 2.5em; margin-bottom: 18px; }
+        h2 { color: #0ff; font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 34px; }
+        h3 { font-size: 1.15em; color: #ffce00; margin-top: 20px; }
+        p, li { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; font-family: 'Courier New', Courier, monospace; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { margin-bottom: 10px; color: #bbb; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list, .settings-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li, .settings-list li { margin-bottom: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border-bottom: 1px solid #233; padding: 8px 6px; text-align: left; vertical-align: top; }
+        th { color: #ffce00; }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 15px; margin-top: 20px; border-radius: 4px; }
+        .warning { border-color: #f66; background-color: rgba(255, 100, 100, 0.1); }
+        .warning strong { color: #f66; }
+        .faq-q { color: #ffce00; font-weight: 700; }
     </style>
 </head>
 <body>
-
     <div class="lang-switch">
-        <a href="index.html">English</a> | <a href="index_ja.html">日本語</a>
+        <a href="index.html" lang="en">English</a> |
+        <a href="index_ja.html" lang="ja">日本語</a>
     </div>
-
-    <div class="container">
+    <main class="container">
         <h1>Portal Afterimage</h1>
-        <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-afterimage" style="color: #ffce00; text-decoration: none; font-weight: 700;">在 GitHub 上查看此插件目录</a></p>
-
-        <div class="note" style="border-color: #f66; background-color: rgba(255, 100, 100, 0.1);">
-            <p><strong style="color: #f66;">前置要求:</strong> 本插件<strong>依赖</strong> <code style="color:#fada5e">Portal DB</code> 插件。您必须先安装并启用 Portal DB，本插件才能正常工作，因为它需要从 Portal DB 获取所有 Portal 的坐标和时间戳数据。</p>
+        <p class="intro">面向 Niantic Ingress Intel 地图的 IITC Portal 记忆残影插件。</p>
+        <p class="summary"><strong>Portal Afterimage</strong> 本质上可以基于 <strong>Portal DB</strong> 的本地数据，在任意缩放级别显示你已经见过的 Portal。默认设置为了性能与可读性会保守限制绘制，但高级用户可以通过修改代码或使用 console 命令来强制实现更激进的“全显示”效果。</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-afterimage">在 GitHub 上查看此插件目录</a> |
+            <a href="https://gongjupal.com/ingress/index_zh-cn.html">查看全部 IITC 插件</a>
+        </p>
+        <div class="note warning">
+            <p><strong>前置要求：</strong>Portal Afterimage 依赖 <a href="https://gongjupal.com/ingress/portal-db/index_zh-cn.html" style="color: #ffce00;">Portal DB</a> 才能工作。它需要从 Portal DB 获取 Portal 坐标与最后可见时间。</p>
         </div>
-
-        <p><strong>Portal Afterimage</strong> 是一个“记忆层”插件：当官方 Portal 图层在低缩放下不可见时，它会以淡淡的残影显示你曾经见过的 Portal。它不会猜测，也不会补全未获得的数据。</p>
-        <p>该插件依赖 <strong>Portal DB</strong> 提供坐标与 lastSeen 时间；Afterimage 自身仅存储 GUID 与名称。</p>
-
-        <h2>主要特性</h2>
-        <ul>
-            <li>
-                <h3>只显示记忆层</h3>
-                <p>仅在官方 Portal 不显示时绘制残影，不覆盖、不修改原生渲染。</p>
-            </li>
-            <li>
-                <h3>本地且私有</h3>
-                <p>所有数据仅保存在浏览器本地，不上传、不共享。</p>
-            </li>
-            <li>
-                <h3>S2 Cell 抽象</h3>
-                <p>按 S2 Cell 分组（可设置 Level），每个 Cell 仅显示有限数量 Portal，避免密集区域过载。</p>
-            </li>
-            <li>
-                <h3>性能安全阀</h3>
-                <p>设置了硬性上限（<code>MAX_DRAWN_ELEMENTS</code>），高密度场景下保证稳定性。</p>
-            </li>
-        </ul>
-
-        <h2>可调设置</h2>
-        <ul>
-            <li><strong>S2 Level (15–18)：</strong> Level 越高，Cell 越小，细节越多。</li>
-            <li><strong>Per Cell (1–3)：</strong> 每个 Cell 最多显示多少个 Portal。</li>
-            <li><strong>选择规则：</strong> 按 Portal DB 的 <code>lastSeen</code> 选取（默认取最新）。</li>
-        </ul>
-
-        <h2>S2 Level 参考表 (L15–L19)</h2>
-        <p>以下尺寸为平均近似值，真实形状会随纬度变化。可作为 Ingress 中选择设置的实用参考。</p>
-        <table>
-            <thead>
-                <tr>
-                    <th>Level</th>
-                    <th>近似边长</th>
-                    <th>近似面积</th>
-                    <th>Ingress 实用含义</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>L15</td>
-                    <td>≈281 m</td>
-                    <td>≈79,000 m&sup2; (0.079 km&sup2;)</td>
-                    <td>小街区/社区尺度。适合大范围概览，压缩密集城区 Portal。</td>
-                </tr>
-                <tr>
-                    <td>L16</td>
-                    <td>≈141 m</td>
-                    <td>≈19,800 m&sup2; (0.020 km&sup2;)</td>
-                    <td>大型街区或公园分区尺度，城市环境较均衡。</td>
-                </tr>
-                <tr>
-                    <td>L17</td>
-                    <td>≈70 m</td>
-                    <td>≈4,950 m&sup2; (0.0049 km&sup2;)</td>
-                    <td>街区侧边尺度，常接近高密度区域 Portal 间距。</td>
-                </tr>
-                <tr>
-                    <td>L18</td>
-                    <td>≈35 m</td>
-                    <td>≈1,240 m&sup2; (0.0012 km&sup2;)</td>
-                    <td>建筑群尺度，适合细致记录小范围。</td>
-                </tr>
-                <tr>
-                    <td>L19</td>
-                    <td>≈18 m</td>
-                    <td>≈309 m&sup2; (0.00031 km&sup2;)</td>
-                    <td>极细尺度，常用于区分单个 Portal 或紧密群。</td>
-                </tr>
-            </tbody>
-        </table>
-
+        <section aria-labelledby="who">
+            <h2 id="who">适合哪些用户</h2>
+            <p>如果你在 Ingress Intel 地图缩小时经常失去 Portal 的视觉参考，希望保留自己已经探索过区域的地图记忆，这个插件会非常适合。它尤其适合希望在低缩放层级保持方向感的特工。</p>
+        </section>
+        <section aria-labelledby="features">
+            <h2 id="features">核心功能</h2>
+            <ul class="feature-list">
+                <li><strong>任意缩放级别可见：</strong>从能力上说，它可以在任意缩放级别显示本地已知 Portal；只是默认 UI 出于性能和清晰度考虑做了限制。</li>
+                <li><strong>本地且私有：</strong>数据保存在浏览器本地，不上传也不跨设备共享。</li>
+                <li><strong>S2 Cell 抽象：</strong>按可配置的 S2 单元分组 Portal，并限制每格显示数量。</li>
+                <li><strong>安全降级：</strong>通过绘制数量上限避免高密度区域导致地图性能失控。</li>
+                <li><strong>依赖 Portal DB：</strong>统一从 Portal DB 获取坐标与时间，避免重复维护 Portal 状态。</li>
+            </ul>
+        </section>
+        <section aria-labelledby="settings">
+            <h2 id="settings">设置项</h2>
+            <ul class="settings-list">
+                <li><strong>S2 Level (15–18)：</strong>Level 越高，Cell 越小，细节越多。</li>
+                <li><strong>Per Cell (1–3)：</strong>控制每个 S2 Cell 内最多显示多少个 Portal。</li>
+                <li><strong>选择规则：</strong>按 Portal DB 的 <code>lastSeen</code> 选择，优先显示最近见过的 Portal。</li>
+            </ul>
+        </section>
+        <section aria-labelledby="how-it-works">
+            <h2 id="how-it-works">工作原理</h2>
+            <p>Portal Afterimage 默认不会一次性绘制所有本地已知 Portal，而是先按 S2 Cell 分组，再从每个 Cell 中选出有限数量进行显示。这样做是出于性能和可读性考虑，而不是能力上的硬限制。</p>
+            <p>如果你愿意自行修改代码，或者通过 console 命令覆盖默认限制，就可以把它推到接近“在任意缩放级别显示所有本地已知 Portal”的效果。插件本地只保存 GUID 和名称，坐标与时间戳则由 Portal DB 提供。</p>
+            <p>更重要的是，这一功能不会强制向 Intel 服务器额外拉取数据。它只利用客户端已经收到并保存在本地的数据，因此不属于主动抓取服务器信息的行为。</p>
+        </section>
+        <section aria-labelledby="s2-reference">
+            <h2 id="s2-reference">S2 Level 参考</h2>
+            <p>下表可帮助你在 Ingress Intel 地图中选择合适的显示密度。实际尺寸会随纬度变化。</p>
+            <table>
+                <thead><tr><th>Level</th><th>东西边长</th><th>南北边长</th><th>近似面积</th><th>典型用途</th></tr></thead>
+                <tbody>
+                    <tr><td>L15</td><td>~509 m</td><td>~637 m</td><td>~0.32 km&sup2;</td><td>地图数据装载边界</td></tr>
+                    <tr><td>L16</td><td>~254 m</td><td>~318 m</td><td>~0.08 km&sup2;</td><td>场作图精度平衡</td></tr>
+                    <tr><td>L17</td><td>~127 m</td><td>~159 m</td><td>~0.02 km&sup2;</td><td>密集区域细节与性能折中</td></tr>
+                    <tr><td>L18</td><td>~63 m</td><td>~79 m</td><td>~0.005 km&sup2;</td><td>精细地理围栏与记忆层</td></tr>
+                    <tr><td>L19</td><td>~32 m</td><td>~40 m</td><td>~1,280 m&sup2;</td><td>极细粒度的唯一性判断</td></tr>
+                </tbody>
+            </table>
+        </section>
         <div class="note">
-            <p><strong>建议：</strong> 初始可用 L18 / Per Cell = 1，随后根据密度逐步调高 Level 或数量。细节越高，越容易触达 5000 上限。</p>
+            <p><strong>建议：</strong>可以先从 <strong>L18</strong> 与 <strong>Per Cell = 1</strong> 开始，再根据本地 Portal 密度和设备性能逐步提高细节。</p>
         </div>
-
-        <h2>更新日志</h2>
-        <div class="changelog-entry">
-            <h3>版本 0.1.6</h3>
-            <ul>
-                <li>更新: 重新设计了 Portal 残影样式，以更好地在深色和浅色/灰色底图（如 Google 地图、高德灰色）上显示。</li>
+        <section aria-labelledby="faq">
+            <h2 id="faq">常见问题</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">Portal Afterimage 会生成虚假的 Portal 吗？</span> 不会。它只显示你的客户端真实见过并保存在本地的数据。</li>
+                <li><span class="faq-q">它真的可以在任意缩放级别显示所有 Portal 吗？</span> 从实现能力上说可以，只要你手动覆盖默认绘制限制，例如修改代码或使用 console 命令。默认配置为了性能不会直接这样做。</li>
+                <li><span class="faq-q">这样做会违反 Niantic 规则吗？</span> 这里的前提是不主动额外请求 Intel 服务器，而只是使用客户端已经接收到的本地数据。在这个前提下，它仍属于本地可视化增强，而不是额外抓取服务器数据。</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>版本 0.1.5</h3>
-            <ul>
-                <li>重构: 移除了本地名称存储。现在完全依赖 Portal DB 获取 Portal 名称。</li>
-                <li>更新: 名称搜寻（Scavenging）现在直接更新 Portal DB，而不是本地存储。</li>
+        </section>
+        <section aria-labelledby="related">
+            <h2 id="related">相关插件</h2>
+            <ul class="related-list">
+                <li><a href="https://gongjupal.com/ingress/portal-db/index_zh-cn.html" style="color: #ffce00;">Portal DB</a> 是必需依赖，为 Portal Afterimage 提供 Portal 坐标与时间数据。</li>
+                <li><a href="https://gongjupal.com/ingress/player-activity-log/index_zh-cn.html" style="color: #ffce00;">玩家活动日志</a> 可与视觉记忆层互补，提供 COMM 行为历史。</li>
+                <li><a href="https://gongjupal.com/ingress/recharge-monitor/index_zh-cn.html" style="color: #ffce00;">充电监控器</a> 则从 Portal 状态角度补充防守信息。</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>版本 0.1.4</h3>
-            <ul>
-                <li>新增: 自动从地图内存中搜寻名称。如果打开维护列表时缺失名称且该 Portal 当前在地图上可见，则会自动恢复名称。</li>
-                <li>更新: 提高了 Portal 跳转期间名称解析的稳健性。</li>
-            </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>版本 0.1.3</h3>
-            <ul>
-                <li>新增: 当缺失 Portal DB 时，工具箱按钮会发出警告，并在依赖加载后自动更新。</li>
-                <li>新增: 如果未启用 Portal DB，维护对话框会添加明确的依赖提示。</li>
-                <li>修复: 针对 Portal DB 增加了带重试机制的稳健依赖检测。</li>
-            </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>版本 0.1.2</h3>
-            <ul>
-                <li>新增: 维护界面中增加了 S2 Level 和每个单元格数量的渲染设置。</li>
-                <li>新增: 关于对话框，解释选择规则和设置。</li>
-                <li>更新: 打开时，维护过滤器默认使用整数天数值。</li>
-                <li>更新: 添加了控制台辅助工具，以支持使用小数天数刷新维护列表。</li>
-            </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>版本 0.1.1</h3>
-            <ul>
-                <li>更新: 使用 Portal DB API 获取 Portal 坐标和最后可见时间戳。</li>
-                <li>更新: Afterimage 数据库现在仅存储 GUID 和 Portal 名称。</li>
-                <li>更新: 维护列表现在通过 Portal DB 解析坐标和最后可见时间。</li>
-            </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>版本 0.1.0</h3>
-            <ul>
-                <li>新增: 初始版本发布。</li>
-            </ul>
-        </div>
-    </div>
-
+        </section>
+        <section aria-labelledby="changelog">
+            <h2 id="changelog">更新日志</h2>
+            <h3>版本 0.1.6</h3><ul class="feature-list"><li>重设计残影样式，让其在深色与灰色底图上都更易辨认。</li></ul>
+            <h3>版本 0.1.5</h3><ul class="feature-list"><li>移除本地名称存储，Portal 名称完全依赖 Portal DB。</li><li>名称回收逻辑改为直接更新 Portal DB。</li></ul>
+            <h3>版本 0.1.4</h3><ul class="feature-list"><li>加入从当前地图内存自动回收名称的能力。</li><li>提升了 Portal 跳转时名称解析的稳定性。</li></ul>
+            <h3>版本 0.1.3</h3><ul class="feature-list"><li>增加缺少 Portal DB 时的工具箱与维护界面提醒。</li><li>改进依赖检测与重试机制。</li></ul>
+            <h3>版本 0.1.2</h3><ul class="feature-list"><li>增加 S2 Level 与 Per Cell 渲染设置。</li><li>增加说明选择规则与设置的关于对话框。</li></ul>
+            <h3>版本 0.1.1</h3><ul class="feature-list"><li>将坐标与 lastSeen 数据改为来自 Portal DB API。</li><li>本地数据库仅保留 GUID 与 Portal 名称。</li></ul>
+            <h3>版本 0.1.0</h3><ul class="feature-list"><li>初始版本发布。</li></ul>
+        </section>
+    </main>
 </body>
 </html>
-

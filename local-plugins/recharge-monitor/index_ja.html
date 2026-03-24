@@ -3,172 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC プラグイン: リチャージモニターと減衰予測 (Recharge Monitor)</title>
+    <title>Recharge Monitor for IITC | Portal 健康監視と減衰予測</title>
+    <meta name="description" content="Recharge Monitor は Niantic Ingress Intel マップ向けの IITC プラグインで、Portal 健康状態を監視し、減衰時刻を予測し、COMM と活動履歴からデプロイ時刻を復元します。">
+    <link rel="canonical" href="https://gongjupal.com/ingress/recharge-monitor/index_ja.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/recharge-monitor/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/recharge-monitor/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/recharge-monitor/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/recharge-monitor/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Ingress Intel マップ用プラグイン一覧">
+    <meta property="og:title" content="Recharge Monitor for IITC | Portal 健康監視と減衰予測">
+    <meta property="og:description" content="Niantic Ingress Intel マップ上で Portal 健康状態を監視し、減衰時刻を推定し、ローカル履歴からデプロイ時刻を復元できます。">
+    <meta property="og:url" content="https://gongjupal.com/ingress/recharge-monitor/index_ja.html">
+    <meta property="og:locale" content="ja_JP">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Recharge Monitor for IITC | Portal 健康監視と減衰予測">
+    <meta name="twitter:description" content="Ingress Intel 用の IITC 監視プラグイン。watchlist 管理、減衰推定、ローカル履歴に基づくリチャージ警告に対応します。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Recharge Monitor",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Recharge Monitor は Niantic Ingress Intel マップ向けの IITC プラグインで、Portal 健康状態を監視し、減衰時刻を予測し、ローカル COMM と活動履歴からデプロイ時刻を復元します。",
+      "url": "https://gongjupal.com/ingress/recharge-monitor/index_ja.html",
+      "softwareVersion": "0.3.1",
+      "inLanguage": "ja",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/recharge-monitor"
+    }
+    </script>
     <style>
-        body {
-            background-color: #0e1111;
-            color: #eee;
-            font-family: 'Roboto', 'Noto Sans JP', sans-serif;
-            font-size: 16px;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
-        .lang-switch {
-            position: fixed;
-            top: 20px;
-            right: 30px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #0ff;
-        }
-        .lang-switch a {
-            color: #ffce00;
-            text-decoration: none;
-            font-family: 'Coda', cursive;
-            margin: 0 5px;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background-color: rgba(10, 25, 30, 0.85);
-            border: 1px solid #0ff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            padding: 25px 40px;
-            border-radius: 5px;
-        }
-        h1, h2, h3 {
-            font-family: 'Coda', 'Noto Sans JP', cursive;
-            color: #0ff;
-            text-transform: uppercase;
-            text-shadow: 0 0 5px #0ff;
-        }
-        h1 {
-            text-align: center;
-            font-size: 2.2em;
-            margin-bottom: 20px;
-        }
-        h2 {
-            font-size: 1.8em;
-            border-bottom: 1px solid #0aa;
-            padding-bottom: 10px;
-            margin-top: 30px;
-        }
-        h3 {
-             font-size: 1.2em;
-             color: #ffce00;
-        }
-        p, li {
-            color: #ccc;
-        }
-        strong {
-            color: #ffce00;
-        }
-        code {
-            background-color: #000;
-            padding: 2px 5px;
-            border: 1px solid #333;
-            border-radius: 3px;
-            color: #fada5e;
-        }
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        ul li {
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 8px;
-            padding-left: 25px;
-            margin-bottom: 10px;
-        }
-        .note {
-            background-color: rgba(255, 206, 0, 0.1);
-            border: 1px solid #ffce00;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 4px;
-        }
-        .note strong {
-            color: #ffce00;
-        }
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', 'Noto Sans JP', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', cursive; margin: 0 5px; }
+        .container { max-width: 900px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', 'Noto Sans JP', cursive; color: #0ff; text-shadow: 0 0 5px #0ff; }
+        h1 { text-align: center; font-size: 2.4em; margin-bottom: 18px; }
+        h2 { font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 30px; }
+        h3 { font-size: 1.15em; color: #ffce00; }
+        p, li { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { color: #bbb; margin-bottom: 10px; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li { margin-bottom: 12px; }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 15px; margin-top: 20px; border-radius: 4px; }
+        .note-danger { border-color: #f88; background: rgba(255, 80, 80, 0.08); }
+        .note-danger strong { color: #f88; }
+        .faq-q { color: #ffce00; font-weight: 700; }
     </style>
 </head>
 <body>
-
     <div class="lang-switch">
-        <a href="index.html">English</a> | <a href="index_zh-cn.html">中文</a>
+        <a href="index.html" lang="en">English</a> |
+        <a href="index_zh-cn.html" lang="zh-CN">中文</a>
     </div>
 
-    <div class="container">
-        <h1>リチャージモニターと減衰予測 (Recharge Monitor)</h1>
-        <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/recharge-monitor" style="color: #ffce00; text-decoration: none; font-weight: 700;">GitHub でこのプラグインのディレクトリを見る</a></p>
+    <main class="container">
+        <h1>Recharge Monitor</h1>
+        <p class="intro">Niantic Ingress Intel マップ向けの IITC Portal 監視リスト・健康追跡・減衰予測プラグインです。</p>
+        <p class="summary"><strong>Recharge Monitor</strong> は、離れた地域にある重要 Portal の健康状態を追跡し、視界外の Portal でも減衰時刻を推定し、ローカル COMM や活動履歴からデプロイ時刻を復元します。</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/recharge-monitor">GitHub でこのプラグインのディレクトリを見る</a> |
+            <a href="https://gongjupal.com/ingress/index_ja.html">すべての IITC プラグインを見る</a>
+        </p>
 
-        <p>このプラグインは、複数の地域のポータルを管理するエージェントのための不可欠なユーティリティです。ポータルの健康状態をリアルタイムで監視し、現在のマップ表示範囲外にあるポータルであっても、いつ完全にエネルギーが枯渇（減衰）するかをインテリジェントに予測します。</p>
-        <p>COMMデータや他のログプラグインと統合することで、リチャージの期限を二度と逃さないようにします。</p>
+        <section aria-labelledby="who">
+            <h2 id="who">どんなユーザー向けか</h2>
+            <p>複数の重要 Portal、長距離アンカー、あるいは離れた防衛対象を管理したいエージェントに向いています。特にそれらが常に現在の視界にあるとは限らない場合、このプラグインは継続的なローカル監視に役立ちます。</p>
+        </section>
 
-        <h2>主な機能</h2>
-        <ul>
-            <li>
-                <h3>エネルギー監視ウォッチリスト</h3>
-                <p>ポータルの詳細パネルから、特定のポータルを個人用のウォッチリストに追加できます。現在の健康状態、最後に確認されたステータス、デプロイ時刻を統合ダッシュボードで一元管理します。</p>
-            </li>
-            <li>
-                <h3>インテリジェントな減衰予測</h3>
-                <p>現在マップ上に表示されていないポータルについて、1日あたり15%の標準的なエネルギー損失に基づいた <code>予測減衰 (Est. Decay)</code> 日時を計算します。ポータルが中立化するまでの信頼できる「カウントダウン」を提供します。</p>
-            </li>
-            <li>
-                <h3>マルチソース履歴同期</h3>
-                <p>以下の2つの強力な方法を使用して、正確なデプロイ時刻を自動的に復元します：</p>
-                <ul>
-                    <li><code>COMM バックフィリング</code>: IITC内部のチャットキャッシュをスキャンし、キャプチャおよびデプロイイベントを探します。</li>
-                    <li><code>ログ統合</code>: <strong>Player Activity Log</strong> プラグインの履歴データと同期し、GUIDと座標による精密なマッチングを行います。</li>
-                </ul>
-            </li>
-            <li>
-                <h3>視覚的なリチャージアラート</h3>
-                <p>監視中のポータルの健康状態が30%を下回ると、IITCツールボックス内の「Recharge Mon」ボタンが動的に色を変え、警告数（例：<code>⚠️ Recharge (3)</code>）を表示します。</p>
-            </li>
-            <li>
-                <h3>ローカライズと使いやすさ</h3>
-                <p>すべてのタイムスタンプを<strong>ローカルタイムゾーン</strong>で表示します。必要に応じてデプロイ時刻を手動で修正できるユーザーフレンドリーなインターフェースを備えています。</p>
-            </li>
-        </ul>
+        <section aria-labelledby="features">
+            <h2 id="features">主な機能</h2>
+            <ul class="feature-list">
+                <li><strong>監視リストダッシュボード:</strong> Portal 詳細パネルから対象を watchlist に追加し、一元管理できます。</li>
+                <li><strong>Portal 健康状態追跡:</strong> 現在のエネルギー、最終確認状態、デプロイ時刻関連情報を確認できます。</li>
+                <li><strong>減衰予測:</strong> 標準の 15% 日次減衰をもとに、視界外 Portal がいつ中立化するかを見積もります。</li>
+                <li><strong>履歴復元:</strong> COMM バックフィルと <strong>Player Activity Log</strong> 連携から、より正確なデプロイ時刻を復元できます。</li>
+                <li><strong>リチャージ警告:</strong> 監視 Portal の健康状態が閾値を下回ると、ツールボックスに警告件数を表示します。</li>
+            </ul>
+        </section>
 
-        <h2>使用方法</h2>
-        <ol style="padding-left: 30px;">
-            <li>マップ上の任意のポータルを選択して詳細パネルを開きます。</li>
-            <li><strong>"🛡️ Add to Watchlist"</strong> (監視リストに追加) をクリックして監視を開始します。</li>
-            <li>ツールボックスの <strong>"Recharge Mon"</strong> ボタンをクリックしてメインダッシュボードを起動します。</li>
-            <li>ダッシュボード内で <strong>"🔄 Sync History"</strong> ボタンを使用し、COMMやログから履歴データを取得して時刻の精度を向上させます。</li>
-            <li>ツールボックスのボタンが<strong>オレンジ色や赤色</strong>に変わったら、リチャージの準備をしましょう！</li>
-        </ol>
+        <section aria-labelledby="history">
+            <h2 id="history">履歴同期と時刻復元</h2>
+            <p>Recharge Monitor の精度は、Portal の元のデプロイ時刻をどれだけ復元できるかに大きく左右されます。そのため、以下のローカル履歴ソースを利用できます。</p>
+            <ul class="feature-list">
+                <li><strong>COMM バックフィル:</strong> IITC のローカルチャットキャッシュから capture / deploy イベントを走査します。</li>
+                <li><strong>Player Activity Log 連携:</strong> GUID と座標の一致を使って互換履歴を読み込みます。</li>
+            </ul>
+            <p>したがって、予測減衰がどこまで正確かは、過去にクライアントがその関連イベントを実際に見て記録しているかに依存します。</p>
+        </section>
+
+        <section aria-labelledby="usage">
+            <h2 id="usage">使い方</h2>
+            <ol>
+                <li>Portal を選択し、詳細パネルから watchlist に追加します。</li>
+                <li>ツールボックスの <strong>Recharge Mon</strong> からメイン画面を開きます。</li>
+                <li>履歴を補完したいときは <strong>Sync History</strong> を使ってローカル履歴源からデプロイ時刻を復元します。</li>
+                <li>ツールボックス表示がオレンジや赤になったら、監視対象が危険域に入っている合図です。</li>
+            </ol>
+        </section>
+
+        <section aria-labelledby="whats-new">
+            <h2 id="whats-new">最近の更新</h2>
+            <h3>バージョン 0.3.1</h3>
+            <ul class="feature-list">
+                <li>公式 Ingress 用語に合わせて <strong>Decay</strong> に表記を統一。</li>
+                <li>健康計算ロジックを改善し、誤上書きを減らしました。</li>
+            </ul>
+            <h3>バージョン 0.3.0</h3>
+            <ul class="feature-list">
+                <li>リアルタイム COMM 監視と履歴同期を追加。</li>
+                <li><strong>Player Activity Log</strong> からの履歴復元を追加。</li>
+                <li>watchlist に <strong>Est. Decay</strong> 列を追加。</li>
+                <li>時刻表示をローカル時刻へ統一。</li>
+            </ul>
+        </section>
 
         <div class="note">
-            <p><strong>ヒント:</strong> このプラグインを <strong>Player Activity Log</strong> と併用することを強くお勧めします。新しいポータルを追加するたびに、アクティビティ履歴から自動的にデプロイ時刻を「収集」します。</p>
+            <p><strong>ヒント:</strong> Recharge Monitor は <a href="https://gongjupal.com/ingress/player-activity-log/index_ja.html" style="color:#ffce00;">Player Activity Log</a> と組み合わせると特に強力で、watchlist 追加時にデプロイ時刻を自動回収できます。</p>
+        </div>
+        <div class="note">
+            <p><strong>重要:</strong> 履歴復元と減衰予測はローカルデータに依存します。必要なイベントをクライアントが見ていなければ、見積もりは不完全になります。</p>
+        </div>
+        <div class="note note-danger">
+            <p><strong>注意:</strong> これはローカル監視・計画ツールであり、サーバー側の完全な履歴を保証するものではありません。</p>
         </div>
 
-        <h2>変更履歴</h2>
-        <div class="changelog-entry">
-            <h3>バージョン 0.3.1</h3>
-            <ul>
-                <li>更新: 用語を公式のIngress標準に合わせて "Decay" に統一しました。</li>
-                <li>修正: データの誤上書きを防ぐため、健康状態の計算ロジックの堅牢性を向上させました。</li>
+        <section aria-labelledby="faq">
+            <h2 id="faq">よくある質問</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">視界外 Portal の減衰も予測できますか？</span> はい。十分なローカル履歴があれば、デプロイ時刻と現在状態から推定できます。</li>
+                <li><span class="faq-q">なぜ Player Activity Log が推奨されるのですか？</span> capture / deploy のローカル履歴を追加で提供し、Recharge Monitor の精度を高めるためです。</li>
+                <li><span class="faq-q">それでも予測が外れるのはなぜですか？</span> クライアントが見逃したイベントは履歴に存在しないため、前提情報そのものが不足するからです。</li>
             </ul>
-        </div>
-        <div class="changelog-entry">
-            <h3>バージョン 0.3.0</h3>
-            <ul>
-                <li>新規: リアルタイムのCOMM監視と履歴遡及同期機能を追加しました。</li>
-                <li>新規: Player Activity Log プラグインからの履歴復元を統合しました。</li>
-                <li>新規: ウォッチリストに「予測減衰」列を追加しました。</li>
-                <li>更新: すべての時刻表示をローカルタイム形式に切り替えました。</li>
-                <li>更新: UIとコメントを完全に英語に翻訳しました（グローバル対応）。</li>
+        </section>
+
+        <section aria-labelledby="related">
+            <h2 id="related">関連プラグイン</h2>
+            <ul class="related-list">
+                <li><a href="https://gongjupal.com/ingress/player-activity-log/index_ja.html" style="color:#ffce00;">Player Activity Log</a> はデプロイ時刻復元と活動履歴照合を補強します。</li>
+                <li><a href="https://gongjupal.com/ingress/portal-db/index_ja.html" style="color:#ffce00;">Portal DB</a> はより強いローカル Portal 基盤が必要な場合に役立ちます。</li>
+                <li><a href="https://gongjupal.com/ingress/portal-afterimage/index_ja.html" style="color:#ffce00;">Portal Afterimage</a> は地図上の Portal 記憶表示でこの監視系を補完します。</li>
             </ul>
-        </div>
-    </div>
+        </section>
+    </main>
 
 </body>
 </html>

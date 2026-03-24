@@ -1,198 +1,159 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC 插件：多边形 AP 统计 (Polygon AP Counter)</title>
+    <title>Polygon AP Counter for IITC | Ingress 区域 AP 分析插件</title>
+    <meta name="description" content="Polygon AP Counter 是 Niantic Ingress Intel Map 的 IITC 插件，可在 Draw Tools 多边形内统计 Portal、Link、Field 和双阵营 AP。">
+    <link rel="canonical" href="https://gongjupal.com/ingress/polygon-ap/index_zh-cn.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/polygon-ap/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/polygon-ap/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/polygon-ap/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/polygon-ap/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
+    <meta property="og:title" content="Polygon AP Counter for IITC | Ingress 区域 AP 分析插件">
+    <meta property="og:description" content="在 Niantic Ingress Intel Map 上统计 Draw Tools 多边形内的 Portal、Link、Field 和 ENL / RES AP 预估值。">
+    <meta property="og:url" content="https://gongjupal.com/ingress/polygon-ap/index_zh-cn.html">
+    <meta property="og:locale" content="zh_CN">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Polygon AP Counter for IITC | Ingress 区域 AP 分析插件">
+    <meta name="twitter:description" content="面向 Ingress 特工的 IITC 分析插件，可在用户绘制的多边形内计算 ENL / RES 潜在 AP。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Polygon AP Counter",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Polygon AP Counter 是 Niantic Ingress Intel Map 的 IITC 插件，可分析用户绘制多边形内的 Portal、Link、Field 以及 ENL / RES 潜在 AP。",
+      "url": "https://gongjupal.com/ingress/polygon-ap/index_zh-cn.html",
+      "softwareVersion": "1.0",
+      "inLanguage": "zh-CN",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/polygon-ap"
+    }
+    </script>
     <style>
-        body {
-            background-color: #0e1111;
-            color: #eee;
-            font-family: 'Roboto', sans-serif;
-            font-size: 16px;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .lang-switch {
-            position: fixed;
-            top: 20px;
-            right: 30px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #0ff;
-            z-index: 1000;
-        }
-
-        .lang-switch a {
-            color: #ffce00;
-            text-decoration: none;
-            font-family: 'Coda', cursive;
-        }
-
-        .lang-switch span {
-            color: #fff;
-            font-family: 'Coda', cursive;
-        }
-
-        .container {
-            max-width: 980px;
-            margin: 0 auto;
-            background-color: rgba(10, 25, 30, 0.85);
-            border: 1px solid #0ff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            padding: 25px 40px;
-            border-radius: 5px;
-        }
-
-        h1,
-        h2,
-        h3 {
-            font-family: 'Coda', cursive;
-            color: #0ff;
-            text-transform: uppercase;
-            text-shadow: 0 0 5px #0ff;
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 2.1em;
-            margin-bottom: 20px;
-        }
-
-        h2 {
-            font-size: 1.7em;
-            border-bottom: 1px solid #0aa;
-            padding-bottom: 10px;
-            margin-top: 32px;
-        }
-
-        h3 {
-            font-size: 1.1em;
-            color: #ffce00;
-            margin-top: 20px;
-        }
-
-        p,
-        li {
-            color: #ccc;
-        }
-
-        strong {
-            color: #ffce00;
-        }
-
-        code {
-            background-color: #000;
-            padding: 2px 5px;
-            border: 1px solid #333;
-            border-radius: 3px;
-            color: #fada5e;
-            font-family: 'Courier New', Courier, monospace;
-        }
-
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-
-        ul li {
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
-            padding-left: 25px;
-            margin-bottom: 10px;
-        }
-
-        .note {
-            background-color: rgba(255, 206, 0, 0.1);
-            border: 1px solid #ffce00;
-            padding: 14px;
-            border-radius: 4px;
-            margin: 16px 0;
-        }
-
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', 'Noto Sans SC', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', 'Noto Sans SC', cursive; margin: 0 5px; }
+        .container { max-width: 980px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', 'Noto Sans SC', cursive; text-shadow: 0 0 5px #0ff; }
+        h1 { color: #0ff; text-align: center; font-size: 2.1em; margin-bottom: 18px; }
+        h2 { color: #0ff; font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 32px; }
+        h3 { font-size: 1.1em; color: #ffce00; margin-top: 20px; }
+        p, li { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; font-family: 'Courier New', Courier, monospace; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { margin-bottom: 10px; color: #bbb; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li { margin-bottom: 12px; }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 14px; border-radius: 4px; margin: 16px 0; }
         .pac-enl { color: #03dc03; font-weight: bold; }
         .pac-res { color: #0492d0; font-weight: bold; }
-
+        .faq-q { color: #ffce00; font-weight: 700; }
         @media (max-width: 900px) {
-            .lang-switch {
-                position: static;
-                margin: 0 auto 12px auto;
-                width: fit-content;
-            }
-
-            .container {
-                padding: 20px;
-            }
+            .lang-switch { position: static; margin: 0 auto 12px auto; width: fit-content; }
+            .container { padding: 20px; }
         }
     </style>
 </head>
-
 <body>
     <div class="lang-switch">
-        <a href="index.html">English</a> | <span>简体中文</span> | <a href="index_ja.html">日本語</a>
+        <a href="https://gongjupal.com/ingress/polygon-ap/index.html" lang="en">English</a> |
+        <a href="https://gongjupal.com/ingress/polygon-ap/index_ja.html" lang="ja">日本語</a>
     </div>
 
-    <div class="container">
-        <h1>多边形 AP 统计 (Polygon AP Counter)</h1>
-        <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/polygon-ap" style="color: #ffce00; text-decoration: none; font-weight: 700;">在 GitHub 上查看此插件目录</a></p>
-
-        <p>
-            <strong>Polygon AP Counter</strong> 是一款 IITC 插件，专门用于分析 Intel 地图上封闭多边形区域内的 Portal、链接 (Link) 和控制场 (Field)。 
-            它可以快速预览两个阵营（启蒙军 ENL 和 抵抗军 RES）在该区域内可获得的潜在 <strong>AP (Action Points)</strong>，并统计 Portal 的总数。
+    <main class="container">
+        <h1>多边形 AP 统计</h1>
+        <p class="intro">适用于 Niantic Ingress Intel Map 的区域分析插件。</p>
+        <p class="summary"><strong>Polygon AP Counter</strong> 用来分析 Draw Tools 绘制的封闭多边形内的 Portal、Link 和 Field。它可以帮助 Ingress 特工快速估算 <span class="pac-enl">ENL</span> 与 <span class="pac-res">RES</span> 两个阵营在该区域内可能获得的 <strong>AP</strong>，并对多个目标区域进行横向比较。</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/polygon-ap">在 GitHub 上查看此插件目录</a> |
+            <a href="https://gongjupal.com/ingress/index_zh-cn.html">查看全部 IITC 插件</a>
         </p>
 
         <div class="note">
-            <p>
-                <strong>鸣谢：</strong> 原始多边形 Portal 统计插件由 57Cell 编写。 
-                由 <strong>Cloverjune</strong> 添加了 AP 统计功能并进行维护。
-            </p>
+            <p><strong>鸣谢：</strong> 原始 <strong>Polygon Portal Counter</strong> 由 <strong>57Cell</strong> 编写，后续的 AP 统计功能由 <strong>Cloverjune</strong> 添加并维护。</p>
         </div>
 
-        <h2>核心功能</h2>
-        <ul>
-            <li><strong>Portal 分析：</strong> 自动识别所有位于 Draw Tools 插件绘制的多边形内的 Portal。</li>
-            <li><strong>AP 计算：</strong> 计算包括占领、部署共振器以及摧毁敌方链接和控制场在内的潜在 AP 收益。</li>
-            <li><strong>阵营统计：</strong> 分别查看 <span class="pac-enl">启蒙军</span> 和 <span class="pac-res">抵抗军</span> 的独立 AP 数据。</li>
-            <li><strong>地图交互气泡：</strong> 在地图上直接以紧凑的标签显示 Portal 数量和阵营 AP。</li>
-            <li><strong>摘要表格：</strong> 提供包含每个多边形统计数据的详细列表及总计摘要。</li>
-        </ul>
+        <section aria-labelledby="who">
+            <h2 id="who">适合哪些用户</h2>
+            <p>这个插件适合在行动前评估目标区域的玩家，比如刷 AP、清场、重建区域，或者比较多个地块的收益潜力。它特别适合那些不想手动数 Portal、Link 和 Field，而希望快速得到双方阵营 AP 预估值的人。</p>
+        </section>
 
-        <h2>使用方法</h2>
-        <ol style="padding-left: 28px; color: #ccc;">
-            <li>确保已安装并启用 <strong>Draw Tools</strong> 插件。</li>
-            <li>使用 Draw Tools 在地图上绘制一个或多个 <strong>多边形 (Polygon)</strong>。</li>
-            <li>在左侧工具栏 (Toolbox) 中点击 <strong>Polygon AP Counter</strong>。</li>
-            <li>弹出对话框将显示每个已绘制多边形的统计数据。</li>
-            <li>如果移动了地图或修改了多边形，点击 <strong>Refresh</strong> 刷新数据。</li>
-            <li>点击表格中的 <strong>View</strong> 可以将地图中心定位到对应的多边形。</li>
-        </ol>
+        <section aria-labelledby="features">
+            <h2 id="features">核心功能</h2>
+            <ul class="feature-list">
+                <li><strong>基于多边形的 Portal 分析：</strong> 自动识别 <strong>Draw Tools</strong> 多边形内的所有 Portal。</li>
+                <li><strong>双阵营 AP 计算：</strong> 分别估算 <span class="pac-enl">启蒙军</span> 和 <span class="pac-res">抵抗军</span> 的潜在 AP。</li>
+                <li><strong>地图气泡标签：</strong> 在地图上直接显示每个多边形的紧凑统计信息。</li>
+                <li><strong>摘要表格：</strong> 按多边形列出详细统计，并提供总览。</li>
+                <li><strong>刷新与定位：</strong> 支持在修改多边形后重新计算，并快速跳转到目标区域。</li>
+            </ul>
+        </section>
 
-        <h2>AP 计算逻辑</h2>
-        <p>计算规则遵循标准的 Ingress AP 规则，类似于 <em>Available AP Statistics</em> 插件：</p>
-        <ul>
-            <li><strong>占领与部署：</strong> 包含占领中立 Portal 并完全部署 8 个共振器的 AP。</li>
-            <li><strong>摧毁：</strong> 包含摧毁敌方共振器、链接和控制场的 AP。</li>
-            <li><strong>Machina Portal：</strong> 包含收复 Machina 控制的 Portal 的 AP。</li>
-            <li><strong>链接与控制场：</strong> 如果链接或控制场的至少一个顶点在多边形内，则计入统计。</li>
-        </ul>
+        <section aria-labelledby="usage">
+            <h2 id="usage">如何使用</h2>
+            <ol>
+                <li>确认已经安装并启用 <strong>Draw Tools</strong>。</li>
+                <li>在地图上绘制一个或多个封闭多边形。</li>
+                <li>从 IITC toolbox 打开 <strong>Polygon AP Counter</strong>。</li>
+                <li>查看对话框中每个多边形的统计结果。</li>
+                <li>如果移动地图或修改了多边形，点击 <strong>Refresh</strong> 重新计算。</li>
+                <li>点击 <strong>View</strong> 将地图中心跳到对应多边形。</li>
+            </ol>
+        </section>
 
-        <h2>运行要求</h2>
-        <p>
-            此插件依赖于 <strong>Draw Tools</strong> 插件。如果没有绘制任何多边形，插件点击后将不显示任何有效数据。
-        </p>
+        <section aria-labelledby="logic">
+            <h2 id="logic">AP 计算逻辑</h2>
+            <ul class="feature-list">
+                <li><strong>占领与部署：</strong> 计入占领中立 Portal 以及完整部署 <strong>8 个共振器</strong> 的 AP。</li>
+                <li><strong>摧毁：</strong> 计入摧毁敌方共振器、Link 和 Field 的 AP。</li>
+                <li><strong>Machina 回收：</strong> 计入回收 Machina 控制 Portal 的 AP。</li>
+                <li><strong>Link 与 Field 规则：</strong> 只要 Link 或 Field 至少有一个顶点落在多边形边界内，就会被纳入统计。</li>
+            </ul>
+            <p>这套计算思路尽量贴近标准的 Ingress AP 规则，与 <em>Available AP Statistics</em> 的思路相近。</p>
+        </section>
 
-        <h2>作者信息</h2>
-        <ul>
-            <li>原始概念：<strong>57Cell</strong></li>
-            <li>当前维护 / AP 功能开发：<a href="https://gongjupal.com/ingress/" target="_blank">Cloverjune</a></li>
-        </ul>
-    </div>
+        <section aria-labelledby="requirements">
+            <h2 id="requirements">依赖与限制</h2>
+            <p>这个插件依赖 <strong>Draw Tools</strong>。如果没有绘制多边形，就没有可分析的区域，因此对话框也不会显示有意义的数据。</p>
+            <p>由于它基于当前 IITC 客户端已经获取到的 Portal、Link 和 Field 数据进行估算，所以结果更适合作为行动规划参考，而不是绝对实时、全局完整的真值。</p>
+        </section>
+
+        <section aria-labelledby="faq">
+            <h2 id="faq">常见问题</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">没有 Draw Tools 也能用吗？</span> 不能。它依赖 Draw Tools 提供的用户绘制多边形。</li>
+                <li><span class="faq-q">为什么 ENL 和 RES 要分开显示？</span> 因为区域内 Portal、Link 和 Field 的阵营归属不同，双方可以获得的 AP 潜力也不同。</li>
+                <li><span class="faq-q">移动地图后数字会变化吗？</span> 会。如果可见数据变化了，或者你修改了多边形，需要重新点击 <strong>Refresh</strong> 计算。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="related">
+            <h2 id="related">相关插件</h2>
+            <ul class="related-list">
+                <li><a href="https://gongjupal.com/ingress/all-portal-names/index_zh-cn.html" style="color:#ffce00;">All Portal Names</a> 可以在高密度多边形区域中保留更多标签，便于检查。</li>
+                <li><a href="https://gongjupal.com/ingress/player-activity-log/index_zh-cn.html" style="color:#ffce00;">Player Activity Log</a> 可从本地 COMM 历史角度补充区域分析信息。</li>
+                <li><a href="https://gongjupal.com/ingress/recharge-monitor/index_zh-cn.html" style="color:#ffce00;">Recharge Monitor</a> 在涉及防守和衰减窗口的区域规划时也很有帮助。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="authors">
+            <h2 id="authors">作者信息</h2>
+            <ul class="feature-list">
+                <li>原始概念：<strong>57Cell</strong></li>
+                <li>当前维护与 AP 功能：<a href="https://gongjupal.com/ingress/" target="_blank" rel="noopener" style="color:#ffce00;">Cloverjune</a></li>
+            </ul>
+        </section>
+    </main>
 </body>
-
 </html>

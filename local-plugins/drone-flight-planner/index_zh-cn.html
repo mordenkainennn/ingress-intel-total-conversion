@@ -1,323 +1,215 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITC 插件: 无人机飞行规划器 (Drone Flight Planner)</title>
+    <title>Drone Flight Planner for IITC | Ingress 无人机路线规划插件</title>
+    <meta name="description" content="Drone Flight Planner 是 Niantic Ingress Intel Map 的 IITC 插件，可基于 S2 机制、钥匙跳跃规则、JSON 导入导出和本地自动保存来规划无人机路线。">
+    <link rel="canonical" href="https://gongjupal.com/ingress/drone-flight-planner/index_zh-cn.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/drone-flight-planner/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/drone-flight-planner/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/drone-flight-planner/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/drone-flight-planner/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
+    <meta property="og:title" content="Drone Flight Planner for IITC | Ingress 无人机路线规划插件">
+    <meta property="og:description" content="在 Niantic Ingress Intel Map 上规划更长的无人机路线，支持 S2 可见性、钥匙跳跃限制、计划导出和战术叠加层。">
+    <meta property="og:url" content="https://gongjupal.com/ingress/drone-flight-planner/index_zh-cn.html">
+    <meta property="og:locale" content="zh_CN">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Drone Flight Planner for IITC | Ingress 无人机路线规划插件">
+    <meta name="twitter:description" content="面向 Ingress 特工的 IITC 无人机规划插件，支持 S2 机制、优化目标、DrawTools 导出与本地计划备份。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Drone Flight Planner",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Drone Flight Planner 是 Niantic Ingress Intel Map 的 IITC 插件，可从当前加载的 Portal 构建长距离无人机路线，支持 S2 机制并导出可复用的路线计划。",
+      "url": "https://gongjupal.com/ingress/drone-flight-planner/index_zh-cn.html",
+      "softwareVersion": "1.0",
+      "inLanguage": "zh-CN",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/drone-flight-planner"
+    }
+    </script>
     <style>
-        body {
-            background-color: #0e1111;
-            color: #eee;
-            font-family: 'Roboto', 'Noto Sans SC', sans-serif;
-            font-size: 16px;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .lang-switch {
-            position: fixed;
-            top: 20px;
-            right: 30px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #0ff;
-            z-index: 1000;
-        }
-
-        .lang-switch a {
-            color: #ffce00;
-            text-decoration: none;
-            font-family: 'Coda', cursive;
-        }
-
-        .lang-switch span {
-            color: #fff;
-            font-family: 'Coda', cursive;
-        }
-
-        .container {
-            max-width: 980px;
-            margin: 0 auto;
-            background-color: rgba(10, 25, 30, 0.85);
-            border: 1px solid #0ff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            padding: 25px 40px;
-            border-radius: 5px;
-        }
-
-        h1,
-        h2,
-        h3 {
-            font-family: 'Coda', 'Noto Sans SC', cursive;
-            color: #0ff;
-            text-transform: uppercase;
-            text-shadow: 0 0 5px #0ff;
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 2.4em;
-            margin-bottom: 20px;
-        }
-
-        h2 {
-            font-size: 1.7em;
-            border-bottom: 1px solid #0aa;
-            padding-bottom: 10px;
-            margin-top: 32px;
-        }
-
-        h3 {
-            font-size: 1.1em;
-            color: #ffce00;
-            margin-top: 20px;
-        }
-
-        p,
-        li {
-            color: #ccc;
-        }
-
-        strong {
-            color: #ffce00;
-        }
-
-        code {
-            background-color: #000;
-            padding: 2px 5px;
-            border: 1px solid #333;
-            border-radius: 3px;
-            color: #fada5e;
-            font-family: 'Courier New', Courier, monospace;
-        }
-
-        pre {
-            background-color: #111;
-            border: 1px solid #333;
-            padding: 12px;
-            border-radius: 4px;
-            overflow-x: auto;
-        }
-
-        pre code {
-            border: none;
-            padding: 0;
-            background: transparent;
-            color: #aaddff;
-        }
-
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-
-        ul li {
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%230ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat left 5px;
-            padding-left: 25px;
-            margin-bottom: 10px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th,
-        td {
-            border-bottom: 1px solid #233;
-            padding: 8px 6px;
-            text-align: left;
-            vertical-align: top;
-        }
-
-        th {
-            color: #ffce00;
-        }
-
-        .note {
-            background-color: rgba(255, 206, 0, 0.1);
-            border: 1px solid #ffce00;
-            padding: 14px;
-            border-radius: 4px;
-            margin: 16px 0;
-        }
-
-        .warn {
-            background-color: rgba(180, 40, 40, 0.2);
-            border: 1px solid #ff6666;
-        }
-
-        .two-col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-
-        .panel {
-            background: rgba(0, 0, 0, 0.25);
-            border: 1px solid #244;
-            border-radius: 4px;
-            padding: 12px;
-        }
-
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', 'Noto Sans SC', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', 'Noto Sans SC', cursive; margin: 0 5px; }
+        .container { max-width: 980px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', 'Noto Sans SC', cursive; text-shadow: 0 0 5px #0ff; }
+        h1 { color: #0ff; text-align: center; font-size: 2.4em; margin-bottom: 18px; }
+        h2 { color: #0ff; font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 32px; }
+        h3 { font-size: 1.1em; color: #ffce00; margin-top: 20px; }
+        p, li, td, th { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; font-family: 'Courier New', Courier, monospace; }
+        pre { background-color: #111; border: 1px solid #333; padding: 12px; border-radius: 4px; overflow-x: auto; }
+        pre code { border: none; padding: 0; background: transparent; color: #aaddff; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { margin-bottom: 10px; color: #bbb; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li { margin-bottom: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border-bottom: 1px solid #233; padding: 8px 6px; text-align: left; vertical-align: top; }
+        th { color: #ffce00; }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 14px; border-radius: 4px; margin: 16px 0; }
+        .warn { background-color: rgba(180, 40, 40, 0.2); border: 1px solid #ff6666; }
+        .warn strong { color: #ff8888; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .panel { background: rgba(0, 0, 0, 0.25); border: 1px solid #244; border-radius: 4px; padding: 12px; }
+        .faq-q { color: #ffce00; font-weight: 700; }
         @media (max-width: 900px) {
-            .lang-switch {
-                position: static;
-                margin: 0 auto 12px auto;
-                width: fit-content;
-            }
-
-            .container {
-                padding: 20px;
-            }
-
-            .two-col {
-                grid-template-columns: 1fr;
-            }
+            .lang-switch { position: static; margin: 0 auto 12px auto; width: fit-content; }
+            .container { padding: 20px; }
+            .two-col { grid-template-columns: 1fr; }
         }
     </style>
 </head>
-
 <body>
     <div class="lang-switch">
-        <a href="index.html">English</a> | <span>简体中文</span> | <a href="index_ja.html">日本語</a>
+        <a href="https://gongjupal.com/ingress/drone-flight-planner/index.html" lang="en">English</a> |
+        <a href="https://gongjupal.com/ingress/drone-flight-planner/index_ja.html" lang="ja">日本語</a>
     </div>
 
-    <div class="container">
+    <main class="container">
         <h1>无人机飞行规划器</h1>
-        <p style="text-align: center; margin: 0 0 24px 0;"><a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/drone-flight-planner" style="color: #ffce00; text-decoration: none; font-weight: 700;">在 GitHub 上查看此插件目录</a></p>
-
-        <p>
-            <strong>Drone Flight Planner</strong> 是一个 IITC 规划插件，用于从当前地图上加载的 Portal 构建长距离的无人机移动路线。
-            它支持经典的基于距离的路由以及基于 S2 的可见性模型，通过此插件，您可以优化更少的跳数、更少的长距离跳跃（需要钥匙），或者制定更具实际可玩性的平衡计划。
+        <p class="intro">适用于 Niantic Ingress Intel Map 的 IITC 无人机路线规划插件。</p>
+        <p class="summary"><strong>Drone Flight Planner</strong> 用来基于当前 Intel Map 已加载的 Portal 生成更长的无人机移动路线。它支持传统距离模型、S2 可见性机制、钥匙跳跃限制、战术叠加层，以及 JSON 导入导出，适合想要优化无人机行动效率的 Ingress 特工。</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/drone-flight-planner">在 GitHub 上查看此插件目录</a> |
+            <a href="https://gongjupal.com/ingress/index_zh-cn.html">查看全部 IITC 插件</a>
         </p>
 
         <div class="note">
-            <p>
-                <strong>鸣谢:</strong> 最初概念和插件代码由 <a href="https://www.youtube.com/@57Cell" target="_blank">57Cell</a> 创作。
-                由 <a href="https://gongjupal.com/ingress/" target="_blank">Cloverjune</a> 扩展和维护，包含 S2 机制工作流以及专注于性能的改进。
-            </p>
+            <p><strong>鸣谢：</strong> 最初概念和插件由 <a href="https://www.youtube.com/@57Cell" target="_blank" rel="noopener" style="color:#ffce00;">57Cell</a> 创建，后续由 <a href="https://gongjupal.com/ingress/" target="_blank" rel="noopener" style="color:#ffce00;">Cloverjune</a> 扩展和维护，加入了 S2 机制工作流与性能优化。</p>
         </div>
 
-        <h2>功能特性</h2>
-        <ul>
-            <li>扫描当前地图视口内的 Portal 并建立可达性图（reachability graph）。</li>
-            <li>让您选择一个起点 Portal，并计算出一条向外延伸的路线。</li>
-            <li>直接在插件的对话框内绘制路线线条并显示摘要文本。</li>
-            <li>支持 JSON 导出导入功能，以便用于路线转存和备份。</li>
-            <li>将最新计算的路线随时保存到浏览器的 localStorage 中，刷新后可快速恢复。</li>
-            <li>在地图上提供可选的战术叠加层，包括实时 S2 网格和单向跳跃警告。</li>
-        </ul>
+        <section aria-labelledby="who">
+            <h2 id="who">适合哪些用户</h2>
+            <p>如果你会认真规划长距离 drone 链、比较不同路线代价，或者希望把路线结果保存下来反复验证，这个插件会非常适合你。尤其当 scanner 范围、key 使用策略和 S2 可见性都会影响最终路径时，它的价值会很明显。</p>
+        </section>
 
-        <h2>规划工作流</h2>
-        <ol style="padding-left: 28px;">
-            <li>从侧边栏（toolbox）中打开插件: <code>Plan Drone Flight</code>。</li>
-            <li>移动地图到目标区域，然后点击 <code>Use Portals In View</code>（使用视口内 Portal）。</li>
-            <li>在地图上选定起飞 Portal (插件会高亮可供选择的起点)。</li>
-            <li>选择路线规划选项（包括目标偏好、算法、S2 设置以及 Key 使用策略）。</li>
-            <li>阅读生成的路线文本并检查地图图层上绘制的链接线。</li>
-            <li>如果您需要保存结果，使用 <code>Export Plan</code> 导出一份副本，完成操作后请根据需要清空缓存。</li>
-        </ol>
+        <section aria-labelledby="features">
+            <h2 id="features">核心功能</h2>
+            <ul class="feature-list">
+                <li><strong>基于视口规划：</strong> 扫描当前地图视野中已加载的 Portal，并构建可达性图。</li>
+                <li><strong>多种优化目标：</strong> 可以偏向更少跳数、更少钥匙跳跃，或选择较平衡的路线。</li>
+                <li><strong>S2 机制支持：</strong> 需要时可切换到基于 S2 单元的无人机可见性逻辑，而不是只看直线距离。</li>
+                <li><strong>JSON 导入导出：</strong> 方便在刷新后恢复路线，或在不同设备之间转移计划。</li>
+                <li><strong>本地自动保存：</strong> 自动把最近一次路线保存到浏览器 localStorage。</li>
+                <li><strong>战术叠加层：</strong> 显示活动 S2 网格和单向跳跃警告，便于复查路线可行性。</li>
+            </ul>
+        </section>
 
-        <h2>选项参考</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>分组</th>
-                    <th>选项</th>
-                    <th>含义</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>优化目标<br>(Optimization Goal)</td>
-                    <td><code>Min Hops</code> / <code>Balanced</code> / <code>Min Keys</code></td>
-                    <td>控制在较少的跳数与较少的耗费钥匙的长跳之间的偏好。</td>
-                </tr>
-                <tr>
-                    <td>搜索算法<br>(Search Algorithm)</td>
-                    <td><code>None</code>, <code>Greedy</code>, <code>Balanced</code>, <code>Perfect</code></td>
-                    <td>在计算速度和结果质量之间进行权衡。<code>Perfect</code> 是最缓慢但也是最详尽耗时的。</td>
-                </tr>
-                <tr>
-                    <td>S2 机制<br>(S2 Mechanics)</td>
-                    <td><code>Use S2 Mechanics</code></td>
-                    <td>开启后，从简单的范围半径检查切换为基于 S2 单元的能见度逻辑。</td>
-                </tr>
-                <tr>
-                    <td>S2 细节<br>(S2 Detail)</td>
-                    <td><code>S2 Level</code> (16 or 17)</td>
-                    <td>设置当前用于可达性判断与警报显示的激活 S2 网格大小（通常设为 16）。</td>
-                </tr>
-                <tr>
-                    <td>Scanner 限制<br>(Scanner Constraint)</td>
-                    <td><code>Scanner View Radius (m)</code></td>
-                    <td>指定无人机用于 S2 计算时的可视半径，默认设为 550m。</td>
-                </tr>
-                <tr>
-                    <td>战术叠加层<br>(Tactical Overlays)</td>
-                    <td><code>Show One-Way Warnings</code>, <code>Display Active Grid</code></td>
-                    <td>在地图上为有去无回的跳跃添加相应的视觉提醒，并展示当前生效的 S2 单元网格。</td>
-                </tr>
-                <tr>
-                    <td>长距离跳跃<br>(Long Jumps)</td>
-                    <td><code>Allow Keys (&lt;1.25km)</code> / <code>No Keys</code></td>
-                    <td>允许或禁止超过扫描仪范围并高达强制硬上限(1.25km)以内的长跳动作。</td>
-                </tr>
-            </tbody>
-        </table>
+        <section aria-labelledby="workflow">
+            <h2 id="workflow">规划流程</h2>
+            <ol>
+                <li>从 IITC 工具箱打开 <code>Plan Drone Flight</code>。</li>
+                <li>把地图移动到目标区域，然后点击 <code>Use Portals In View</code>。</li>
+                <li>在地图上选一个起点 Portal。</li>
+                <li>设置规划目标、搜索算法、S2 机制和 key 策略。</li>
+                <li>查看生成的路线文本和地图上的路线线段。</li>
+                <li>如果要保留结果，使用 <code>Export Plan</code> 导出计划。</li>
+            </ol>
+        </section>
 
-        <h2>按钮与操作</h2>
-        <div class="two-col">
-            <div class="panel">
-                <h3>计划控制 (Plan Controls)</h3>
-                <ul>
-                    <li><code>Use Portals In View</code>: 获取当前屏幕上所有已加载的 Portal。</li>
-                    <li><code>Switch End to Start</code>: 将当前的路线终点倒转为起点以继续规划路线。</li>
-                    <li><code>Export to DrawTools</code>: 将生成的路线线段发送到 DrawTools 图层。</li>
-                    <li><code>Export Plan</code>: 下载 <code>iitc-drone-plan.json</code>。</li>
-                    <li><code>Import Plan</code>: 导入适配的 JSON 路线计划数据文件。</li>
-                </ul>
+        <section aria-labelledby="options">
+            <h2 id="options">选项说明</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>分组</th>
+                        <th>选项</th>
+                        <th>含义</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>优化目标</td>
+                        <td><code>Min Hops</code> / <code>Balanced</code> / <code>Min Keys</code></td>
+                        <td>控制总跳数和长距离钥匙跳跃之间的权衡。</td>
+                    </tr>
+                    <tr>
+                        <td>搜索算法</td>
+                        <td><code>None</code>, <code>Greedy</code>, <code>Balanced</code>, <code>Perfect</code></td>
+                        <td>在速度与结果质量之间取舍。<code>Perfect</code> 最慢，也最彻底。</td>
+                    </tr>
+                    <tr>
+                        <td>S2 机制</td>
+                        <td><code>Use S2 Mechanics</code></td>
+                        <td>启用基于 S2 单元的可见性逻辑，而不只是简单半径判断。</td>
+                    </tr>
+                    <tr>
+                        <td>S2 细节</td>
+                        <td><code>S2 Level</code> (16 or 17)</td>
+                        <td>决定用于可达性与警告显示的活动网格大小。</td>
+                    </tr>
+                    <tr>
+                        <td>Scanner 限制</td>
+                        <td><code>Scanner View Radius (m)</code></td>
+                        <td>设置计算时采用的无人机可视半径，通常为 <strong>550 米</strong>。</td>
+                    </tr>
+                    <tr>
+                        <td>战术叠加层</td>
+                        <td><code>Show One-Way Warnings</code>, <code>Display Active Grid</code></td>
+                        <td>在地图上显示单向跳跃提示和当前生效的 S2 单元。</td>
+                    </tr>
+                    <tr>
+                        <td>长距离跳跃</td>
+                        <td><code>Allow Keys (&lt;1.25km)</code> / <code>No Keys</code></td>
+                        <td>控制是否允许超出 scanner 范围、但不超过硬上限的钥匙跳跃。</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section aria-labelledby="buttons">
+            <h2 id="buttons">按钮与操作</h2>
+            <div class="two-col">
+                <div class="panel">
+                    <h3>计划控制</h3>
+                    <ul class="feature-list">
+                        <li><code>Use Portals In View</code> 读取当前屏幕中已加载的 Portal。</li>
+                        <li><code>Switch End to Start</code> 以当前路线终点继续规划。</li>
+                        <li><code>Export to DrawTools</code> 将路线导出到 DrawTools 图层。</li>
+                        <li><code>Export Plan</code> 下载 <code>iitc-drone-plan.json</code>。</li>
+                        <li><code>Import Plan</code> 导入兼容的 JSON 路线文件。</li>
+                    </ul>
+                </div>
+                <div class="panel">
+                    <h3>缓存控制</h3>
+                    <ul class="feature-list">
+                        <li><code>Clear Start</code> 清除起点，但不完全重置缓存。</li>
+                        <li><code>Clear Unused</code> 只保留主路径使用到的 Portal。</li>
+                        <li><code>Clear Most</code> 保留主路径及其附近邻居。</li>
+                        <li><code>Clear All</code> 清除路线缓存和自动保存的数据。</li>
+                        <li><code>More Info</code> 查看作者信息、存储说明和安全提示。</li>
+                    </ul>
+                </div>
             </div>
-            <div class="panel">
-                <h3>缓存控制 (Cache Controls)</h3>
-                <ul>
-                    <li><code>Clear Start</code>: 清除刚才选定的起点而不用完全重置状态缓存。</li>
-                    <li><code>Clear Unused</code>: 将计算图缩减至仅保留主要路线经过的 Portal。</li>
-                    <li><code>Clear Most</code>: 清除除主干路线外加上附近邻近 Portal 之后的所有点。</li>
-                    <li><code>Clear All</code>: 全部清空规划缓存并移除对应自动保存的项。</li>
-                    <li><code>More Info</code>: 查看原作者页面，包括存储使用提示与防患警告。</li>
-                </ul>
-            </div>
-        </div>
+        </section>
 
-        <h2>数据存储与安全性</h2>
-        <p>
-            插件在浏览器本地 localStorage 存储配置和状态:
-            <code>plugin-drone-flight-planner-settings</code> 和 <code>drone-flight-plan-autosave</code>。
-            随着时间推移，生成的庞大路线计划占用可能不小。
-        </p>
+        <section aria-labelledby="storage">
+            <h2 id="storage">数据存储与安全性</h2>
+            <p>插件会把配置和自动保存的路线存入 localStorage，主要使用 <code>plugin-drone-flight-planner-settings</code> 与 <code>drone-flight-plan-autosave</code>。如果你经常在高密度区域反复试算，缓存体积会明显增加。</p>
+        </section>
 
         <div class="note warn">
-            <p>
-                <strong>⚠️警告:</strong> localStorage 额度是在浏览器内与其他所有 IITC 插件共享使用的。
-                如果存储额度耗尽了，系统环境内的别的插件可能会遭遇无法正常存放配置的异常。保持一个常规的习惯操作：如果用完了进行路线分享：<code>Export Plan</code> ，然后手动点击
-                <code>Clear All</code> 清除释放所占用的内容以策完全！
-            </p>
+            <p><strong>重要：</strong> localStorage 配额是和其他 IITC 插件共享的。如果大量路线缓存长期不清理，其他插件可能会因为空间不足而无法保存状态。比较稳妥的习惯是：用完后先 <code>Export Plan</code>，再执行 <code>Clear All</code>。</p>
         </div>
 
-        <h2>JSON 计划格式</h2>
-        <p>导出的计划文件包含了路线信息以及一个十分小巧的 Portal 数据字典表:</p>
-        <pre><code>{
+        <section aria-labelledby="json-format">
+            <h2 id="json-format">JSON 计划格式</h2>
+            <p>导出的计划文件包含路线数据和一个精简的 Portal 字典：</p>
+            <pre><code>{
   "name": "Drone Flight Plan",
   "version": "1.0",
   "startPortalGuid": "....",
@@ -327,28 +219,36 @@
     "guid1": { "name": "Portal A", "lat": 35.0, "lng": 139.0 }
   }
 }</code></pre>
-        <p>
-            就算原计划路线上的 Portal 都不在视野可视区域（或者没加载等），导入这个结构之后也能完完全全将被隐去部分复原并在地图重新构建显示出来。
-            支持借此恢复之前的计算记录甚至将计划档案直接在多台移动设备之间互相分享操作。
-        </p>
+            <p>即使这些 Portal 之后不再处于当前视野，导入计划文件后仍能重建路线所需的最小数据，方便继续规划或跨设备转移。</p>
+        </section>
 
-        <h2>性能说明(Performance Notes)</h2>
-        <ul>
-            <li>最终获得规划路线与算力运行表现完全取决于当前屏幕展示地图视差内的基站密集度状况（范围同理）。</li>
-            <li><code>Perfect</code> 算法模式为了防止堵塞 UI 主线程，使用时间片分片切割策略跑后台任务执行。即便如此密集基站群也由于量大势必极其漫长等待导致地图发闷假死。</li>
-            <li>反复来回调教寻找适合落点并多发尝试生成线路迭代的情况下，适时依靠点击 <code>Clear Unused</code> 或者 <code>Clear Most</code>
-                清内存按钮可以明显减轻由于大量点构筑运算耗费卡顿的副作用。</li>
-            <li>假如你明显感受地图加载卡卡的时候（拉扯刷新有停滞撕裂错觉等），可以进入选项界面把用不到的指示网格和一些预警提示（像 <code>Display Active Grid</code>
-                ）给先按黑即可立竿见影缓解症状。</li>
-        </ul>
+        <section aria-labelledby="performance">
+            <h2 id="performance">性能说明</h2>
+            <ul class="feature-list">
+                <li>路线质量和计算时间都非常依赖当前地图视野中的 Portal 密度。</li>
+                <li><code>Perfect</code> 模式虽然使用时间片处理来减少卡顿，但在高密度区域依然会比较重。</li>
+                <li>反复试算时，<code>Clear Unused</code> 和 <code>Clear Most</code> 能帮助减少图规模。</li>
+                <li>如果地图明显变慢，建议关闭不需要的叠加层，比如活动网格或单向警告。</li>
+            </ul>
+        </section>
 
-        <h2>作者链接</h2>
-        <ul>
-            <li>57Cell (初代作者): <a href="https://www.youtube.com/@57Cell" target="_blank">YouTube 频道</a></li>
-            <li>Cloverjune (现在接管者与维护人): <a href="https://gongjupal.com/ingress/"
-                    target="_blank">https://gongjupal.com/ingress/</a></li>
-        </ul>
-    </div>
+        <section aria-labelledby="faq">
+            <h2 id="faq">常见问题</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">这个插件只使用当前 IITC 已加载的 Portal 吗？</span> 是的。规划基于当前 Intel Map 视野中的 Portal，或者你导入的计划文件。</li>
+                <li><span class="faq-q">为什么要用 S2 机制？</span> 当单纯的直线距离不足以反映真实无人机可达性时，S2 模式能更接近实际行为。</li>
+                <li><span class="faq-q">路线可以在多设备之间转移吗？</span> 可以。导出 JSON 后，就能在其他浏览器或设备中导入使用。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="related">
+            <h2 id="related">相关插件</h2>
+            <ul class="related-list">
+                <li><a href="https://gongjupal.com/ingress/uniques-tools/index_zh-cn.html" style="color:#ffce00;">Uniques Tools</a> 可以配合记录 drone 历史与最后位置，方便路线执行后的追踪。</li>
+                <li><a href="https://gongjupal.com/ingress/portal-db/index_zh-cn.html" style="color:#ffce00;">Portal DB</a> 能补强本地 Portal 数据基础，对规划类工作流很有帮助。</li>
+                <li><a href="https://gongjupal.com/ingress/overlay-planner/index_zh-cn.html" style="color:#ffce00;">Overlay Planner</a> 适合把无人机路线与其他地图标记一起比较和整理。</li>
+            </ul>
+        </section>
+    </main>
 </body>
-
 </html>
