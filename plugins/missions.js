@@ -1,13 +1,14 @@
 // @author         jonatkins
 // @name           Missions
 // @category       Info
-// @version        0.3.5
+// @version        0.3.6
 // @description    View missions. Marking progress on waypoints/missions basis. Showing mission paths on the map.
 
 /* exported setup, changelog --eslint */
 /* global IITC, L -- eslint */
 
 var changelog = [
+  { version: '0.3.6', changes: ['Refactoring: update Leaflet API usage'] },
   {
     version: '0.3.5',
     changes: ['Fix mission link missing from sidebar'],
@@ -506,18 +507,12 @@ window.plugin.missions = {
   renderMissionList: function (missions) {
     var container = document.createElement('div');
 
-    // Sort by name
-    function compare(a, b) {
-      if (a.title < b.title) {
-        return -1;
-      }
-      if (a.title > b.title) {
-        return 1;
-      }
-      return 0;
-    }
-
-    missions.sort(compare);
+    // Natural Alphanumeric Sort
+    const collator = new Intl.Collator(undefined, {
+      numeric: true,
+      sensitivity: 'base',
+    });
+    missions.sort((a, b) => collator.compare(a.title, b.title));
 
     missions.forEach(function (mission) {
       container.appendChild(this.renderMissionSummary(mission));

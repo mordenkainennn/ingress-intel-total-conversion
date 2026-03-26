@@ -1,6 +1,6 @@
 // @author         jonatkins
 // @name           IITC: Ingress intel map total conversion
-// @version        0.42.0
+// @version        0.42.2
 // @description    Total conversion for the ingress intel map.
 // @run-at         document-end
 
@@ -17,8 +17,22 @@ window.IITC = IITC;
 window.script_info = plugin_info;
 window.script_info.changelog = [
   {
+    version: '0.42.2',
+    changes: ['Fix LatLng instantiation in artifacts'],
+  },
+  {
+    version: '0.42.1',
+    changes: ['Fix drawn circles disappearing on refresh and failing to import'],
+  },
+  {
     version: '0.42.0',
-    changes: ['Update and supplement ingress constants for access points'],
+    changes: [
+      'Introduce IITC.statusbar API with modular template-based rendering for map and portal status',
+      'Add safe-area support for edge-to-edge displays on Android 15+ and iOS 11+',
+      'Fix portal range circles not updating after portal detail load',
+      'Fix restoring saved map layer for plugins loaded after map initialization',
+      'Update and supplement ingress constants for access points',
+    ],
   },
   {
     version: '0.41.0',
@@ -273,19 +287,6 @@ window.REFRESH_GAME_SCORE = 15 * 60;
  */
 window.MAX_IDLE_TIME = 15 * 60;
 
-/**
- * How much space to leave for scrollbars, in pixels, default 20.
- * @type {number}
- * @memberof config_options
- */
-window.HIDDEN_SCROLLBAR_ASSUMED_WIDTH = 20;
-
-/**
- * How wide should the sidebar be, in pixels, default 300.
- * @type {number}
- * @memberof config_options
- */
-window.SIDEBAR_WIDTH = 300;
 
 /**
  * Controls requesting chat data based on the pixel distance from the line currently in view
@@ -295,12 +296,6 @@ window.SIDEBAR_WIDTH = 300;
  */
 window.CHAT_REQUEST_SCROLL_TOP = 200;
 
-/**
- * Controls height of chat when chat is collapsed, in pixels, default 60
- * @type {number}
- * @memberof config_options
- */
-window.CHAT_SHRINKED = 60;
 
 /**
  * What colour should the selected portal be, string(css hex code), default ‘#f0f’ (hot pink)
