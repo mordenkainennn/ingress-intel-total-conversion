@@ -31,7 +31,7 @@
       "operatingSystem": "Web Browser",
       "description": "Recharge Monitor is an IITC plugin for Niantic's Ingress Intel Map that watches portal health, predicts decay timing, and recovers deploy history from local COMM and activity logs.",
       "url": "https://gongjupal.com/ingress/recharge-monitor/index.html",
-      "softwareVersion": "0.3.1",
+      "softwareVersion": "0.5.0",
       "inLanguage": "en",
       "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/recharge-monitor"
     }
@@ -85,6 +85,7 @@
             <h2 id="features">Key Features</h2>
             <ul class="feature-list">
                 <li><strong>Watchlist dashboard:</strong> Add portals from the details pane and manage them from one central monitor.</li>
+                <li><strong>Bookmark-style groups:</strong> Organize large watchlists into collapsible groups, rename groups, and move portals between them.</li>
                 <li><strong>Portal health tracking:</strong> Review current energy, last-seen status, and deployment timing signals for watched portals.</li>
                 <li><strong>Decay prediction:</strong> Estimate when an out-of-view portal will neutralize based on the standard 15% daily decay pattern.</li>
                 <li><strong>History recovery:</strong> Recover deploy timing from COMM backfill and from <strong>Player Activity Log</strong> integration.</li>
@@ -107,6 +108,7 @@
             <ol>
                 <li>Select a portal and use the details pane to add it to the watchlist.</li>
                 <li>Open the main dashboard from the <strong>Recharge Mon</strong> toolbox button.</li>
+                <li>Create groups when your watchlist gets large, then move portals into the right sections for anchors, farms, or regional defense targets.</li>
                 <li>Use <strong>Sync History</strong> when you want to improve deployment-time accuracy from local history sources.</li>
                 <li>Watch for orange or red toolbox warnings when portal energy falls into dangerous territory.</li>
             </ol>
@@ -114,6 +116,35 @@
 
         <section aria-labelledby="whats-new">
             <h2 id="whats-new">What&apos;s New</h2>
+            <h3>Version 0.5.0</h3>
+            <ul class="feature-list">
+                <li>Added bookmark-style groups for the recharge watchlist, including create, rename, delete, collapse, and portal move actions.</li>
+                <li>Removed a browser-incompatible import that could stop the plugin from loading in IITC.</li>
+            </ul>
+            <h3>Version 0.4.4</h3>
+            <ul class="feature-list">
+                <li>Improved sync feedback with a summary of how many portals were updated.</li>
+            </ul>
+            <h3>Version 0.4.3</h3>
+            <ul class="feature-list">
+                <li>Added total XM needed to fully recharge all monitored portals.</li>
+                <li>Added a total daily decay estimate for the current watchlist.</li>
+                <li>Improved max-XM estimation when only map summary data is available.</li>
+            </ul>
+            <h3>Version 0.4.2</h3>
+            <ul class="feature-list">
+                <li>Added an <strong>About</strong> button to the watchlist dialog.</li>
+                <li>Expanded the built-in documentation for dependency requirements.</li>
+            </ul>
+            <h3>Version 0.4.1</h3>
+            <ul class="feature-list">
+                <li>Migrated history sync to the asynchronous <strong>Player Activity Log</strong> API.</li>
+                <li>Improved cross-plugin sync reliability.</li>
+            </ul>
+            <h3>Version 0.3.2</h3>
+            <ul class="feature-list">
+                <li>Corrected the UserScript update and download URLs.</li>
+            </ul>
             <h3>Version 0.3.1</h3>
             <ul class="feature-list">
                 <li>Unified terminology to <strong>Decay</strong> to better match official Ingress wording.</li>

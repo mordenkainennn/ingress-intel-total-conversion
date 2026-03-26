@@ -2,7 +2,7 @@
 // @id             iitc-plugin-recharge-monitor
 // @name           IITC plugin: Recharge Monitor & Decay Predictor
 // @category       Info
-// @version        0.4.4
+// @version        0.5.0
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/recharge-monitor/recharge-monitor.meta.js
 // @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/recharge-monitor/recharge-monitor.user.js
@@ -13,17 +13,22 @@
 // @grant          none
 // ==/UserScript==
 
-const { version } = require("react");
-
 function wrapper(plugin_info) {
 
     if (typeof window.plugin !== 'function') window.plugin = function () { };
 
     plugin_info.buildName = 'RechargeMonitor';
-    plugin_info.dateTimeVersion = '202602212340';
+    plugin_info.dateTimeVersion = '202603261200';
     plugin_info.pluginId = 'recharge-monitor';
 
     var changelog = [
+        {
+            version: '0.5.0',
+            changes: [
+                'NEW: Added bookmark-style groups for the recharge watchlist, including create, rename, delete, collapse, and portal move actions.',
+                'FIX: Removed a stray browser-incompatible import that could prevent the plugin from loading.',
+            ],
+        },
         {
             version: '0.4.4',
             changes: [
@@ -64,23 +69,139 @@ function wrapper(plugin_info) {
     const self = window.plugin.rechargeMonitor;
 
     const STORAGE_KEY = 'iitc-plugin-recharge-monitor-data';
+    self.DEFAULT_GROUP = 'idOthers';
     self.data = {};
+    self.groups = {};
 
     /* ---------------- Data Storage ---------------- */
 
+    self.createDefaultGroups = function () {
+        return {
+            [self.DEFAULT_GROUP]: { label: 'Others', state: 1 }
+        };
+    };
+
+    self.generateGroupId = function () {
+        return 'id' + Date.now().toString() + Math.floor(Math.random() * 1000).toString();
+    };
+
+    self.ensureDataModel = function () {
+        self.groups = self.groups || self.createDefaultGroups();
+        if (!self.groups[self.DEFAULT_GROUP]) {
+            self.groups[self.DEFAULT_GROUP] = { label: 'Others', state: 1 };
+        }
+
+        Object.keys(self.data).forEach(function (guid) {
+            const portal = self.data[guid];
+            if (!portal || typeof portal !== 'object') return;
+            if (!portal.groupId || !self.groups[portal.groupId]) {
+                portal.groupId = self.DEFAULT_GROUP;
+            }
+        });
+    };
+
     self.save = function () {
-        localStorage[STORAGE_KEY] = JSON.stringify(self.data);
+        self.ensureDataModel();
+        localStorage[STORAGE_KEY] = JSON.stringify({
+            version: 2,
+            portals: self.data,
+            groups: self.groups
+        });
     };
 
     self.load = function () {
         try {
             if (localStorage[STORAGE_KEY]) {
-                self.data = JSON.parse(localStorage[STORAGE_KEY]);
+                const parsed = JSON.parse(localStorage[STORAGE_KEY]);
+                if (parsed && parsed.version === 2 && parsed.portals) {
+                    self.data = parsed.portals || {};
+                    self.groups = parsed.groups || self.createDefaultGroups();
+                } else {
+                    self.data = parsed || {};
+                    self.groups = self.createDefaultGroups();
+                }
             }
+            self.ensureDataModel();
         } catch (e) {
             console.error('Recharge Monitor: load failed', e);
             self.data = {};
+            self.groups = self.createDefaultGroups();
         }
+    };
+
+    self.escapeHtml = function (text) {
+        return String(text || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
+    self.getGroupEntries = function () {
+        const entries = [];
+        Object.keys(self.groups).forEach(function (groupId) {
+            entries.push({ id: groupId, label: self.groups[groupId].label || 'Unnamed', state: self.groups[groupId].state ? 1 : 0 });
+        });
+        entries.sort(function (a, b) {
+            if (a.id === self.DEFAULT_GROUP) return 1;
+            if (b.id === self.DEFAULT_GROUP) return -1;
+            return a.label.localeCompare(b.label);
+        });
+        return entries;
+    };
+
+    self.toggleGroup = function (groupId) {
+        if (!self.groups[groupId]) return;
+        self.groups[groupId].state = self.groups[groupId].state ? 0 : 1;
+        self.save();
+        self.showList(true);
+    };
+
+    self.createGroup = function () {
+        const label = prompt('Enter new group name');
+        if (!label) return;
+        const safeLabel = label.trim();
+        if (!safeLabel) return;
+
+        const id = self.generateGroupId();
+        self.groups[id] = { label: safeLabel, state: 1 };
+        self.save();
+        self.showList(true);
+    };
+
+    self.renameGroup = function (groupId) {
+        if (!self.groups[groupId] || groupId === self.DEFAULT_GROUP) return;
+        const label = prompt('Rename group', self.groups[groupId].label || '');
+        if (!label) return;
+        const safeLabel = label.trim();
+        if (!safeLabel) return;
+
+        self.groups[groupId].label = safeLabel;
+        self.save();
+        self.showList(true);
+    };
+
+    self.deleteGroup = function (groupId) {
+        if (!self.groups[groupId] || groupId === self.DEFAULT_GROUP) return;
+        if (!confirm('Delete this group and move its portals to Others?')) return;
+
+        Object.keys(self.data).forEach(function (guid) {
+            if (self.data[guid] && self.data[guid].groupId === groupId) {
+                self.data[guid].groupId = self.DEFAULT_GROUP;
+            }
+        });
+
+        delete self.groups[groupId];
+        self.save();
+        self.showList(true);
+    };
+
+    self.movePortalToGroup = function (guid, groupId) {
+        if (!self.data[guid] || !self.groups[groupId]) return;
+        self.data[guid].groupId = groupId;
+        self.save();
+        self.showList(true);
     };
 
     /* ---------------- Core Logic ---------------- */
@@ -378,7 +499,8 @@ function wrapper(plugin_info) {
                 lastSeenHealth: p.options.data.health,
                 lastSeenTime: Date.now(),
                 level: p.options.data.level,
-                resCount: p.options.data.resCount
+                resCount: p.options.data.resCount,
+                groupId: self.DEFAULT_GROUP
             };
             const details = window.portalDetail.get(guid);
             if (details && details.resonators) {
@@ -428,17 +550,33 @@ function wrapper(plugin_info) {
     self.showList = function () {
         if ($('#recharge-monitor-dialog').length === 0 && arguments.length === 0) return;
         try {
-            let html = `<table class="recharge-table" style="width:100%"><tr><th>Portal</th><th>Health</th><th>Deploy Time</th><th>Est. Decay</th><th>Action</th></tr>`;
+            self.ensureDataModel();
+
+            const groupEntries = self.getGroupEntries();
+            const portalsByGroup = {};
             let totalMissingXM = 0, totalDailyDecay = 0, exactCount = 0, usedEstimates = false;
+
             for (const guid in self.data) {
                 const p = self.data[guid];
                 if (!p || !p.latlng) continue;
+
+                const groupId = p.groupId && self.groups[p.groupId] ? p.groupId : self.DEFAULT_GROUP;
+                if (!portalsByGroup[groupId]) portalsByGroup[groupId] = [];
+
                 const h = self.calculateHealth(guid);
                 const c = h <= 30 ? '#f00' : '#0f0';
                 const lat = typeof p.latlng.lat !== 'undefined' ? p.latlng.lat : (Array.isArray(p.latlng) ? p.latlng[0] : 0);
                 const lng = typeof p.latlng.lng !== 'undefined' ? p.latlng.lng : (Array.isArray(p.latlng) ? p.latlng[1] : 0);
-                const safeName = (p.name || 'Unknown').replace(/"/g, '&quot;');
-                html += `<tr><td><a onclick="window.zoomToAndShowPortal('${guid}',[${lat},${lng}]);">${safeName}</a></td><td style="color:${c};font-weight:bold">${(h || 0).toFixed(0)}%</td><td>${self.formatTime(p.captureTime)}</td><td>${self.estimateDecay(h, p.lastSeenTime, p.captureTime)}</td><td><a onclick="window.plugin.rechargeMonitor.toggleWatch('${guid}'); setTimeout(window.plugin.rechargeMonitor.showList, 100);">Del</a></td></tr>`;
+                portalsByGroup[groupId].push({
+                    guid: guid,
+                    name: p.name || 'Unknown',
+                    health: h || 0,
+                    healthColor: c,
+                    captureTime: p.captureTime,
+                    lastSeenTime: p.lastSeenTime,
+                    lat: lat,
+                    lng: lng
+                });
 
                 const maxEng = self.getEstimatedMaxEnergy(guid);
                 if (maxEng.value > 0) {
@@ -448,7 +586,66 @@ function wrapper(plugin_info) {
                     else usedEstimates = true;
                 }
             }
-            html += '</table>';
+
+            let html = '<div class="recharge-groups-toolbar"><a onclick="window.plugin.rechargeMonitor.createGroup();return false;">+ Group</a></div>';
+
+            groupEntries.forEach(function (group) {
+                const portals = portalsByGroup[group.id] || [];
+                const isOpen = group.state;
+                const safeLabel = self.escapeHtml(group.label);
+                const arrow = isOpen ? '&#9660;' : '&#9658;';
+
+                html += `<div class="recharge-group">
+                    <div class="recharge-group-header">
+                        <a class="recharge-group-toggle" onclick="window.plugin.rechargeMonitor.toggleGroup('${group.id}');return false;">${arrow} ${safeLabel}</a>
+                        <span class="recharge-group-count">${portals.length}</span>`;
+
+                if (group.id !== self.DEFAULT_GROUP) {
+                    html += `<span class="recharge-group-actions">
+                        <a onclick="window.plugin.rechargeMonitor.renameGroup('${group.id}');return false;">Rename</a>
+                        <a onclick="window.plugin.rechargeMonitor.deleteGroup('${group.id}');return false;">Delete</a>
+                    </span>`;
+                }
+
+                html += '</div>';
+
+                if (isOpen) {
+                    html += `<table class="recharge-table" style="width:100%"><tr><th>Portal</th><th>Health</th><th>Deploy Time</th><th>Est. Decay</th><th>Group</th><th>Action</th></tr>`;
+
+                    if (portals.length === 0) {
+                        html += `<tr><td colspan="6" class="recharge-empty">No portals in this group</td></tr>`;
+                    } else {
+                        portals.sort(function (a, b) {
+                            return a.health - b.health || a.name.localeCompare(b.name);
+                        });
+
+                        portals.forEach(function (portal) {
+                            const safeName = self.escapeHtml(portal.name);
+                            const selectOptions = groupEntries.map(function (entry) {
+                                const selected = entry.id === group.id ? ' selected' : '';
+                                return `<option value="${entry.id}"${selected}>${self.escapeHtml(entry.label)}</option>`;
+                            }).join('');
+
+                            html += `<tr>
+                                <td><a onclick="window.zoomToAndShowPortal('${portal.guid}',[${portal.lat},${portal.lng}]);">${safeName}</a></td>
+                                <td style="color:${portal.healthColor};font-weight:bold">${portal.health.toFixed(0)}%</td>
+                                <td>${self.formatTime(portal.captureTime)}</td>
+                                <td>${self.estimateDecay(portal.health, portal.lastSeenTime, portal.captureTime)}</td>
+                                <td>
+                                    <select onchange="window.plugin.rechargeMonitor.movePortalToGroup('${portal.guid}', this.value)">
+                                        ${selectOptions}
+                                    </select>
+                                </td>
+                                <td><a onclick="window.plugin.rechargeMonitor.toggleWatch('${portal.guid}'); setTimeout(window.plugin.rechargeMonitor.showList, 100);">Del</a></td>
+                            </tr>`;
+                        });
+                    }
+
+                    html += '</table>';
+                }
+
+                html += '</div>';
+            });
 
             const countAll = Object.keys(self.data).length;
             if (countAll > 0) {
@@ -500,7 +697,7 @@ function wrapper(plugin_info) {
         const t = setInterval(() => { if (addToolboxButton() || ++tries > 20) clearInterval(t); }, 500);
         self.loop();
         setInterval(self.loop, 60000);
-        $('<style>').text('.recharge-table td{padding:4px;text-align:center;border-bottom:1px solid #20A8B1}').appendTo('head');
+        $('<style>').text('.recharge-table td,.recharge-table th{padding:4px;text-align:center;border-bottom:1px solid #20A8B1}.recharge-group{margin-bottom:10px;border:1px solid #20A8B1;border-radius:4px;overflow:hidden}.recharge-group-header{display:flex;align-items:center;gap:8px;padding:6px 8px;background:rgba(32,168,177,0.12)}.recharge-group-toggle{font-weight:bold;flex:1}.recharge-group-count{color:#ffce00}.recharge-group-actions a{margin-left:8px}.recharge-groups-toolbar{margin-bottom:10px;text-align:right}.recharge-empty{color:#aaa;padding:10px 4px}.recharge-table select{width:100%;max-width:140px;background:#111;color:#ddd;border:1px solid #20A8B1}').appendTo('head');
         console.log('Recharge Monitor: loaded');
     };
 
