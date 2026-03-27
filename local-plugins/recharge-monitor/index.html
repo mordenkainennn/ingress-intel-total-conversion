@@ -31,7 +31,7 @@
       "operatingSystem": "Web Browser",
       "description": "Recharge Monitor is an IITC plugin for Niantic's Ingress Intel Map that watches portal health, predicts decay timing, and recovers deploy history from local COMM and activity logs.",
       "url": "https://gongjupal.com/ingress/recharge-monitor/index.html",
-      "softwareVersion": "0.5.2",
+      "softwareVersion": "0.5.4",
       "inLanguage": "en",
       "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/recharge-monitor"
     }
@@ -91,6 +91,7 @@
                 <li><strong>History recovery:</strong> Recover deploy timing from COMM backfill and from <strong>Player Activity Log</strong> integration.</li>
                 <li><strong>Recharge alerts:</strong> Show warning counts in the toolbox when watched portals fall below the health threshold.</li>
                 <li><strong>Cleaner watchlist layout:</strong> The watchlist dialog is wider and keeps <strong>Deploy Time</strong> and <strong>Est. Decay</strong> on a single line for easier scanning.</li>
+                <li><strong>Map highlighter:</strong> Adds a <strong>Recharge Monitor</strong> highlighter where watched red-zone portals show in red, watched healthy portals keep their original look, and unwatched portals use a muted gray-purple tone.</li>
             </ul>
         </section>
 
@@ -117,6 +118,16 @@
 
         <section aria-labelledby="whats-new">
             <h2 id="whats-new">What&apos;s New</h2>
+            <h3>Version 0.5.4</h3>
+            <ul class="feature-list">
+                <li>Refined the new Recharge Monitor highlighter with a softer gray-purple color for unwatched portals.</li>
+                <li>Documented the map-highlighting behavior for watched danger portals, watched healthy portals, and unwatched portals.</li>
+            </ul>
+            <h3>Version 0.5.3</h3>
+            <ul class="feature-list">
+                <li>Added a <strong>Recharge Monitor</strong> portal highlighter.</li>
+                <li>Watched portals in the red health zone now highlight red, while watched healthy portals keep their normal map color.</li>
+            </ul>
             <h3>Version 0.5.2</h3>
             <ul class="feature-list">
                 <li>Group names now turn red when any portal in that group drops into the red health zone, even if the group is collapsed.</li>

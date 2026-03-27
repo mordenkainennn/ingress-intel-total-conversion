@@ -2,7 +2,7 @@
 // @id             iitc-plugin-recharge-monitor
 // @name           IITC plugin: Recharge Monitor & Decay Predictor
 // @category       Info
-// @version        0.5.2
+// @version        0.5.4
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/recharge-monitor/recharge-monitor.meta.js
 // @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/recharge-monitor/recharge-monitor.user.js
@@ -18,10 +18,22 @@ function wrapper(plugin_info) {
     if (typeof window.plugin !== 'function') window.plugin = function () { };
 
     plugin_info.buildName = 'RechargeMonitor';
-    plugin_info.dateTimeVersion = '202603271330';
+    plugin_info.dateTimeVersion = '202603271430';
     plugin_info.pluginId = 'recharge-monitor';
 
     var changelog = [
+        {
+            version: '0.5.4',
+            changes: [
+                'UPD: Refined the Recharge Monitor highlighter with a muted gray-purple color for unwatched portals and documented the new highlight behavior.',
+            ],
+        },
+        {
+            version: '0.5.3',
+            changes: [
+                'NEW: Added a portal highlighter for Recharge Monitor: watched red-zone portals highlight red, watched healthy portals keep their normal color, and unwatched portals highlight purple.',
+            ],
+        },
         {
             version: '0.5.2',
             changes: [
@@ -324,6 +336,47 @@ function wrapper(plugin_info) {
 
         // Tier 3: Fallback (Assume standard 8 Res L5 portal)
         return { value: 24000, exact: false };
+    };
+
+    self.getHighlightHealth = function (guid, portal) {
+        const pData = self.data[guid];
+        if (!pData) return null;
+
+        const portalData = portal && portal.options ? portal.options.data : null;
+        if (portalData && typeof portalData.health === 'number') {
+            return portalData.health;
+        }
+
+        const lastHealth = typeof pData.lastSeenHealth === 'number' ? pData.lastSeenHealth : 0;
+        const lastTime = typeof pData.lastSeenTime === 'number' ? pData.lastSeenTime : Date.now();
+        const hours = (Date.now() - lastTime) / 36e5;
+        const days = Math.floor(hours / 24);
+        const predicted = lastHealth - days * 15;
+        return predicted > 0 ? predicted : 0;
+    };
+
+    self.highlighter = {
+        highlight: function (data) {
+            const guid = data.portal.options.guid;
+            const watched = !!self.data[guid];
+
+            if (!watched) {
+                data.portal.setStyle({
+                    fillColor: '#7b6d8d',
+                    fillOpacity: 0.35,
+                });
+                return;
+            }
+
+            const health = self.getHighlightHealth(guid, data.portal);
+            if (health !== null && health <= 30) {
+                data.portal.setStyle({
+                    fillColor: 'red',
+                    fillOpacity: 0.7,
+                });
+            }
+        },
+        setSelected: function () { },
     };
 
     /* ---------------- History Integration ---------------- */
@@ -708,6 +761,7 @@ function wrapper(plugin_info) {
     const setup = function () {
         self.load();
         self.setupPortals();
+        window.addPortalHighlighter('Recharge Monitor', self.highlighter);
         window.addHook('publicChatDataAvailable', self.handleCommData);
         let tries = 0;
         const t = setInterval(() => { if (addToolboxButton() || ++tries > 20) clearInterval(t); }, 500);

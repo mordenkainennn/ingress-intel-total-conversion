@@ -31,7 +31,7 @@
       "operatingSystem": "Web Browser",
       "description": "Recharge Monitor は Niantic Ingress Intel マップ向けの IITC プラグインで、Portal 健康状態を監視し、減衰時刻を予測し、ローカル COMM と活動履歴からデプロイ時刻を復元します。",
       "url": "https://gongjupal.com/ingress/recharge-monitor/index_ja.html",
-      "softwareVersion": "0.5.2",
+      "softwareVersion": "0.5.4",
       "inLanguage": "ja",
       "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/recharge-monitor"
     }
@@ -91,6 +91,7 @@
                 <li><strong>履歴復元:</strong> COMM バックフィルと <strong>Player Activity Log</strong> 連携から、より正確なデプロイ時刻を復元できます。</li>
                 <li><strong>リチャージ警告:</strong> 監視 Portal の健康状態が閾値を下回ると、ツールボックスに警告件数を表示します。</li>
                 <li><strong>見やすい watchlist レイアウト:</strong> ダイアログ幅を広げ、<strong>Deploy Time</strong> と <strong>Est. Decay</strong> が 1 行で収まるようになりました。</li>
+                <li><strong>マップ highlighter:</strong> <strong>Recharge Monitor</strong> highlighter を追加し、赤ゾーンの監視 Portal は赤、健康な監視 Portal は元の色のまま、未監視 Portal は落ち着いたグレーパープルで表示できます。</li>
             </ul>
         </section>
 
@@ -117,6 +118,16 @@
 
         <section aria-labelledby="whats-new">
             <h2 id="whats-new">最近の更新</h2>
+            <h3>バージョン 0.5.4</h3>
+            <ul class="feature-list">
+                <li>新しい Recharge Monitor highlighter の未監視 Portal 色を、より穏やかなグレーパープルに調整しました。</li>
+                <li>監視危険 Portal、監視正常 Portal、未監視 Portal のマップ高亮挙動を紹介ページに反映しました。</li>
+            </ul>
+            <h3>バージョン 0.5.3</h3>
+            <ul class="feature-list">
+                <li><strong>Recharge Monitor</strong> 用の Portal highlighter を追加しました。</li>
+                <li>赤ゾーンの監視 Portal は赤で表示され、健康な監視 Portal は元の地図色を維持するようになりました。</li>
+            </ul>
             <h3>バージョン 0.5.2</h3>
             <ul class="feature-list">
                 <li>グループ内に赤ゾーンの Portal が 1 つでもある場合、グループが折りたたまれていてもグループ名が赤くなるようにしました。</li>
