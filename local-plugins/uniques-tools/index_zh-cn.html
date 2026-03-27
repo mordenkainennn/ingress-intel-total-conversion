@@ -31,7 +31,7 @@
       "operatingSystem": "Web Browser",
       "description": "Uniques Tools 是 Niantic Ingress Intel Map 的 IITC 插件，可替代原生 Uniques 插件，并提供无人机支持、Scout 状态追踪、官方历史导入和更丰富的 Portal 历史工具。",
       "url": "https://gongjupal.com/ingress/uniques-tools/index_zh-cn.html",
-      "softwareVersion": "1.6.6",
+      "softwareVersion": "1.6.15",
       "inLanguage": "zh-CN",
       "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/uniques-tools"
     }
@@ -89,6 +89,7 @@
                 <li><strong>完整无人机支持：</strong> 记录最近三个 drone 访问过的 Portal，支持快速跳转到最后位置，并显示常驻和临时的 <strong>550 米</strong> 无人机航程圈。</li>
                 <li><strong>Scout 状态追踪：</strong> 增加手动 <strong>Scanned</strong> 状态，方便追踪 Scout Controller 相关进度。</li>
                 <li><strong>官方历史导入：</strong> 可将当前地图视野内 Portal 的官方 visited、captured 和 scanned 历史导入到本地记录中。</li>
+                <li><strong>状态计数统计：</strong> 在工具箱中新增按钮，可快速查看当前 <strong>Visited</strong>、<strong>Captured</strong>、<strong>Scanned</strong> 和 <strong>Drone Visit</strong> 的 Portal 总数。</li>
                 <li><strong>更清晰的高亮规则：</strong> 能更直观地区分未访问、仅扫描、仅无人机访问、已访问未占领和已占领等状态。</li>
             </ul>
         </section>
@@ -96,7 +97,7 @@
         <section aria-labelledby="how-it-works">
             <h2 id="how-it-works">工作方式</h2>
             <p>选择一个 Portal 后，详情面板会显示 <code>Visited</code>、<code>Captured</code>、<code>Scanned</code> 和 <code>Drone</code> 四个复选框。你可以直接在这里手动更新状态，数据会保存在本地；如果启用了 <strong>Sync</strong> 插件，也可以进一步同步。</p>
-            <p><strong>Uniques Tools</strong> 工具箱对话框还提供导入官方历史、清除无人机最后位置、返回最后一个 drone Portal 等操作，因此它既适合日常使用，也适合作战后回顾。</p>
+            <p><strong>Uniques Tools</strong> 工具箱对话框还提供导入官方历史、查看状态计数、清除无人机最后位置、返回最后一个 drone Portal 等操作。现在按钮区域也整理成了每行两个按钮的布局，因此无论是日常使用还是作战后回顾都会更顺手。</p>
         </section>
 
         <section aria-labelledby="highlighter">
@@ -148,6 +149,11 @@
 
         <section aria-labelledby="changelog">
             <h2 id="changelog">更新日志</h2>
+            <h3>版本 1.6.15</h3>
+            <ul class="feature-list">
+                <li>新增 <strong>Show Portal Counts</strong> 按钮，可显示 visited、captured、scanned 和 drone visit 的 Portal 统计数量。</li>
+                <li>优化工具箱对话框按钮排列，调整为每行两个按钮的更整齐布局。</li>
+            </ul>
             <h3>版本 1.6.6</h3>
             <ul class="feature-list">
                 <li>为最后一次无人机位置增加了常驻的 550 米航程圈。</li>

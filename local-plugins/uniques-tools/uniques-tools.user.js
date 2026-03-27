@@ -3,7 +3,7 @@
 // @author         3ch01c, cloverjune
 // @name           Uniques Tools
 // @category       Misc
-// @version        1.6.14
+// @version        1.6.15
 // @description    Modified version of the stock Uniques plugin to add support for Drone view, manual entry, and import of portal history.
 // @id             uniques-tools
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -23,13 +23,19 @@ function wrapper(plugin_info) {
     //PLUGIN AUTHORS: writing a plugin outside of the IITC build environment? if so, delete these lines!!
     //(leaving them in place might break the 'About IITC' page or break update checks)
     plugin_info.buildName = 'local';
-    plugin_info.dateTimeVersion = '20260226.170000'; // Updated date
+    plugin_info.dateTimeVersion = '20260327.120000'; // Updated date
     plugin_info.pluginId = 'uniques-tools';
     //END PLUGIN AUTHORS NOTE
 
     /* exported setup, changelog --eslint */
 
     var changelog = [
+        {
+            version: '1.6.15',
+            changes: [
+                'NEW: Added a stats button in the Uniques Tools dialog to show counts for visited, captured, scanned, and drone visit portals.',
+            ],
+        },
         {
             version: '1.6.14',
             changes: [
@@ -170,6 +176,40 @@ function wrapper(plugin_info) {
         delete self.uniques[self.DRONE_HISTORY_SYNC_KEY];
         self.sync(self.DRONE_HISTORY_SYNC_KEY);
         self.updateDroneMarkers();
+    };
+
+    self.getStatusCounts = function () {
+        return Object.keys(self.uniques).reduce(function (counts, guid) {
+            if (guid === self.DRONE_HISTORY_SYNC_KEY) return counts;
+
+            var info = self.uniques[guid];
+            if (!info) return counts;
+
+            if (info.visited) counts.visited++;
+            if (info.captured) counts.captured++;
+            if (info.scoutControlled) counts.scanned++;
+            if (info.droneVisited) counts.drone++;
+            return counts;
+        }, {
+            visited: 0,
+            captured: 0,
+            scanned: 0,
+            drone: 0,
+        });
+    };
+
+    self.showStatusCounts = function () {
+        self.loadLocal('uniques');
+        self.loadDroneHistoryFromUniques();
+
+        var counts = self.getStatusCounts();
+        alert(
+            'Portal Counts\n\n'
+            + 'Visited: ' + counts.visited + '\n'
+            + 'Captured: ' + counts.captured + '\n'
+            + 'Scanned: ' + counts.scanned + '\n'
+            + 'Drone Visit: ' + counts.drone
+        );
     };
 
     self.zoomToLastDroneLocation = function () {
@@ -741,16 +781,29 @@ function wrapper(plugin_info) {
 
         var isHistoryEmpty = self.droneLocationHistory.length === 0;
         var hasOldData = !!localStorage['plugin-uniques-drone-final-data'];
+        var importOldDataButton = hasOldData
+            ? '<button type="button" class="import-old-data uniques-tools-action" style="margin: 0;">Import from Old Version</button>'
+            : '';
+        var actionButtons = [
+            '<button type="button" class="import-history uniques-tools-action" style="margin: 0;">Import History</button>',
+            '<button type="button" class="show-status-counts uniques-tools-action" style="margin: 0;">Show Portal Counts</button>',
+            '<button type="button" class="clear-drone-history uniques-tools-action" style="margin: 0;">Clear Drone Last Location</button>',
+            '<button type="button" class="zoom-last-drone uniques-tools-action" style="margin: 0;"' + (isHistoryEmpty ? ' disabled' : '') + '>Find Last Location</button>',
+        ];
+
+        if (importOldDataButton) {
+            actionButtons.push(importOldDataButton);
+        }
+
+        while (actionButtons.length % 2 !== 0) {
+            actionButtons.push('<span class="uniques-tools-action-spacer"></span>');
+        }
 
         var html = '<div class="uniques-tools-dialog" style="text-align: center;">' +
             warningHTML +
             '<p style="margin: 5px 0 10px;">Select a portal on the map to display a 550m drone range circle.</p>'
-            + '<button type="button" class="import-history" style="margin: 5px;">Import History</button>'
-            + '<button type="button" class="clear-drone-history" style="margin: 5px;">Clear Drone Last Location</button>'
-            + '<br>'
-            + '<button type="button" class="zoom-last-drone" style="margin: 5px;"' + (isHistoryEmpty ? ' disabled' : '') + '>Find Last Location</button>'
+            + '<div class="uniques-tools-actions">' + actionButtons.join('') + '</div>'
             + '<br><label style="margin: 5px; display: inline-block;"><input type="checkbox" class="show-import-debug"' + (self.showImportDebug ? ' checked' : '') + '> Show Import Debug Info</label>'
-            + (hasOldData ? '<br><button type="button" class="import-old-data" style="margin: 5px;">Import from Old Version</button>' : '')
             + '</div>';
 
         var dialog = window.dialog({
@@ -764,6 +817,9 @@ function wrapper(plugin_info) {
             self.showImportDebug = dialog.find('input.show-import-debug').prop('checked');
             self.importFromOfficialHistory();
             dialog.dialog('close');
+        });
+        dialog.find('button.show-status-counts').on('click', function () {
+            self.showStatusCounts();
         });
         dialog.find('button.clear-drone-history').on('click', function () {
             self.clearDroneHistory();
@@ -783,7 +839,7 @@ function wrapper(plugin_info) {
 
     self.setupCSS = function () {
         $('<style>').prop('type', 'text/css').html(
-            '#uniques-container{display:block;text-align:center;margin:6px 3px 1px}#uniques-container label{margin:0 .5em}#uniques-container input{vertical-align:middle}#uniques-import-link{display:block;text-align:center;margin:5px 0}.portal-list-uniques input[type=checkbox]{padding:0;height:auto;margin-top:-5px;margin-bottom:-5px}'
+            '#uniques-container{display:block;text-align:center;margin:6px 3px 1px}#uniques-container label{margin:0 .5em}#uniques-container input{vertical-align:middle}#uniques-import-link{display:block;text-align:center;margin:5px 0}.portal-list-uniques input[type=checkbox]{padding:0;height:auto;margin-top:-5px;margin-bottom:-5px}.uniques-tools-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}.uniques-tools-action{width:100%;box-sizing:border-box}.uniques-tools-action-spacer{display:block}'
         ).appendTo('head');
     };
 

@@ -31,7 +31,7 @@
       "operatingSystem": "Web Browser",
       "description": "Uniques Tools is an IITC plugin for Niantic's Ingress Intel Map that replaces the stock Uniques plugin with drone support, scout status tracking, official history import, and richer portal history tools.",
       "url": "https://gongjupal.com/ingress/uniques-tools/index.html",
-      "softwareVersion": "1.6.6",
+      "softwareVersion": "1.6.15",
       "inLanguage": "en",
       "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/uniques-tools"
     }
@@ -89,6 +89,7 @@
                 <li><strong>Drone support:</strong> Track the last three drone-visited portals, jump to the latest location, and show both persistent and temporary <strong>550m</strong> drone range circles on the Intel Map.</li>
                 <li><strong>Scout tracking:</strong> Adds a manual <strong>Scanned</strong> state so you can track scout controller progress alongside visited and captured status.</li>
                 <li><strong>Official history import:</strong> Import visited, captured, and scanned history from official Ingress data for portals currently visible in your map view.</li>
+                <li><strong>Portal counts summary:</strong> Adds a toolbox button that shows your current totals for <strong>Visited</strong>, <strong>Captured</strong>, <strong>Scanned</strong>, and <strong>Drone Visit</strong>.</li>
                 <li><strong>Improved highlighting:</strong> Uses clearer visual states for unvisited, scanned-only, drone-only, visited, and captured portals.</li>
             </ul>
         </section>
@@ -96,7 +97,7 @@
         <section aria-labelledby="how-it-works">
             <h2 id="how-it-works">How It Works</h2>
             <p>When you open a portal, the details panel shows four checkboxes: <code>Visited</code>, <code>Captured</code>, <code>Scanned</code>, and <code>Drone</code>. These values are stored locally and can also sync if you use the IITC <strong>Sync</strong> plugin.</p>
-            <p>The <strong>Uniques Tools</strong> toolbox dialog adds quick actions for importing official history, clearing the saved drone location, and jumping back to the last drone-visited portal. Together, these tools make the plugin useful both for day-to-day play and for review after field work.</p>
+            <p>The <strong>Uniques Tools</strong> toolbox dialog adds quick actions for importing official history, showing status counts, clearing the saved drone location, and jumping back to the last drone-visited portal. The action buttons are arranged in a cleaner two-column layout, making the dialog easier to use during regular play and post-operation review.</p>
         </section>
 
         <section aria-labelledby="highlighter">
@@ -148,6 +149,11 @@
 
         <section aria-labelledby="changelog">
             <h2 id="changelog">Changelog</h2>
+            <h3>Version 1.6.15</h3>
+            <ul class="feature-list">
+                <li>Added a <strong>Show Portal Counts</strong> button to display totals for visited, captured, scanned, and drone-visited portals.</li>
+                <li>Adjusted the toolbox dialog to use a cleaner two-buttons-per-row layout.</li>
+            </ul>
             <h3>Version 1.6.6</h3>
             <ul class="feature-list">
                 <li>Added a persistent 550m drone range circle around the last saved drone location.</li>

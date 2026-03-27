@@ -31,7 +31,7 @@
       "operatingSystem": "Web Browser",
       "description": "Uniques Tools は Niantic Ingress Intel Map 向けの IITC プラグインで、標準の Uniques を置き換え、ドローンサポート、Scout 状態追跡、公式履歴インポート、より高度なポータル履歴ツールを提供します。",
       "url": "https://gongjupal.com/ingress/uniques-tools/index_ja.html",
-      "softwareVersion": "1.6.6",
+      "softwareVersion": "1.6.15",
       "inLanguage": "ja",
       "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/uniques-tools"
     }
@@ -89,6 +89,7 @@
                 <li><strong>ドローンサポート:</strong> 直近 3 件の drone 訪問ポータルを記録し、最後の位置へのジャンプと常設・一時の <strong>550m</strong> 範囲円を表示できます。</li>
                 <li><strong>Scout 状態追跡:</strong> 手動の <strong>Scanned</strong> 状態を追加し、Scout Controller の進捗をポータル単位で記録できます。</li>
                 <li><strong>公式履歴インポート:</strong> 現在のマップ表示内にあるポータルについて、公式の visited、captured、scanned 履歴をローカルに取り込めます。</li>
+                <li><strong>件数サマリー表示:</strong> ツールボックスのボタンから <strong>Visited</strong>、<strong>Captured</strong>、<strong>Scanned</strong>、<strong>Drone Visit</strong> の現在件数をまとめて確認できます。</li>
                 <li><strong>改善されたハイライト:</strong> 未訪問、スキャンのみ、ドローンのみ、訪問済み未キャプチャ、キャプチャ済みを見分けやすく表示します。</li>
             </ul>
         </section>
@@ -96,7 +97,7 @@
         <section aria-labelledby="how-it-works">
             <h2 id="how-it-works">動作の概要</h2>
             <p>ポータルを選択すると、詳細パネルに <code>Visited</code>、<code>Captured</code>、<code>Scanned</code>、<code>Drone</code> の 4 つのチェックボックスが表示されます。ここで状態を手動更新すると、データはローカルに保存され、<strong>Sync</strong> プラグイン使用時には同期も可能です。</p>
-            <p><strong>Uniques Tools</strong> ダイアログでは、公式履歴のインポート、最後のドローン位置のクリア、最後にドローンで訪れたポータルへのジャンプなどを行えます。日常利用にも、行動後の振り返りにも使いやすい構成です。</p>
+            <p><strong>Uniques Tools</strong> ダイアログでは、公式履歴のインポート、件数サマリー表示、最後のドローン位置のクリア、最後にドローンで訪れたポータルへのジャンプなどを行えます。アクションボタンは 2 列レイアウトで整理され、日常利用にも行動後の振り返りにも使いやすくなっています。</p>
         </section>
 
         <section aria-labelledby="highlighter">
@@ -148,6 +149,11 @@
 
         <section aria-labelledby="changelog">
             <h2 id="changelog">変更履歴</h2>
+            <h3>バージョン 1.6.15</h3>
+            <ul class="feature-list">
+                <li><strong>Show Portal Counts</strong> ボタンを追加し、visited、captured、scanned、drone visited の件数を表示できるようにしました。</li>
+                <li>ツールボックスダイアログのボタン配置を、1 行 2 個の見やすいレイアウトに調整しました。</li>
+            </ul>
             <h3>バージョン 1.6.6</h3>
             <ul class="feature-list">
                 <li>最後のドローン位置の周囲に常設の 550m 範囲円を追加しました。</li>
