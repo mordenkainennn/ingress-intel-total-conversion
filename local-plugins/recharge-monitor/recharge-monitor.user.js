@@ -2,7 +2,7 @@
 // @id             iitc-plugin-recharge-monitor
 // @name           IITC plugin: Recharge Monitor & Decay Predictor
 // @category       Info
-// @version        0.5.1
+// @version        0.5.2
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/recharge-monitor/recharge-monitor.meta.js
 // @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/recharge-monitor/recharge-monitor.user.js
@@ -18,10 +18,16 @@ function wrapper(plugin_info) {
     if (typeof window.plugin !== 'function') window.plugin = function () { };
 
     plugin_info.buildName = 'RechargeMonitor';
-    plugin_info.dateTimeVersion = '202603271300';
+    plugin_info.dateTimeVersion = '202603271330';
     plugin_info.pluginId = 'recharge-monitor';
 
     var changelog = [
+        {
+            version: '0.5.2',
+            changes: [
+                'NEW: Group names now turn red when any portal in that group drops into the red health zone, even while the group is collapsed.',
+            ],
+        },
         {
             version: '0.5.1',
             changes: [
@@ -600,10 +606,14 @@ function wrapper(plugin_info) {
                 const isOpen = group.state;
                 const safeLabel = self.escapeHtml(group.label);
                 const arrow = isOpen ? '&#9660;' : '&#9658;';
+                const hasRedPortal = portals.some(function (portal) {
+                    return portal.health <= 30;
+                });
+                const groupToggleClass = hasRedPortal ? 'recharge-group-toggle recharge-group-alert' : 'recharge-group-toggle';
 
                 html += `<div class="recharge-group">
                     <div class="recharge-group-header">
-                        <a class="recharge-group-toggle" onclick="window.plugin.rechargeMonitor.toggleGroup('${group.id}');return false;">${arrow} ${safeLabel}</a>
+                        <a class="${groupToggleClass}" onclick="window.plugin.rechargeMonitor.toggleGroup('${group.id}');return false;">${arrow} ${safeLabel}</a>
                         <span class="recharge-group-count">${portals.length}</span>`;
 
                 if (group.id !== self.DEFAULT_GROUP) {
@@ -703,7 +713,7 @@ function wrapper(plugin_info) {
         const t = setInterval(() => { if (addToolboxButton() || ++tries > 20) clearInterval(t); }, 500);
         self.loop();
         setInterval(self.loop, 60000);
-        $('<style>').text('.recharge-table td,.recharge-table th{padding:4px;text-align:center;border-bottom:1px solid #20A8B1}.recharge-time-col{white-space:nowrap;min-width:130px}.recharge-group{margin-bottom:10px;border:1px solid #20A8B1;border-radius:4px;overflow:hidden}.recharge-group-header{display:flex;align-items:center;gap:8px;padding:6px 8px;background:rgba(32,168,177,0.12)}.recharge-group-toggle{font-weight:bold;flex:1}.recharge-group-count{color:#ffce00}.recharge-group-actions a{margin-left:8px}.recharge-groups-toolbar{margin-bottom:10px;text-align:right}.recharge-empty{color:#aaa;padding:10px 4px}.recharge-table select{width:100%;max-width:140px;background:#111;color:#ddd;border:1px solid #20A8B1}').appendTo('head');
+        $('<style>').text('.recharge-table td,.recharge-table th{padding:4px;text-align:center;border-bottom:1px solid #20A8B1}.recharge-time-col{white-space:nowrap;min-width:130px}.recharge-group{margin-bottom:10px;border:1px solid #20A8B1;border-radius:4px;overflow:hidden}.recharge-group-header{display:flex;align-items:center;gap:8px;padding:6px 8px;background:rgba(32,168,177,0.12)}.recharge-group-toggle{font-weight:bold;flex:1}.recharge-group-alert{color:#ff4d4f !important}.recharge-group-count{color:#ffce00}.recharge-group-actions a{margin-left:8px}.recharge-groups-toolbar{margin-bottom:10px;text-align:right}.recharge-empty{color:#aaa;padding:10px 4px}.recharge-table select{width:100%;max-width:140px;background:#111;color:#ddd;border:1px solid #20A8B1}').appendTo('head');
         console.log('Recharge Monitor: loaded');
     };
 

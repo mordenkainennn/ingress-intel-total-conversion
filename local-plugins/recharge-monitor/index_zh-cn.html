@@ -31,7 +31,7 @@
       "operatingSystem": "Web Browser",
       "description": "Recharge Monitor 是适用于 Niantic Ingress Intel 地图的 IITC 插件，可监控 Portal 健康度、预测衰减时间，并从本地 COMM 与活动日志恢复部署历史。",
       "url": "https://gongjupal.com/ingress/recharge-monitor/index_zh-cn.html",
-      "softwareVersion": "0.5.0",
+      "softwareVersion": "0.5.2",
       "inLanguage": "zh-CN",
       "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/recharge-monitor"
     }
@@ -85,11 +85,12 @@
             <h2 id="features">核心功能</h2>
             <ul class="feature-list">
                 <li><strong>监控列表面板：</strong>可从 Portal 详情面板将目标加入 watchlist，并集中管理。</li>
-                <li><strong>书签式分组：</strong>可将很长的 watchlist 按组折叠、重命名、删除分组，并在分组之间移动 Portal。</li>
+                <li><strong>书签式分组：</strong>可将很长的 watchlist 按组折叠、重命名、删除分组，并在分组之间移动 Portal；当某组内存在红血 Portal 时，该组名称会直接变红，便于快速定位风险组。</li>
                 <li><strong>Portal 健康度追踪：</strong>查看当前能量、最后观测状态，以及部署时间相关信息。</li>
                 <li><strong>衰减预测：</strong>根据标准 15% 日衰减模式，估算视野外 Portal 何时会中立化。</li>
                 <li><strong>历史恢复：</strong>可从 COMM 回溯和 <strong>Player Activity Log</strong> 中恢复更准确的部署时间。</li>
                 <li><strong>充电提醒：</strong>当 watchlist 中的 Portal 健康度跌破阈值时，在工具箱显示预警数量。</li>
+                <li><strong>更清晰的 watchlist 布局：</strong>窗口更宽，<strong>Deploy Time</strong> 和 <strong>Est. Decay</strong> 会保持在同一行，查看起来更整齐。</li>
             </ul>
         </section>
 
@@ -110,12 +111,21 @@
                 <li>从工具箱中的 <strong>Recharge Mon</strong> 打开主面板。</li>
                 <li>当监控列表变长时，可以创建分组，并把 Portal 按锚点、农场或区域防守目标进行归类。</li>
                 <li>当你需要补全历史时，使用 <strong>Sync History</strong> 从本地来源恢复部署时间。</li>
-                <li>当工具箱变成橙色或红色时，就表示某些监控 Portal 已进入危险区间。</li>
+                <li>当工具箱变成橙色或红色时，就表示某些监控 Portal 已进入危险区间；如果某个分组名称也变红，则说明这个分组里至少有一个 Portal 已掉入红色血量区间，即使该分组当前处于折叠状态。</li>
             </ol>
         </section>
 
         <section aria-labelledby="whats-new">
             <h2 id="whats-new">近期更新</h2>
+            <h3>版本 0.5.2</h3>
+            <ul class="feature-list">
+                <li>当分组内任意 Portal 进入红色血量区间时，该分组名称会变红；即使分组已折叠，这个提醒也会保留。</li>
+            </ul>
+            <h3>版本 0.5.1</h3>
+            <ul class="feature-list">
+                <li>加宽了 watchlist 对话框，整体布局不再那么拥挤。</li>
+                <li>优化了 <strong>Deploy Time</strong> 和 <strong>Est. Decay</strong> 列，避免时间被拆成两行显示。</li>
+            </ul>
             <h3>版本 0.5.0</h3>
             <ul class="feature-list">
                 <li>为 Recharge Watchlist 新增书签风格的分组功能，支持新建、重命名、删除、折叠分组，以及在组之间移动 Portal。</li>

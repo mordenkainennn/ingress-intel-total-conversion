@@ -31,7 +31,7 @@
       "operatingSystem": "Web Browser",
       "description": "Recharge Monitor is an IITC plugin for Niantic's Ingress Intel Map that watches portal health, predicts decay timing, and recovers deploy history from local COMM and activity logs.",
       "url": "https://gongjupal.com/ingress/recharge-monitor/index.html",
-      "softwareVersion": "0.5.0",
+      "softwareVersion": "0.5.2",
       "inLanguage": "en",
       "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/recharge-monitor"
     }
@@ -85,11 +85,12 @@
             <h2 id="features">Key Features</h2>
             <ul class="feature-list">
                 <li><strong>Watchlist dashboard:</strong> Add portals from the details pane and manage them from one central monitor.</li>
-                <li><strong>Bookmark-style groups:</strong> Organize large watchlists into collapsible groups, rename groups, and move portals between them.</li>
+                <li><strong>Bookmark-style groups:</strong> Organize large watchlists into collapsible groups, rename groups, move portals between them, and spot risky groups instantly when the group name turns red.</li>
                 <li><strong>Portal health tracking:</strong> Review current energy, last-seen status, and deployment timing signals for watched portals.</li>
                 <li><strong>Decay prediction:</strong> Estimate when an out-of-view portal will neutralize based on the standard 15% daily decay pattern.</li>
                 <li><strong>History recovery:</strong> Recover deploy timing from COMM backfill and from <strong>Player Activity Log</strong> integration.</li>
                 <li><strong>Recharge alerts:</strong> Show warning counts in the toolbox when watched portals fall below the health threshold.</li>
+                <li><strong>Cleaner watchlist layout:</strong> The watchlist dialog is wider and keeps <strong>Deploy Time</strong> and <strong>Est. Decay</strong> on a single line for easier scanning.</li>
             </ul>
         </section>
 
@@ -110,12 +111,21 @@
                 <li>Open the main dashboard from the <strong>Recharge Mon</strong> toolbox button.</li>
                 <li>Create groups when your watchlist gets large, then move portals into the right sections for anchors, farms, or regional defense targets.</li>
                 <li>Use <strong>Sync History</strong> when you want to improve deployment-time accuracy from local history sources.</li>
-                <li>Watch for orange or red toolbox warnings when portal energy falls into dangerous territory.</li>
+                <li>Watch for orange or red toolbox warnings when portal energy falls into dangerous territory, and check for red group names to identify which collapsed or expanded group contains the urgent portal.</li>
             </ol>
         </section>
 
         <section aria-labelledby="whats-new">
             <h2 id="whats-new">What&apos;s New</h2>
+            <h3>Version 0.5.2</h3>
+            <ul class="feature-list">
+                <li>Group names now turn red when any portal in that group drops into the red health zone, even if the group is collapsed.</li>
+            </ul>
+            <h3>Version 0.5.1</h3>
+            <ul class="feature-list">
+                <li>Widened the watchlist dialog so the layout feels less cramped.</li>
+                <li>Prevented <strong>Deploy Time</strong> and <strong>Est. Decay</strong> from wrapping onto two lines.</li>
+            </ul>
             <h3>Version 0.5.0</h3>
             <ul class="feature-list">
                 <li>Added bookmark-style groups for the recharge watchlist, including create, rename, delete, collapse, and portal move actions.</li>

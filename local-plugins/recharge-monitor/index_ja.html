@@ -31,7 +31,7 @@
       "operatingSystem": "Web Browser",
       "description": "Recharge Monitor は Niantic Ingress Intel マップ向けの IITC プラグインで、Portal 健康状態を監視し、減衰時刻を予測し、ローカル COMM と活動履歴からデプロイ時刻を復元します。",
       "url": "https://gongjupal.com/ingress/recharge-monitor/index_ja.html",
-      "softwareVersion": "0.5.0",
+      "softwareVersion": "0.5.2",
       "inLanguage": "ja",
       "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/recharge-monitor"
     }
@@ -85,11 +85,12 @@
             <h2 id="features">主な機能</h2>
             <ul class="feature-list">
                 <li><strong>監視リストダッシュボード:</strong> Portal 詳細パネルから対象を watchlist に追加し、一元管理できます。</li>
-                <li><strong>ブックマーク風グループ:</strong> 長い watchlist を折りたたみ可能なグループで整理し、名前変更や Portal の移動も行えます。</li>
+                <li><strong>ブックマーク風グループ:</strong> 長い watchlist を折りたたみ可能なグループで整理し、名前変更や Portal の移動に加えて、危険 Portal を含むグループ名を赤表示で一目で確認できます。</li>
                 <li><strong>Portal 健康状態追跡:</strong> 現在のエネルギー、最終確認状態、デプロイ時刻関連情報を確認できます。</li>
                 <li><strong>減衰予測:</strong> 標準の 15% 日次減衰をもとに、視界外 Portal がいつ中立化するかを見積もります。</li>
                 <li><strong>履歴復元:</strong> COMM バックフィルと <strong>Player Activity Log</strong> 連携から、より正確なデプロイ時刻を復元できます。</li>
                 <li><strong>リチャージ警告:</strong> 監視 Portal の健康状態が閾値を下回ると、ツールボックスに警告件数を表示します。</li>
+                <li><strong>見やすい watchlist レイアウト:</strong> ダイアログ幅を広げ、<strong>Deploy Time</strong> と <strong>Est. Decay</strong> が 1 行で収まるようになりました。</li>
             </ul>
         </section>
 
@@ -110,12 +111,21 @@
                 <li>ツールボックスの <strong>Recharge Mon</strong> からメイン画面を開きます。</li>
                 <li>watchlist が長くなったらグループを作成し、アンカー、ファーム、地域防衛などの目的別に Portal を整理します。</li>
                 <li>履歴を補完したいときは <strong>Sync History</strong> を使ってローカル履歴源からデプロイ時刻を復元します。</li>
-                <li>ツールボックス表示がオレンジや赤になったら、監視対象が危険域に入っている合図です。</li>
+                <li>ツールボックス表示がオレンジや赤になったら、監視対象が危険域に入っている合図です。さらにグループ名が赤い場合は、その折りたたみ済みグループ内にも危険 Portal が含まれています。</li>
             </ol>
         </section>
 
         <section aria-labelledby="whats-new">
             <h2 id="whats-new">最近の更新</h2>
+            <h3>バージョン 0.5.2</h3>
+            <ul class="feature-list">
+                <li>グループ内に赤ゾーンの Portal が 1 つでもある場合、グループが折りたたまれていてもグループ名が赤くなるようにしました。</li>
+            </ul>
+            <h3>バージョン 0.5.1</h3>
+            <ul class="feature-list">
+                <li>watchlist ダイアログの幅を広げ、全体の窮屈さを軽減しました。</li>
+                <li><strong>Deploy Time</strong> と <strong>Est. Decay</strong> が 2 行に折り返されないよう改善しました。</li>
+            </ul>
             <h3>バージョン 0.5.0</h3>
             <ul class="feature-list">
                 <li>Recharge Watchlist にブックマーク風のグループ機能を追加し、作成、名前変更、削除、折りたたみ、Portal 移動に対応しました。</li>
