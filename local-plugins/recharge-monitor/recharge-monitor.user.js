@@ -2,7 +2,7 @@
 // @id             iitc-plugin-recharge-monitor
 // @name           IITC plugin: Recharge Monitor & Decay Predictor
 // @category       Info
-// @version        0.5.0
+// @version        0.5.1
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/recharge-monitor/recharge-monitor.meta.js
 // @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/recharge-monitor/recharge-monitor.user.js
@@ -18,10 +18,16 @@ function wrapper(plugin_info) {
     if (typeof window.plugin !== 'function') window.plugin = function () { };
 
     plugin_info.buildName = 'RechargeMonitor';
-    plugin_info.dateTimeVersion = '202603261200';
+    plugin_info.dateTimeVersion = '202603271300';
     plugin_info.pluginId = 'recharge-monitor';
 
     var changelog = [
+        {
+            version: '0.5.1',
+            changes: [
+                'UPD: Widened the watchlist dialog and prevented time columns from wrapping onto two lines.',
+            ],
+        },
         {
             version: '0.5.0',
             changes: [
@@ -610,7 +616,7 @@ function wrapper(plugin_info) {
                 html += '</div>';
 
                 if (isOpen) {
-                    html += `<table class="recharge-table" style="width:100%"><tr><th>Portal</th><th>Health</th><th>Deploy Time</th><th>Est. Decay</th><th>Group</th><th>Action</th></tr>`;
+                    html += `<table class="recharge-table" style="width:100%"><tr><th>Portal</th><th>Health</th><th class="recharge-time-col">Deploy Time</th><th class="recharge-time-col">Est. Decay</th><th>Group</th><th>Action</th></tr>`;
 
                     if (portals.length === 0) {
                         html += `<tr><td colspan="6" class="recharge-empty">No portals in this group</td></tr>`;
@@ -629,8 +635,8 @@ function wrapper(plugin_info) {
                             html += `<tr>
                                 <td><a onclick="window.zoomToAndShowPortal('${portal.guid}',[${portal.lat},${portal.lng}]);">${safeName}</a></td>
                                 <td style="color:${portal.healthColor};font-weight:bold">${portal.health.toFixed(0)}%</td>
-                                <td>${self.formatTime(portal.captureTime)}</td>
-                                <td>${self.estimateDecay(portal.health, portal.lastSeenTime, portal.captureTime)}</td>
+                                <td class="recharge-time-col">${self.formatTime(portal.captureTime)}</td>
+                                <td class="recharge-time-col">${self.estimateDecay(portal.health, portal.lastSeenTime, portal.captureTime)}</td>
                                 <td>
                                     <select onchange="window.plugin.rechargeMonitor.movePortalToGroup('${portal.guid}', this.value)">
                                         ${selectOptions}
@@ -663,7 +669,7 @@ function wrapper(plugin_info) {
                 html: html,
                 title: 'Recharge Watchlist',
                 id: 'recharge-monitor-dialog',
-                width: 550,
+                width: 760,
                 buttons: {
                     'Sync History': function () { window.plugin.rechargeMonitor.scanActivityLog(); },
                     'About': function () { window.plugin.rechargeMonitor.showAbout(); },
@@ -697,7 +703,7 @@ function wrapper(plugin_info) {
         const t = setInterval(() => { if (addToolboxButton() || ++tries > 20) clearInterval(t); }, 500);
         self.loop();
         setInterval(self.loop, 60000);
-        $('<style>').text('.recharge-table td,.recharge-table th{padding:4px;text-align:center;border-bottom:1px solid #20A8B1}.recharge-group{margin-bottom:10px;border:1px solid #20A8B1;border-radius:4px;overflow:hidden}.recharge-group-header{display:flex;align-items:center;gap:8px;padding:6px 8px;background:rgba(32,168,177,0.12)}.recharge-group-toggle{font-weight:bold;flex:1}.recharge-group-count{color:#ffce00}.recharge-group-actions a{margin-left:8px}.recharge-groups-toolbar{margin-bottom:10px;text-align:right}.recharge-empty{color:#aaa;padding:10px 4px}.recharge-table select{width:100%;max-width:140px;background:#111;color:#ddd;border:1px solid #20A8B1}').appendTo('head');
+        $('<style>').text('.recharge-table td,.recharge-table th{padding:4px;text-align:center;border-bottom:1px solid #20A8B1}.recharge-time-col{white-space:nowrap;min-width:130px}.recharge-group{margin-bottom:10px;border:1px solid #20A8B1;border-radius:4px;overflow:hidden}.recharge-group-header{display:flex;align-items:center;gap:8px;padding:6px 8px;background:rgba(32,168,177,0.12)}.recharge-group-toggle{font-weight:bold;flex:1}.recharge-group-count{color:#ffce00}.recharge-group-actions a{margin-left:8px}.recharge-groups-toolbar{margin-bottom:10px;text-align:right}.recharge-empty{color:#aaa;padding:10px 4px}.recharge-table select{width:100%;max-width:140px;background:#111;color:#ddd;border:1px solid #20A8B1}').appendTo('head');
         console.log('Recharge Monitor: loaded');
     };
 
