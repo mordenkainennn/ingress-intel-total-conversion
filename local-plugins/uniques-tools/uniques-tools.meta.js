@@ -1,6 +1,6 @@
 // ==UserScript==
 // @author         3ch01c, cloverjune
-// @name           Uniques Tools
+// @name           IITC plugin: Uniques Tools
 // @category       Misc
 // @version        1.6.14
 // @description    Modified version of the stock Uniques plugin to add support for Drone view, manual entry, and import of portal history.

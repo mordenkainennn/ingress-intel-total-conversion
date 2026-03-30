@@ -23,7 +23,11 @@ All custom-built and enhanced plugins are located in the `local-plugins/` direct
 | **Player Activity Log** | **Intel Tracking.** Logs player activities from COMM and visualizes movement trails on the map with time-based color coding. | [CN](./local-plugins/player-activity-log/index_zh-cn.html) / [EN](./local-plugins/player-activity-log/index.html) / [JA](./local-plugins/player-activity-log/index_ja.html) |
 | **Recharge Monitor** | **Strategic Defense.** Real-time health monitoring and decay prediction. Syncs with Activity Log to "vacuum" deployment times. | [CN](./local-plugins/recharge-monitor/index_zh-cn.html) / [EN](./local-plugins/recharge-monitor/index.html) / [JA](./local-plugins/recharge-monitor/index_ja.html) |
 | **Uniques Tools** | **History Tracking.** Enhanced version of "Uniques" with full Drone support, Scout Controller tracking, and official history import. | [CN](./local-plugins/uniques-tools/index_zh-cn.html) / [EN](./local-plugins/uniques-tools/index.html) / [JA](./local-plugins/uniques-tools/index_ja.html) |
-| **All Portal Names** | **Visual Clarity.** Forces display of all portal names regardless of overlap at a user-defined zoom level threshold. | [CN](./local-plugins/all-portal-name/index_zh-cn.html) / [EN](./local-plugins/all-portal-name/index.html) / [JA](./local-plugins/all-portal-name/index_ja.html) |
+| **Homogeneous Fields** | **Structured Fielding.** Plans and visualizes homogeneous field layers for agents building orderly multilayer operations. | [CN](./local-plugins/homogeneous-fields/index_zh-cn.html) / [EN](./local-plugins/homogeneous-fields/index.html) / [JA](./local-plugins/homogeneous-fields/index_ja.html) |
+| **Drone Flight Planner** | **Drone Routing.** Plans drone routes with S2 visibility mechanics, key-jump constraints, and JSON import/export. | [CN](./local-plugins/drone-flight-planner/index_zh-cn.html) / [EN](./local-plugins/drone-flight-planner/index.html) / [JA](./local-plugins/drone-flight-planner/index_ja.html) |
+| **Fanfield Planner** | **Field Planning.** Builds two-phase fanfield plans with non-crossing base links, anchor reflections, and execution summaries. | [CN](./local-plugins/fanfield-planner/index_zh-cn.html) / [EN](./local-plugins/fanfield-planner/index.html) / [JA](./local-plugins/fanfield-planner/index_ja.html) |
+| **All Portal Names** | **Visual Clarity.** Forces display of all portal names regardless of overlap at a user-defined zoom level threshold. | [CN](./local-plugins/all-portal-names/index_zh-cn.html) / [EN](./local-plugins/all-portal-names/index.html) / [JA](./local-plugins/all-portal-names/index_ja.html) |
+| **Polygon AP Counter** | **Area Estimation.** Analyzes user-drawn polygons to estimate portals, links, fields, and potential faction AP in target areas. | [CN](./local-plugins/polygon-ap/index_zh-cn.html) / [EN](./local-plugins/polygon-ap/index.html) / [JA](./local-plugins/polygon-ap/index_ja.html) |
 
 ---
 
@@ -35,6 +39,7 @@ To ensure clean maintenance and compatibility with upstream IITC-CE:
 2.  **Use `local-plugins/` for everything.** 
     -   If you want to improve an official plugin, copy it to `local-plugins/` first.
     -   All new custom plugins must be placed in `local-plugins/`.
+    -   Plugin introduction pages in `local-plugins/` should use local relative links for internal navigation so they work during local preview; keep SEO-oriented absolute URLs such as `canonical`, `alternate`, and `og:url` unchanged for deployment.
 3.  **Build System**: Use the standard build script to generate user scripts:
     ```bash
     python build.py local

@@ -1,6 +1,6 @@
 // ==UserScript==
 // @author         cloverjune
-// @name           Portal DB
+// @name           IITC plugin: Portal DB
 // @category       Database
 // @version        0.4.0
 // @description    Save portal basic information (GUID, Lat, Lng, Team) to IndexedDB for cross-plugin use.

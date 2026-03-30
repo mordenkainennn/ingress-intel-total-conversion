@@ -1,6 +1,6 @@
 // ==UserScript==
 // @id             iitc-plugin-ap-stats@cloverjune
-// @name           Available AP statistics [cloverjune]
+// @name           IITC plugin: Available AP statistics [cloverjune]
 // @category       Info
 // @version        0.4.6.2
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion

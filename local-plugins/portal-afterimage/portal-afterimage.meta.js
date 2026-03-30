@@ -1,6 +1,6 @@
 // ==UserScript==
 // @author         cloverjune
-// @name           Portal Afterimage
+// @name           IITC plugin: Portal Afterimage
 // @category       Layer
 // @version        0.1.6
 // @description    Draw a subtle afterimage of portals you've seen when official portals are hidden by zoom.
