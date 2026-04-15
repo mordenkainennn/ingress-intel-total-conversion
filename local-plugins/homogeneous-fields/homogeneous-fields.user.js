@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-homogeneous-fields@cloverjune
 // @name           IITC Plugin: 57Cell's Field Planner [cloverjune]
-// @version        2.1.15.20260312
+// @version        2.1.16.20260415
 // @description    Plugin for planning fields in IITC
 // @author         57Cell (Michael Hartley) and ChatGPT 4.0, modified by cloverjune
 // @category       Layer
@@ -24,8 +24,14 @@
 // ==/UserScript==
 
 pluginName = "57Cell's Field Planner";
-version = "2.1.15";
+version = "2.1.16";
 changeLog = [
+    {
+        version: '2.1.16.20260415',
+        changes: [
+            'NEW: Append total AP to the generated action plan statistics, assuming neutral portals that are captured and fully deployed with 8 resonators.',
+        ],
+    },
     {
         version: '2.1.15.20260312',
         changes: [
@@ -185,7 +191,7 @@ changeLog = [
 function wrapper(plugin_info) {
     if (typeof window.plugin !== 'function') window.plugin = function () { };
     plugin_info.buildName = '';
-    plugin_info.dateTimeVersion = '2026-03-12-000000';
+    plugin_info.dateTimeVersion = '2026-04-15-000000';
     plugin_info.pluginId = '57CellsFieldPlanner';
 
     // PLUGIN START
@@ -769,6 +775,31 @@ function wrapper(plugin_info) {
         return bestPath;
     };
 
+    self.calculateTotalAP = function (plan) {
+        const AP_CAPTURE_NEUTRAL_PORTAL = 675;
+        const AP_DEPLOY_RESONATOR = 125;
+        const AP_FINAL_RESONATOR_BONUS = 250;
+        const AP_LINK = 313;
+        const AP_FIELD = 1250;
+        const RESONATORS_PER_PORTAL = 8;
+
+        let totalAP = 0;
+
+        $.each(plan, function (index, item) {
+            if (item.action === 'capture') {
+                totalAP += AP_CAPTURE_NEUTRAL_PORTAL;
+                totalAP += RESONATORS_PER_PORTAL * AP_DEPLOY_RESONATOR;
+                totalAP += AP_FINAL_RESONATOR_BONUS;
+            } else if (item.action === 'link') {
+                totalAP += AP_LINK;
+            } else if (item.action === 'field') {
+                totalAP += AP_FIELD;
+            }
+        });
+
+        return totalAP;
+    };
+
 
     self.planToText = function (plan) {
         const nextChar = function (c) {
@@ -795,6 +826,7 @@ function wrapper(plugin_info) {
 
         let statsText = "\nStats:\n";
         let portalCount = 0, linkCount = 0, fieldCount = 0, totalDistance = 0;
+        let totalAP = self.calculateTotalAP(plan);
 
         $.each(plan, function (index, item) {
             // let pos = `${index + 1}`;
@@ -833,7 +865,8 @@ function wrapper(plugin_info) {
             "Portals".padEnd(indentation, '\xa0') + `: ${portalCount}\n` +
             "Links".padEnd(indentation, '\xa0') + `: ${linkCount}\n` +
             "Fields".padEnd(indentation, '\xa0') + `: ${fieldCount}\n` +
-            "Distance".padEnd(indentation, '\xa0') + `: ${distanceText}\n`
+            "Distance".padEnd(indentation, '\xa0') + `: ${distanceText}\n` +
+            "Total AP".padEnd(indentation, '\xa0') + `: ${totalAP.toLocaleString()}\n`
 
 
         planText += keysText + statsText;
