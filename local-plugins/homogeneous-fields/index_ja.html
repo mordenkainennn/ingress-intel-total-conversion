@@ -31,7 +31,7 @@
       "operatingSystem": "Web Browser",
       "description": "Homogeneous Fields は Niantic Ingress Intel Map 向けの IITC プラグインで、選択したアンカーポータルから均一多重フィールド、最大フィールド、Cobweb 計画を生成します。",
       "url": "https://gongjupal.com/ingress/homogeneous-fields/index_ja.html",
-      "softwareVersion": "2.1.15",
+      "softwareVersion": "2.1.16",
       "inLanguage": "ja",
       "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/homogeneous-fields"
     }
@@ -87,7 +87,7 @@
                 <li><strong>対話型の計画ダイアログ:</strong> コーナーポータル選択、アンカー画像プレビュー、ロック、設定調整を一つの画面で行えます。</li>
                 <li><strong>ポータル選別:</strong> Included / Excluded リストで、計画に使うポータルを細かく調整できます。</li>
                 <li><strong>地図上の可視化:</strong> 計画したリンクとフィールドを Intel Map 上に描画し、色も調整できます。</li>
-                <li><strong>詳細な実行出力:</strong> リンク順、訪問順、SoftBank 数、キー数、総移動距離をまとめて出力します。</li>
+                <li><strong>詳細な実行出力:</strong> リンク順、訪問順、SoftBank 数、キー数、総移動距離に加え、この計画で得られる総 AP の見積もりも出力します。</li>
                 <li><strong>他プラグイン連携:</strong> 生成したリンク計画を <strong>DrawTools</strong> や <strong>Arc</strong> に出力できます。</li>
             </ul>
         </section>
@@ -120,7 +120,7 @@
                 <li>各ポータルから投げるリンクの番号付きリスト。</li>
                 <li>主要アンカーに必要な SoftBank 数。</li>
                 <li>ポータルごとの必要キー数。</li>
-                <li>総移動距離と全体統計。</li>
+                <li>総移動距離、総 AP、全体統計。</li>
             </ul>
         </section>
 
@@ -133,7 +133,7 @@
             <ul class="faq-list">
                 <li><span class="faq-q">このプラグインは均一フィールド専用ですか？</span> いいえ。均一多重フィールドだけでなく、最大フィールドや Cobweb 計画にも対応しています。</li>
                 <li><span class="faq-q">ポータルを除外できますか？</span> はい。主三角形を決めた後、Included から Excluded へ移動できます。</li>
-                <li><span class="faq-q">見た目だけの計画ですか？</span> いいえ。リンク順、キー数、SoftBank 数、移動距離を含む詳細なテキスト手順も出力します。</li>
+                <li><span class="faq-q">見た目だけの計画ですか？</span> いいえ。リンク順、キー数、SoftBank 数、移動距離に加え、総 AP 見積もりを含む詳細なテキスト手順も出力します。</li>
             </ul>
         </section>
 
@@ -147,6 +147,10 @@
 
         <section aria-labelledby="changelog">
             <h2 id="changelog">変更履歴</h2>
+            <h3>バージョン 2.1.16</h3>
+            <ul class="feature-list">
+                <li>生成した計画の統計に総 AP を追加しました。中立ポータルを確保し、8 本の Resonator をフル展開する前提で見積もります。</li>
+            </ul>
             <h3>バージョン 2.1.15</h3>
             <ul class="feature-list">
                 <li>選択したコーナーと候補ポータルの座標・名前をキャッシュし、地図移動後でも計画が壊れないようにしました。</li>

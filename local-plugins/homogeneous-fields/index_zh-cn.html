@@ -31,7 +31,7 @@
       "operatingSystem": "Web Browser",
       "description": "Homogeneous Fields 是 Niantic Ingress Intel Map 的 IITC 插件，可基于选定锚点 Portal 设计均匀分层控场、最大控场和 Cobweb 控场方案。",
       "url": "https://gongjupal.com/ingress/homogeneous-fields/index_zh-cn.html",
-      "softwareVersion": "2.1.15",
+      "softwareVersion": "2.1.16",
       "inLanguage": "zh-CN",
       "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/homogeneous-fields"
     }
@@ -87,7 +87,7 @@
                 <li><strong>交互式规划对话框：</strong> 可以选择角点 Portal、查看锚点预览图、锁定选择并调整参数。</li>
                 <li><strong>Portal 纳入与排除控制：</strong> 通过 Included / Excluded 列表精细控制最终参与方案的 Portal。</li>
                 <li><strong>地图可视化覆盖：</strong> 直接在 Intel Map 上绘制规划结果，并可调整覆盖层颜色。</li>
-                <li><strong>详细执行输出：</strong> 自动生成访问顺序、连线顺序、SoftBank 数量、钥匙数量和总路程统计。</li>
+                <li><strong>详细执行输出：</strong> 自动生成访问顺序、连线顺序、SoftBank 数量、钥匙数量、总路程统计，以及本次规划可获得的总 AP 估算。</li>
                 <li><strong>插件联动：</strong> 支持把生成的连线方案导出到 <strong>DrawTools</strong> 与 <strong>Arc</strong>。</li>
             </ul>
         </section>
@@ -120,7 +120,7 @@
                 <li>每个 Portal 的编号连线列表。</li>
                 <li>主要锚点所需的 SoftBank 数量。</li>
                 <li>每个 Portal 所需的钥匙统计。</li>
-                <li>总行进距离和整体计划统计。</li>
+                <li>总行进距离、总 AP 和整体计划统计。</li>
             </ul>
         </section>
 
@@ -133,7 +133,7 @@
             <ul class="faq-list">
                 <li><span class="faq-q">这个插件只能做均匀控场吗？</span> 不是。均匀控场只是其中一种模式，它也支持最大控场和 Cobweb 规划。</li>
                 <li><span class="faq-q">可以排除某些 Portal 吗？</span> 可以。选定主三角后，可以把不想使用的 Portal 从 Included 移到 Excluded。</li>
-                <li><span class="faq-q">插件只显示图形结果吗？</span> 不是。它还会生成详细的文本计划，包含连线顺序、钥匙、SoftBank 和距离信息。</li>
+                <li><span class="faq-q">插件只显示图形结果吗？</span> 不是。它还会生成详细的文本计划，包含连线顺序、钥匙、SoftBank、距离信息和总 AP 估算。</li>
             </ul>
         </section>
 
@@ -147,6 +147,10 @@
 
         <section aria-labelledby="changelog">
             <h2 id="changelog">更新日志</h2>
+            <h3>版本 2.1.16</h3>
+            <ul class="feature-list">
+                <li>在生成的行动计划统计中加入总 AP，按中立 Portal 被占领并插满 8 个 Resonator 的前提进行估算。</li>
+            </ul>
             <h3>版本 2.1.15</h3>
             <ul class="feature-list">
                 <li>缓存了角点和候选 Portal 的坐标与名称，移动地图后规划不再失效。</li>

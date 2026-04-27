@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Coverage Layers for IITC | 未訪問・未キャプチャ ポータル表示レイヤー</title>
+    <meta name="description" content="Portal Coverage Layers は Niantic Ingress Intel Map 向けの IITC プラグインで、Uniques Tools のデータから未訪問と未キャプチャのポータルレイヤーを表示します。">
+    <link rel="canonical" href="https://gongjupal.com/ingress/portal-coverage-layers/index_ja.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/portal-coverage-layers/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/portal-coverage-layers/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/portal-coverage-layers/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/portal-coverage-layers/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
+    <meta property="og:title" content="Portal Coverage Layers for IITC | 未訪問・未キャプチャ ポータル表示レイヤー">
+    <meta property="og:description" content="Uniques Tools の履歴データを使い、Intel Map 上で未訪問ポータルまたは未キャプチャポータルだけを表示します。">
+    <meta property="og:url" content="https://gongjupal.com/ingress/portal-coverage-layers/index_ja.html">
+    <meta property="og:locale" content="ja_JP">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Portal Coverage Layers for IITC | 未訪問・未キャプチャ ポータル表示レイヤー">
+    <meta name="twitter:description" content="Ingress エージェント向けの IITC プラグイン。Uniques Tools のポータル履歴を未訪問・未キャプチャの実用的なレイヤーに変換します。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Portal Coverage Layers",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Portal Coverage Layers は Niantic Ingress Intel Map 向けの IITC プラグインで、Uniques Tools に保存された履歴から未訪問ポータルと未キャプチャポータルの 2 つのレイヤーを作成します。",
+      "url": "https://gongjupal.com/ingress/portal-coverage-layers/index_ja.html",
+      "softwareVersion": "0.1.0",
+      "inLanguage": "ja",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-coverage-layers"
+    }
+    </script>
+    <style>
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', 'Noto Sans JP', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', 'Noto Sans JP', cursive; margin: 0 5px; }
+        .container { max-width: 900px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', 'Noto Sans JP', cursive; text-shadow: 0 0 5px #0ff; }
+        h1 { color: #0ff; text-align: center; font-size: 2.5em; margin-bottom: 18px; }
+        h2 { color: #0ff; font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 34px; }
+        h3 { font-size: 1.15em; color: #ffce00; margin-top: 20px; }
+        p, li { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; font-family: 'Courier New', Courier, monospace; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { margin-bottom: 10px; color: #bbb; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li { margin-bottom: 12px; }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 15px; margin-top: 20px; border-radius: 4px; }
+        .note-danger { border-color: #f88; background: rgba(255, 80, 80, 0.08); }
+        .note-danger strong { color: #f88; }
+        .faq-q { color: #ffce00; font-weight: 700; }
+        @media (max-width: 900px) {
+            .lang-switch { position: static; margin: 0 auto 12px auto; width: fit-content; }
+            .container { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="../portal-coverage-layers/index.html" lang="en">English</a> |
+        <a href="../portal-coverage-layers/index_zh-cn.html" lang="zh-CN">中文</a>
+    </div>
+
+    <main class="container">
+        <h1>Portal Coverage Layers</h1>
+        <p class="intro">Niantic Ingress Intel Map 向けの IITC カバレッジフィルタープラグインです。</p>
+        <p class="summary"><strong>Portal Coverage Layers</strong> はローカルのポータル履歴を 2 つの実用的なレイヤーに変換します。<strong>Unvisited Portals</strong> と <strong>Uncaptured Portals</strong> を使うことで、ヒートマップを読み解く代わりに、すでに完了したポータルを隠し、次に行くべき対象だけを地図上に残せます。</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-coverage-layers">GitHub でこのプラグインのディレクトリを見る</a> |
+            <a href="../index_ja.html">すべての IITC プラグインを見る</a>
+        </p>
+
+        <div class="note note-danger">
+            <p><strong>依存プラグイン:</strong> このプラグインは <a href="../uniques-tools/index_ja.html" style="color:#ffce00;">Uniques Tools</a>、つまり <code>local-plugins/uniques-tools</code> に依存しています。Uniques Tools が保存する visited / captured 履歴がない場合、Portal Coverage Layers は表示対象を判定できません。</p>
+        </div>
+
+        <section aria-labelledby="who">
+            <h2 id="who">このプラグインが向いている人</h2>
+            <p>密度を見るヒートマップよりも、次に処理すべきポータルを直接見たいエージェントに向いています。uniques の埋め残し確認、未キャプチャポータルの回収、作戦後の後片付けルート作成などで特に読みやすい表示になります。</p>
+        </section>
+
+        <section aria-labelledby="features">
+            <h2 id="features">主な機能</h2>
+            <ul class="feature-list">
+                <li><strong>2 つの専用レイヤー:</strong> <strong>Unvisited Portals</strong> と <strong>Uncaptured Portals</strong> を別々の IITC レイヤーとして追加します。</li>
+                <li><strong>履歴ベースのフィルタリング:</strong> <strong>Uniques Tools</strong> が管理している <strong>visited</strong> と <strong>captured</strong> の状態をそのまま利用します。</li>
+                <li><strong>判断が速い:</strong> 完了済みポータルを隠すため、地図に残るポータルが次の目標になります。</li>
+                <li><strong>両レイヤー同時利用:</strong> 両方を有効化した場合、どちらかの条件に合うポータルは表示されたままになります。</li>
+                <li><strong>自動更新:</strong> マップデータ変更時や Uniques Tools の状態更新時に自動で再適用されます。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="layers">
+            <h2 id="layers">各レイヤーが表示するもの</h2>
+            <ul class="feature-list">
+                <li><strong>Unvisited Portals:</strong> <code>visited</code> でも <code>captured</code> でもないポータルだけを表示します。</li>
+                <li><strong>Uncaptured Portals:</strong> <code>captured</code> ではないポータルを表示します。つまり、訪問済みでも未キャプチャなら残ります。</li>
+                <li><strong>両方を有効化した場合:</strong> どちらかの条件を満たすポータルは表示され続けるため、未キャプチャ対象を広く残しつつ、完全未訪問の候補も同時に把握できます。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="how-to-use">
+            <h2 id="how-to-use">使い方</h2>
+            <ol>
+                <li>まず <strong>Uniques Tools</strong> を導入して有効化します。</li>
+                <li>Uniques Tools にポータル履歴を登録します。手動入力でもインポートでも構いません。</li>
+                <li><strong>Portal Coverage Layers</strong> を導入して有効化します。</li>
+                <li>IITC のレイヤー一覧から <strong>Unvisited Portals</strong>、<strong>Uncaptured Portals</strong>、またはその両方を有効にします。</li>
+                <li>地図上に残ったポータルを、そのままルート計画や回収対象として使います。</li>
+            </ol>
+        </section>
+
+        <section aria-labelledby="why">
+            <h2 id="why">ヒートマップより直感的な理由</h2>
+            <p>ヒートマップは全体の傾向や密度を見るのに向いていますが、色の強弱や重なりを自分で解釈する必要があります。<strong>Portal Coverage Layers</strong> はもっと直接的で、完了済みポータルを地図から消すことで、表示されているもの自体を行動リストに変えます。</p>
+            <p>そのため、最後の uniques 埋め、過去エリアの再確認、まだ未訪問や未キャプチャが残っているかのチェックに特に有効です。</p>
+        </section>
+
+        <section aria-labelledby="requirements">
+            <h2 id="requirements">要件と制限</h2>
+            <p>このプラグインには <strong>Uniques Tools</strong> が必要です。公式履歴を自分で取得したり、独自データベースを持ったりはせず、<strong>local-plugins/uniques-tools</strong> に保存された履歴だけを解釈して表示します。</p>
+            <p>また、現在 IITC クライアントに読み込まれているポータルと、ローカルに保存されている履歴に基づいて動作するため、全世界の完全な最新状態を示すものではなく、実用的な行動用ビューとして使うのが適しています。</p>
+        </section>
+
+        <section aria-labelledby="faq">
+            <h2 id="faq">FAQ</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">Uniques Tools なしでも動きますか？</span> いいえ。visited / captured 履歴は Uniques Tools に依存しています。</li>
+                <li><span class="faq-q">Unvisited と Uncaptured の違いは何ですか？</span> <strong>Unvisited</strong> は visited と captured の両方を隠し、<strong>Uncaptured</strong> は captured だけを隠します。</li>
+                <li><span class="faq-q">2 つのプラグインで別々にデータを管理する必要がありますか？</span> ありません。履歴更新は Uniques Tools 側だけで行い、このプラグインはそれを読み取るだけです。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="related">
+            <h2 id="related">関連プラグイン</h2>
+            <ul class="related-list">
+                <li><a href="../uniques-tools/index_ja.html" style="color:#ffce00;">Uniques Tools</a> は必須の依存プラグインであり、visited / captured 履歴の元データです。</li>
+                <li><a href="../portal-afterimage/index_ja.html" style="color:#ffce00;">Portal Afterimage</a> は既知ポータルの視認性向上に役立ち、このプラグインと組み合わせやすいです。</li>
+                <li><a href="../player-activity-log/index_ja.html" style="color:#ffce00;">Player Activity Log</a> はローカル行動履歴を補完し、ポータル回収の計画に役立ちます。</li>
+            </ul>
+        </section>
+    </main>
+
+</body>
+</html>

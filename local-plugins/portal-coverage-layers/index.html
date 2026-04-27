@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Coverage Layers for IITC | Unvisited and Uncaptured Portal Filter</title>
+    <meta name="description" content="Portal Coverage Layers is an IITC plugin for Niantic's Ingress Intel Map that shows separate Unvisited and Uncaptured portal layers using Uniques Tools data.">
+    <link rel="canonical" href="https://gongjupal.com/ingress/portal-coverage-layers/index.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/portal-coverage-layers/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/portal-coverage-layers/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/portal-coverage-layers/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/portal-coverage-layers/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
+    <meta property="og:title" content="Portal Coverage Layers for IITC | Unvisited and Uncaptured Portal Filter">
+    <meta property="og:description" content="Filter the Intel Map to show only unvisited portals or only uncaptured portals with data from Uniques Tools.">
+    <meta property="og:url" content="https://gongjupal.com/ingress/portal-coverage-layers/index.html">
+    <meta property="og:locale" content="en_US">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Portal Coverage Layers for IITC | Unvisited and Uncaptured Portal Filter">
+    <meta name="twitter:description" content="An IITC plugin for Ingress agents that turns Uniques Tools history data into simple Unvisited and Uncaptured map layers.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Portal Coverage Layers",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Portal Coverage Layers is an IITC plugin for Niantic's Ingress Intel Map that creates separate Unvisited and Uncaptured portal layers from Uniques Tools history data.",
+      "url": "https://gongjupal.com/ingress/portal-coverage-layers/index.html",
+      "softwareVersion": "0.1.0",
+      "inLanguage": "en",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-coverage-layers"
+    }
+    </script>
+    <style>
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', cursive; margin: 0 5px; }
+        .container { max-width: 900px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', cursive; text-shadow: 0 0 5px #0ff; }
+        h1 { color: #0ff; text-align: center; font-size: 2.5em; margin-bottom: 18px; text-transform: uppercase; }
+        h2 { color: #0ff; font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 34px; }
+        h3 { font-size: 1.15em; color: #ffce00; margin-top: 20px; }
+        p, li { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; font-family: 'Courier New', Courier, monospace; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { margin-bottom: 10px; color: #bbb; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li { margin-bottom: 12px; }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 15px; margin-top: 20px; border-radius: 4px; }
+        .note-danger { border-color: #f88; background: rgba(255, 80, 80, 0.08); }
+        .note-danger strong { color: #f88; }
+        .faq-q { color: #ffce00; font-weight: 700; }
+        @media (max-width: 900px) {
+            .lang-switch { position: static; margin: 0 auto 12px auto; width: fit-content; }
+            .container { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="../portal-coverage-layers/index_zh-cn.html" lang="zh-CN">中文</a> |
+        <a href="../portal-coverage-layers/index_ja.html" lang="ja">日本語</a>
+    </div>
+
+    <main class="container">
+        <h1>Portal Coverage Layers</h1>
+        <p class="intro">A coverage-focused map filtering plugin for IITC on Niantic&apos;s Ingress Intel Map.</p>
+        <p class="summary"><strong>Portal Coverage Layers</strong> turns your local portal history into two practical map layers: <strong>Unvisited Portals</strong> and <strong>Uncaptured Portals</strong>. Instead of interpreting a heatmap, Ingress agents can hide completed portals and immediately see what still needs to be visited or captured.</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-coverage-layers">View this plugin directory on GitHub</a> |
+            <a href="../index.html">See all IITC plugins</a>
+        </p>
+
+        <div class="note note-danger">
+            <p><strong>Dependency required:</strong> This plugin depends on <a href="../uniques-tools/index.html" style="color:#ffce00;">Uniques Tools</a> in <code>local-plugins/uniques-tools</code>. Without that plugin and its stored portal history data, Portal Coverage Layers has no visited or captured state to filter.</p>
+        </div>
+
+        <section aria-labelledby="who">
+            <h2 id="who">Who This Plugin Is For</h2>
+            <p>This plugin is for agents who want a direct action map instead of a density map. If your goal is to quickly find missing uniques, mop up uncaptured portals, or route cleanup work after an operation, this view is often easier to read than a heatmap.</p>
+        </section>
+
+        <section aria-labelledby="features">
+            <h2 id="features">Key Features</h2>
+            <ul class="feature-list">
+                <li><strong>Two dedicated layer views:</strong> Adds <strong>Unvisited Portals</strong> and <strong>Uncaptured Portals</strong> as separate IITC layers.</li>
+                <li><strong>History-driven filtering:</strong> Uses the <strong>visited</strong> and <strong>captured</strong> records already managed by <strong>Uniques Tools</strong>.</li>
+                <li><strong>Cleaner decision-making:</strong> Hides finished portals so the remaining visible portals are your next targets.</li>
+                <li><strong>Shared filter behavior:</strong> If both layers are enabled, a portal stays visible when it matches either active filter.</li>
+                <li><strong>Live updates:</strong> Refreshes when map data changes or when Uniques Tools updates a portal state.</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="layers">
+            <h2 id="layers">What Each Layer Shows</h2>
+            <ul class="feature-list">
+                <li><strong>Unvisited Portals:</strong> Shows only portals that are neither marked <code>visited</code> nor <code>captured</code>.</li>
+                <li><strong>Uncaptured Portals:</strong> Shows portals that are not marked <code>captured</code>, including portals you may have visited but never captured.</li>
+                <li><strong>Both layers enabled:</strong> A portal remains visible if it matches either condition, which is useful when you want to preserve all uncaptured opportunities while still seeing fully untouched targets.</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="how-to-use">
+            <h2 id="how-to-use">How to Use Portal Coverage Layers</h2>
+            <ol>
+                <li>Install and enable <strong>Uniques Tools</strong>.</li>
+                <li>Make sure your portal history is populated in Uniques Tools, either manually or by using its import features.</li>
+                <li>Install and enable <strong>Portal Coverage Layers</strong>.</li>
+                <li>Open the IITC layer chooser and enable <strong>Unvisited Portals</strong>, <strong>Uncaptured Portals</strong>, or both.</li>
+                <li>Use the visible portals as your action list for route planning, cleanup, or fieldwork.</li>
+            </ol>
+        </section>
+
+        <section aria-labelledby="why">
+            <h2 id="why">Why Use This Instead of a Heatmap</h2>
+            <p>Heatmaps are useful for identifying general clusters and coverage patterns, but they still require you to visually interpret intensity and overlap. <strong>Portal Coverage Layers</strong> is more literal: it removes already completed portals from view so the map becomes a direct list of targets.</p>
+            <p>That makes it especially effective for tasks like last-mile uniques cleanup, revisiting old operation areas, or checking whether a block still contains portals that have never been visited or never been captured.</p>
+        </section>
+
+        <section aria-labelledby="requirements">
+            <h2 id="requirements">Requirements and Limits</h2>
+            <p>This plugin requires <strong>Uniques Tools</strong>. It does not fetch official history on its own and does not maintain a separate database. It only interprets the portal history already stored by <strong>local-plugins/uniques-tools</strong>.</p>
+            <p>Because it works from currently loaded portal markers and the local history available to your IITC client, the output reflects your saved state and current map data rather than the complete live game world.</p>
+        </section>
+
+        <section aria-labelledby="faq">
+            <h2 id="faq">FAQ</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">Does this plugin work without Uniques Tools?</span> No. It depends on Uniques Tools for visited and captured history data.</li>
+                <li><span class="faq-q">What is the difference between Unvisited and Uncaptured?</span> <strong>Unvisited</strong> hides both visited and captured portals. <strong>Uncaptured</strong> hides only captured portals.</li>
+                <li><span class="faq-q">Do I need to maintain data in two plugins?</span> No. Update history only in Uniques Tools; Portal Coverage Layers simply reads and displays that data.</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="related">
+            <h2 id="related">Related Plugins</h2>
+            <ul class="related-list">
+                <li><a href="../uniques-tools/index.html" style="color:#ffce00;">Uniques Tools</a> is the required dependency and the source of visited and captured history.</li>
+                <li><a href="../portal-afterimage/index.html" style="color:#ffce00;">Portal Afterimage</a> can complement this plugin when you want local visibility improvements for known portals.</li>
+                <li><a href="../player-activity-log/index.html" style="color:#ffce00;">Player Activity Log</a> pairs well with portal coverage cleanup by adding local activity context.</li>
+            </ul>
+        </section>
+    </main>
+
+</body>
+</html>

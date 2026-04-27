@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Coverage Layers for IITC | 未访问与未占领 Portal 筛选图层</title>
+    <meta name="description" content="Portal Coverage Layers 是 Niantic Ingress Intel Map 的 IITC 插件，可基于 Uniques Tools 数据分别显示未访问和未占领 Portal 图层。">
+    <link rel="canonical" href="https://gongjupal.com/ingress/portal-coverage-layers/index_zh-cn.html">
+    <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/portal-coverage-layers/index.html">
+    <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/portal-coverage-layers/index_ja.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://gongjupal.com/ingress/portal-coverage-layers/index_zh-cn.html">
+    <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/portal-coverage-layers/index.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
+    <meta property="og:title" content="Portal Coverage Layers for IITC | 未访问与未占领 Portal 筛选图层">
+    <meta property="og:description" content="利用 Uniques Tools 保存的历史数据，在 Intel Map 上只显示未访问 Portal 或未占领 Portal。">
+    <meta property="og:url" content="https://gongjupal.com/ingress/portal-coverage-layers/index_zh-cn.html">
+    <meta property="og:locale" content="zh_CN">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Portal Coverage Layers for IITC | 未访问与未占领 Portal 筛选图层">
+    <meta name="twitter:description" content="适用于 Ingress 特工的 IITC 插件，可把 Uniques Tools 的 Portal 历史变成直观的未访问和未占领图层。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Portal Coverage Layers",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Portal Coverage Layers 是 Niantic Ingress Intel Map 的 IITC 插件，可读取 Uniques Tools 中保存的 Portal 历史，并生成未访问与未占领两个独立图层。",
+      "url": "https://gongjupal.com/ingress/portal-coverage-layers/index_zh-cn.html",
+      "softwareVersion": "0.1.0",
+      "inLanguage": "zh-CN",
+      "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-coverage-layers"
+    }
+    </script>
+    <style>
+        body { background-color: #0e1111; color: #eee; font-family: 'Roboto', 'Noto Sans SC', sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 20px; }
+        .lang-switch { position: fixed; top: 20px; right: 30px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; border: 1px solid #0ff; z-index: 1000; }
+        .lang-switch a { color: #ffce00; text-decoration: none; font-family: 'Coda', 'Noto Sans SC', cursive; margin: 0 5px; }
+        .container { max-width: 900px; margin: 0 auto; background-color: rgba(10, 25, 30, 0.85); border: 1px solid #0ff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); padding: 25px 40px; border-radius: 5px; }
+        h1, h2, h3 { font-family: 'Coda', 'Noto Sans SC', cursive; text-shadow: 0 0 5px #0ff; }
+        h1 { color: #0ff; text-align: center; font-size: 2.5em; margin-bottom: 18px; }
+        h2 { color: #0ff; font-size: 1.7em; border-bottom: 1px solid #0aa; padding-bottom: 10px; margin-top: 34px; }
+        h3 { font-size: 1.15em; color: #ffce00; margin-top: 20px; }
+        p, li { color: #ccc; }
+        strong { color: #ffce00; }
+        code { background-color: #000; padding: 2px 5px; border: 1px solid #333; border-radius: 3px; color: #fada5e; font-family: 'Courier New', Courier, monospace; }
+        .intro, .summary { text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
+        .intro { margin-bottom: 10px; color: #bbb; }
+        .summary { margin-bottom: 22px; }
+        .resource-links { text-align: center; margin: 0 0 28px 0; }
+        .resource-links a { color: #ffce00; text-decoration: none; font-weight: 700; }
+        .feature-list, .faq-list, .related-list { padding-left: 20px; }
+        .feature-list li, .faq-list li, .related-list li { margin-bottom: 12px; }
+        .note { background-color: rgba(255, 206, 0, 0.1); border: 1px solid #ffce00; padding: 15px; margin-top: 20px; border-radius: 4px; }
+        .note-danger { border-color: #f88; background: rgba(255, 80, 80, 0.08); }
+        .note-danger strong { color: #f88; }
+        .faq-q { color: #ffce00; font-weight: 700; }
+        @media (max-width: 900px) {
+            .lang-switch { position: static; margin: 0 auto 12px auto; width: fit-content; }
+            .container { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switch">
+        <a href="../portal-coverage-layers/index.html" lang="en">English</a> |
+        <a href="../portal-coverage-layers/index_ja.html" lang="ja">日本語</a>
+    </div>
+
+    <main class="container">
+        <h1>Portal Coverage Layers</h1>
+        <p class="intro">适用于 Niantic Ingress Intel Map 的 IITC 目标筛选图层插件。</p>
+        <p class="summary"><strong>Portal Coverage Layers</strong> 会把你的本地 Portal 历史转换成两个非常直接的地图图层：<strong>Unvisited Portals</strong> 与 <strong>Uncaptured Portals</strong>。相比需要自己理解冷热分布的热力图，这个插件会直接隐藏已经完成的 Portal，让地图上剩下的点就是你下一步该去处理的目标。</p>
+        <p class="resource-links">
+            <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-coverage-layers">在 GitHub 上查看此插件目录</a> |
+            <a href="../index_zh-cn.html">查看全部 IITC 插件</a>
+        </p>
+
+        <div class="note note-danger">
+            <p><strong>依赖说明：</strong> 这个插件依赖 <a href="../uniques-tools/index_zh-cn.html" style="color:#ffce00;">Uniques Tools</a>，也就是 <code>local-plugins/uniques-tools</code>。如果没有安装该插件，或者其中没有保存 visited / captured 历史数据，那么 Portal Coverage Layers 就没有可用的筛选依据。</p>
+        </div>
+
+        <section aria-labelledby="who">
+            <h2 id="who">适合哪些用户</h2>
+            <p>如果你更想要一个“直接告诉你下一步该去哪”的地图，而不是一个需要自己判断密度的趋势图，那么这个插件会很适合你。它特别适合补 uniques、清理未占领 Portal、复盘旧行动区域，或者规划一条专门补漏的路线。</p>
+        </section>
+
+        <section aria-labelledby="features">
+            <h2 id="features">核心功能</h2>
+            <ul class="feature-list">
+                <li><strong>两个独立图层：</strong> 为 IITC 增加 <strong>Unvisited Portals</strong> 和 <strong>Uncaptured Portals</strong> 两个独立 layer。</li>
+                <li><strong>基于历史数据筛选：</strong> 直接读取 <strong>Uniques Tools</strong> 中维护的 <strong>visited</strong> 和 <strong>captured</strong> 状态。</li>
+                <li><strong>决策更直接：</strong> 把已经完成的 Portal 隐藏后，地图上剩下的就是待处理目标。</li>
+                <li><strong>支持双图层并开：</strong> 两个 layer 同时启用时，只要 Portal 满足任一条件就会保留显示。</li>
+                <li><strong>自动刷新：</strong> 地图数据变化或 Uniques Tools 更新状态后，会自动重新应用筛选。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="layers">
+            <h2 id="layers">两个图层分别显示什么</h2>
+            <ul class="feature-list">
+                <li><strong>Unvisited Portals：</strong> 只显示既没有标记 <code>visited</code>，也没有标记 <code>captured</code> 的 Portal。</li>
+                <li><strong>Uncaptured Portals：</strong> 显示所有尚未标记 <code>captured</code> 的 Portal，其中也包括那些已经访问过但还没有占领的 Portal。</li>
+                <li><strong>两个图层同时开启：</strong> 只要 Portal 满足其中任一条件，就会继续显示。这个模式很适合在保留所有未占领机会的同时，把完全没碰过的目标一起留在图上。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="how-to-use">
+            <h2 id="how-to-use">如何使用 Portal Coverage Layers</h2>
+            <ol>
+                <li>先安装并启用 <strong>Uniques Tools</strong>。</li>
+                <li>确保你的 Portal 历史已经在 Uniques Tools 中录入，可以是手动记录，也可以来自其导入功能。</li>
+                <li>安装并启用 <strong>Portal Coverage Layers</strong>。</li>
+                <li>打开 IITC 图层列表，按需启用 <strong>Unvisited Portals</strong>、<strong>Uncaptured Portals</strong> 或两者同时启用。</li>
+                <li>把地图上仍然可见的 Portal 直接当作补点、清理或跑图目标使用。</li>
+            </ol>
+        </section>
+
+        <section aria-labelledby="why">
+            <h2 id="why">为什么它比热力图更直观</h2>
+            <p>热力图适合看整体区域的密度和趋势，但你仍然要自己去解读颜色强弱和分布重叠。<strong>Portal Coverage Layers</strong> 则更直接，它会把已经完成的 Portal 从视图里移除，让地图本身变成一份目标清单。</p>
+            <p>对于补最后一批 uniques、回头清理老区域、或者检查一片区域里是否还有从未访问或从未占领的 Portal，这种显示方式通常会更高效。</p>
+        </section>
+
+        <section aria-labelledby="requirements">
+            <h2 id="requirements">依赖与限制</h2>
+            <p>这个插件必须依赖 <strong>Uniques Tools</strong>。它自己不会抓取官方历史，也不会维护独立数据库，而只是读取 <strong>local-plugins/uniques-tools</strong> 已经保存好的 Portal 历史。</p>
+            <p>另外，它的结果只基于当前 IITC 客户端已经加载到地图上的 Portal，以及你本地保存的历史状态，因此更适合作为实战规划视图，而不是全局实时真相。</p>
+        </section>
+
+        <section aria-labelledby="faq">
+            <h2 id="faq">常见问题</h2>
+            <ul class="faq-list">
+                <li><span class="faq-q">没有 Uniques Tools 也能用吗？</span> 不能。这个插件完全依赖 Uniques Tools 提供 visited 和 captured 历史。</li>
+                <li><span class="faq-q">Unvisited 和 Uncaptured 有什么区别？</span> <strong>Unvisited</strong> 会隐藏 visited 和 captured；<strong>Uncaptured</strong> 只隐藏 captured。</li>
+                <li><span class="faq-q">是不是要在两个插件里分别维护数据？</span> 不需要。你只需要在 Uniques Tools 里维护历史数据，Portal Coverage Layers 只是读取并显示它。</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="related">
+            <h2 id="related">相关插件</h2>
+            <ul class="related-list">
+                <li><a href="../uniques-tools/index_zh-cn.html" style="color:#ffce00;">Uniques Tools</a> 是这个插件的必备依赖，也是 visited / captured 历史的来源。</li>
+                <li><a href="../portal-afterimage/index_zh-cn.html" style="color:#ffce00;">Portal Afterimage</a> 可补充本地已知 Portal 的可见性增强，与本插件相辅相成。</li>
+                <li><a href="../player-activity-log/index_zh-cn.html" style="color:#ffce00;">Player Activity Log</a> 则能补上本地行动历史，让补点和复盘更完整。</li>
+            </ul>
+        </section>
+    </main>
+
+</body>
+</html>

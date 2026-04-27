@@ -31,7 +31,7 @@
       "operatingSystem": "Web Browser",
       "description": "Homogeneous Fields is an IITC plugin for Niantic's Ingress Intel Map that designs layered field plans, maximum fielding plans, and cobweb plans from selected anchor portals.",
       "url": "https://gongjupal.com/ingress/homogeneous-fields/index.html",
-      "softwareVersion": "2.1.15",
+      "softwareVersion": "2.1.16",
       "inLanguage": "en",
       "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/homogeneous-fields"
     }
@@ -87,7 +87,7 @@
                 <li><strong>Interactive planning dialog:</strong> Select corner portals, preview anchor images, lock selections, and adjust plan settings from one workspace.</li>
                 <li><strong>Portal inclusion control:</strong> Move portals between included and excluded lists to refine the final plan.</li>
                 <li><strong>Visual overlays:</strong> Draw the planned links and fields directly on the Intel Map and adjust overlay color as needed.</li>
-                <li><strong>Detailed execution output:</strong> Get link order, visitation order, SoftBank counts, key counts, and total travel distance.</li>
+                <li><strong>Detailed execution output:</strong> Get link order, visitation order, SoftBank counts, key counts, total travel distance, and estimated total AP for the generated operation.</li>
                 <li><strong>Plugin integration:</strong> Export the generated link plan to <strong>DrawTools</strong> and <strong>Arc</strong>.</li>
             </ul>
         </section>
@@ -120,7 +120,7 @@
                 <li>A numbered list of links to throw from each portal.</li>
                 <li>SoftBank counts for major anchors.</li>
                 <li>Key counts per portal.</li>
-                <li>Total travel distance and overall plan statistics.</li>
+                <li>Total travel distance, total AP, and overall plan statistics.</li>
             </ul>
         </section>
 
@@ -133,7 +133,7 @@
             <ul class="faq-list">
                 <li><span class="faq-q">Is this plugin only for homogeneous fields?</span> No. Homogeneous fields are one major mode, but the plugin also supports general maximum fielding and cobweb plans.</li>
                 <li><span class="faq-q">Can I exclude portals from the plan?</span> Yes. After choosing the main triangle, you can move portals from the included list to the excluded list.</li>
-                <li><span class="faq-q">Does the plugin only show a visual plan?</span> No. It also produces a detailed text-based plan with link order, keys, SoftBanks, and travel information.</li>
+                <li><span class="faq-q">Does the plugin only show a visual plan?</span> No. It also produces a detailed text-based plan with link order, keys, SoftBanks, travel information, and total AP estimates.</li>
             </ul>
         </section>
 
@@ -147,6 +147,10 @@
 
         <section aria-labelledby="changelog">
             <h2 id="changelog">Changelog</h2>
+            <h3>Version 2.1.16</h3>
+            <ul class="feature-list">
+                <li>Added total AP to the generated plan statistics, assuming neutral portals are captured and fully deployed with eight resonators.</li>
+            </ul>
             <h3>Version 2.1.15</h3>
             <ul class="feature-list">
                 <li>Cached coordinates and names for selected corners and candidate portals, so planning no longer breaks after moving the map.</li>
