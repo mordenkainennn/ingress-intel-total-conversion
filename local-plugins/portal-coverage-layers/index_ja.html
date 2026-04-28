@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Coverage Layers for IITC | 未訪問・未キャプチャ ポータル表示レイヤー</title>
-    <meta name="description" content="Portal Coverage Layers は Niantic Ingress Intel Map 向けの IITC プラグインで、Uniques Tools のデータから未訪問と未キャプチャのポータルレイヤーを表示します。">
+    <meta name="description" content="Portal Coverage Layers は Niantic Ingress Intel Map 向けの IITC プラグインで、Uniques Tools のデータから未訪問と未キャプチャのポータルレイヤーを表示し、標準 Uniques プラグインにもフォールバックできます。">
     <link rel="canonical" href="https://gongjupal.com/ingress/portal-coverage-layers/index_ja.html">
     <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/portal-coverage-layers/index.html">
     <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/portal-coverage-layers/index_ja.html">
@@ -13,12 +13,12 @@
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
     <meta property="og:title" content="Portal Coverage Layers for IITC | 未訪問・未キャプチャ ポータル表示レイヤー">
-    <meta property="og:description" content="Uniques Tools の履歴データを使い、Intel Map 上で未訪問ポータルまたは未キャプチャポータルだけを表示します。">
+    <meta property="og:description" content="Uniques Tools または標準 Uniques の履歴データを使い、Intel Map 上で未訪問ポータルまたは未キャプチャポータルだけを表示します。">
     <meta property="og:url" content="https://gongjupal.com/ingress/portal-coverage-layers/index_ja.html">
     <meta property="og:locale" content="ja_JP">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Portal Coverage Layers for IITC | 未訪問・未キャプチャ ポータル表示レイヤー">
-    <meta name="twitter:description" content="Ingress エージェント向けの IITC プラグイン。Uniques Tools のポータル履歴を未訪問・未キャプチャの実用的なレイヤーに変換します。">
+    <meta name="twitter:description" content="Ingress エージェント向けの IITC プラグイン。Uniques Tools または標準 Uniques のポータル履歴を未訪問・未キャプチャの実用的なレイヤーに変換します。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -29,9 +29,9 @@
       "name": "Portal Coverage Layers",
       "applicationCategory": "UtilitiesApplication",
       "operatingSystem": "Web Browser",
-      "description": "Portal Coverage Layers は Niantic Ingress Intel Map 向けの IITC プラグインで、Uniques Tools に保存された履歴から未訪問ポータルと未キャプチャポータルの 2 つのレイヤーを作成します。",
+      "description": "Portal Coverage Layers は Niantic Ingress Intel Map 向けの IITC プラグインで、Uniques Tools に保存された履歴から未訪問ポータルと未キャプチャポータルの 2 つのレイヤーを作成し、必要に応じて標準 Uniques にフォールバックします。",
       "url": "https://gongjupal.com/ingress/portal-coverage-layers/index_ja.html",
-      "softwareVersion": "0.1.0",
+      "softwareVersion": "0.1.1",
       "inLanguage": "ja",
       "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-coverage-layers"
     }
@@ -82,7 +82,7 @@
         </p>
 
         <div class="note note-danger">
-            <p><strong>依存プラグイン:</strong> このプラグインは <a href="../uniques-tools/index_ja.html" style="color:#ffce00;">Uniques Tools</a>、つまり <code>local-plugins/uniques-tools</code> に依存しています。Uniques Tools が保存する visited / captured 履歴がない場合、Portal Coverage Layers は表示対象を判定できません。</p>
+            <p><strong>依存プラグイン:</strong> このプラグインは <a href="../uniques-tools/index_ja.html" style="color:#ffce00;">Uniques Tools</a>、つまり <code>local-plugins/uniques-tools</code> を優先して使いますが、IITC 標準の <code>plugins/uniques.js</code> にもフォールバックできます。どちらにも visited / captured 履歴がない場合、Portal Coverage Layers は表示対象を判定できません。</p>
         </div>
 
         <section aria-labelledby="who">
@@ -94,10 +94,10 @@
             <h2 id="features">主な機能</h2>
             <ul class="feature-list">
                 <li><strong>2 つの専用レイヤー:</strong> <strong>Unvisited Portals</strong> と <strong>Uncaptured Portals</strong> を別々の IITC レイヤーとして追加します。</li>
-                <li><strong>履歴ベースのフィルタリング:</strong> <strong>Uniques Tools</strong> が管理している <strong>visited</strong> と <strong>captured</strong> の状態をそのまま利用します。</li>
+                <li><strong>履歴ベースのフィルタリング:</strong> <strong>Uniques Tools</strong> が管理している <strong>visited</strong> と <strong>captured</strong> をそのまま利用し、未導入時は標準 <strong>Uniques</strong> にフォールバックします。</li>
                 <li><strong>判断が速い:</strong> 完了済みポータルを隠すため、地図に残るポータルが次の目標になります。</li>
                 <li><strong>両レイヤー同時利用:</strong> 両方を有効化した場合、どちらかの条件に合うポータルは表示されたままになります。</li>
-                <li><strong>自動更新:</strong> マップデータ変更時や Uniques Tools の状態更新時に自動で再適用されます。</li>
+                <li><strong>自動更新:</strong> マップデータ変更時や、対応する uniques プラグインの状態更新時に自動で再適用されます。</li>
             </ul>
         </section>
 
@@ -113,8 +113,8 @@
         <section aria-labelledby="how-to-use">
             <h2 id="how-to-use">使い方</h2>
             <ol>
-                <li>まず <strong>Uniques Tools</strong> を導入して有効化します。</li>
-                <li>Uniques Tools にポータル履歴を登録します。手動入力でもインポートでも構いません。</li>
+                <li>まず <strong>Uniques Tools</strong> を導入して有効化します。すでに標準 <strong>Uniques</strong> を使っている場合はそのままでも構いません。</li>
+                <li>利用中の uniques プラグインにポータル履歴を登録します。手動入力でもインポートでも構いません。</li>
                 <li><strong>Portal Coverage Layers</strong> を導入して有効化します。</li>
                 <li>IITC のレイヤー一覧から <strong>Unvisited Portals</strong>、<strong>Uncaptured Portals</strong>、またはその両方を有効にします。</li>
                 <li>地図上に残ったポータルを、そのままルート計画や回収対象として使います。</li>
@@ -129,23 +129,23 @@
 
         <section aria-labelledby="requirements">
             <h2 id="requirements">要件と制限</h2>
-            <p>このプラグインには <strong>Uniques Tools</strong> が必要です。公式履歴を自分で取得したり、独自データベースを持ったりはせず、<strong>local-plugins/uniques-tools</strong> に保存された履歴だけを解釈して表示します。</p>
+            <p>このプラグインには <strong>Uniques Tools</strong> または標準 <strong>Uniques</strong> が必要です。公式履歴を自分で取得したり、独自データベースを持ったりはせず、<strong>local-plugins/uniques-tools</strong> または <strong>plugins/uniques.js</strong> に保存された履歴だけを解釈して表示します。</p>
             <p>また、現在 IITC クライアントに読み込まれているポータルと、ローカルに保存されている履歴に基づいて動作するため、全世界の完全な最新状態を示すものではなく、実用的な行動用ビューとして使うのが適しています。</p>
         </section>
 
         <section aria-labelledby="faq">
             <h2 id="faq">FAQ</h2>
             <ul class="faq-list">
-                <li><span class="faq-q">Uniques Tools なしでも動きますか？</span> いいえ。visited / captured 履歴は Uniques Tools に依存しています。</li>
+                <li><span class="faq-q">Uniques Tools なしでも動きますか？</span> はい。標準の <strong>Uniques</strong> を使っていれば動作します。visited / captured 履歴を持つプラグインがどちらか 1 つ必要です。</li>
                 <li><span class="faq-q">Unvisited と Uncaptured の違いは何ですか？</span> <strong>Unvisited</strong> は visited と captured の両方を隠し、<strong>Uncaptured</strong> は captured だけを隠します。</li>
-                <li><span class="faq-q">2 つのプラグインで別々にデータを管理する必要がありますか？</span> ありません。履歴更新は Uniques Tools 側だけで行い、このプラグインはそれを読み取るだけです。</li>
+                <li><span class="faq-q">2 つのプラグインで別々にデータを管理する必要がありますか？</span> ありません。使用している uniques プラグイン側だけで履歴を更新し、このプラグインはそれを読み取るだけです。</li>
             </ul>
         </section>
 
         <section aria-labelledby="related">
             <h2 id="related">関連プラグイン</h2>
             <ul class="related-list">
-                <li><a href="../uniques-tools/index_ja.html" style="color:#ffce00;">Uniques Tools</a> は必須の依存プラグインであり、visited / captured 履歴の元データです。</li>
+                <li><a href="../uniques-tools/index_ja.html" style="color:#ffce00;">Uniques Tools</a> は推奨の依存プラグインであり、visited / captured 履歴の主な元データです。標準 <strong>Uniques</strong> も fallback として利用できます。</li>
                 <li><a href="../portal-afterimage/index_ja.html" style="color:#ffce00;">Portal Afterimage</a> は既知ポータルの視認性向上に役立ち、このプラグインと組み合わせやすいです。</li>
                 <li><a href="../player-activity-log/index_ja.html" style="color:#ffce00;">Player Activity Log</a> はローカル行動履歴を補完し、ポータル回収の計画に役立ちます。</li>
             </ul>

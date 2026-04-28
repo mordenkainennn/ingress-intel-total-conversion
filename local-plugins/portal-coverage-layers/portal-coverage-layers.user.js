@@ -2,8 +2,8 @@
 // @author         Cloverjune
 // @name           IITC plugin: Portal Coverage Layers
 // @category       Layer
-// @version        0.1.0
-// @description    Adds Unvisited and Uncaptured portal layers using data from Uniques Tools.
+// @version        0.1.1
+// @description    Adds Unvisited and Uncaptured portal layers using data from Uniques Tools or the stock Uniques plugin.
 // @id             portal-coverage-layers
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/portal-coverage-layers/portal-coverage-layers.meta.js
@@ -19,8 +19,24 @@ function wrapper(plugin_info) {
     }
 
     plugin_info.buildName = 'local';
-    plugin_info.dateTimeVersion = '20260428.000000';
+    plugin_info.dateTimeVersion = '20260428.010000';
     plugin_info.pluginId = 'portal-coverage-layers';
+
+    var changelog = [
+        {
+            version: '0.1.1',
+            changes: [
+                'NEW: Fall back to the stock Uniques plugin when Uniques Tools is not installed.',
+                'UPD: Refresh coverage layers when stock Uniques updates portal history.',
+            ],
+        },
+        {
+            version: '0.1.0',
+            changes: [
+                'NEW: Added separate Unvisited and Uncaptured portal layers based on local uniques history.',
+            ],
+        },
+    ];
 
     window.plugin.portalCoverageLayers = function () { };
     var self = window.plugin.portalCoverageLayers;
@@ -32,12 +48,15 @@ function wrapper(plugin_info) {
     self.unvisitedLayer = null;
     self.uncapturedLayer = null;
 
-    self.getUniquesTools = function () {
-        return window.plugin && window.plugin.uniquesTools ? window.plugin.uniquesTools : null;
+    self.getHistoryPlugin = function () {
+        if (!window.plugin) return null;
+        if (window.plugin.uniquesTools && window.plugin.uniquesTools.uniques) return window.plugin.uniquesTools;
+        if (window.plugin.uniques && window.plugin.uniques.uniques) return window.plugin.uniques;
+        return null;
     };
 
     self.getUniqueInfo = function (guid) {
-        var plugin = self.getUniquesTools();
+        var plugin = self.getHistoryPlugin();
         if (!plugin || !plugin.uniques) return null;
         return plugin.uniques[guid] || null;
     };
@@ -137,6 +156,7 @@ function wrapper(plugin_info) {
         window.addHook('requestFinished', self.refreshIfActive);
         window.addHook('pluginUniquesToolsUpdate', self.refreshIfActive);
         window.addHook('pluginUniquesToolsRefreshAll', self.refreshIfActive);
+        window.addHook('pluginUniquesUpdateUniques', self.refreshIfActive);
     };
 
     setup.info = plugin_info;

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Coverage Layers for IITC | Unvisited and Uncaptured Portal Filter</title>
-    <meta name="description" content="Portal Coverage Layers is an IITC plugin for Niantic's Ingress Intel Map that shows separate Unvisited and Uncaptured portal layers using Uniques Tools data.">
+    <meta name="description" content="Portal Coverage Layers is an IITC plugin for Niantic's Ingress Intel Map that shows separate Unvisited and Uncaptured portal layers using Uniques Tools data, with fallback to the stock Uniques plugin.">
     <link rel="canonical" href="https://gongjupal.com/ingress/portal-coverage-layers/index.html">
     <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/portal-coverage-layers/index.html">
     <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/portal-coverage-layers/index_ja.html">
@@ -13,12 +13,12 @@
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
     <meta property="og:title" content="Portal Coverage Layers for IITC | Unvisited and Uncaptured Portal Filter">
-    <meta property="og:description" content="Filter the Intel Map to show only unvisited portals or only uncaptured portals with data from Uniques Tools.">
+    <meta property="og:description" content="Filter the Intel Map to show only unvisited portals or only uncaptured portals with data from Uniques Tools or the stock Uniques plugin.">
     <meta property="og:url" content="https://gongjupal.com/ingress/portal-coverage-layers/index.html">
     <meta property="og:locale" content="en_US">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Portal Coverage Layers for IITC | Unvisited and Uncaptured Portal Filter">
-    <meta name="twitter:description" content="An IITC plugin for Ingress agents that turns Uniques Tools history data into simple Unvisited and Uncaptured map layers.">
+    <meta name="twitter:description" content="An IITC plugin for Ingress agents that turns portal history from Uniques Tools or the stock Uniques plugin into simple map layers.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
@@ -29,9 +29,9 @@
       "name": "Portal Coverage Layers",
       "applicationCategory": "UtilitiesApplication",
       "operatingSystem": "Web Browser",
-      "description": "Portal Coverage Layers is an IITC plugin for Niantic's Ingress Intel Map that creates separate Unvisited and Uncaptured portal layers from Uniques Tools history data.",
+      "description": "Portal Coverage Layers is an IITC plugin for Niantic's Ingress Intel Map that creates separate Unvisited and Uncaptured portal layers from Uniques Tools history data, with fallback to the stock Uniques plugin.",
       "url": "https://gongjupal.com/ingress/portal-coverage-layers/index.html",
-      "softwareVersion": "0.1.0",
+      "softwareVersion": "0.1.1",
       "inLanguage": "en",
       "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-coverage-layers"
     }
@@ -82,7 +82,7 @@
         </p>
 
         <div class="note note-danger">
-            <p><strong>Dependency required:</strong> This plugin depends on <a href="../uniques-tools/index.html" style="color:#ffce00;">Uniques Tools</a> in <code>local-plugins/uniques-tools</code>. Without that plugin and its stored portal history data, Portal Coverage Layers has no visited or captured state to filter.</p>
+            <p><strong>Preferred dependency:</strong> This plugin works best with <a href="../uniques-tools/index.html" style="color:#ffce00;">Uniques Tools</a> in <code>local-plugins/uniques-tools</code>, but it can also fall back to the stock IITC <code>plugins/uniques.js</code> plugin. Without either plugin and its stored portal history data, Portal Coverage Layers has no visited or captured state to filter.</p>
         </div>
 
         <section aria-labelledby="who">
@@ -94,10 +94,10 @@
             <h2 id="features">Key Features</h2>
             <ul class="feature-list">
                 <li><strong>Two dedicated layer views:</strong> Adds <strong>Unvisited Portals</strong> and <strong>Uncaptured Portals</strong> as separate IITC layers.</li>
-                <li><strong>History-driven filtering:</strong> Uses the <strong>visited</strong> and <strong>captured</strong> records already managed by <strong>Uniques Tools</strong>.</li>
+                <li><strong>History-driven filtering:</strong> Uses the <strong>visited</strong> and <strong>captured</strong> records managed by <strong>Uniques Tools</strong>, or by the stock <strong>Uniques</strong> plugin as a fallback.</li>
                 <li><strong>Cleaner decision-making:</strong> Hides finished portals so the remaining visible portals are your next targets.</li>
                 <li><strong>Shared filter behavior:</strong> If both layers are enabled, a portal stays visible when it matches either active filter.</li>
-                <li><strong>Live updates:</strong> Refreshes when map data changes or when Uniques Tools updates a portal state.</li>
+                <li><strong>Live updates:</strong> Refreshes when map data changes or when either supported uniques plugin updates a portal state.</li>
             </ul>
         </section>
 
@@ -113,8 +113,8 @@
         <section aria-labelledby="how-to-use">
             <h2 id="how-to-use">How to Use Portal Coverage Layers</h2>
             <ol>
-                <li>Install and enable <strong>Uniques Tools</strong>.</li>
-                <li>Make sure your portal history is populated in Uniques Tools, either manually or by using its import features.</li>
+                <li>Install and enable <strong>Uniques Tools</strong>, or use the stock IITC <strong>Uniques</strong> plugin if that is already part of your setup.</li>
+                <li>Make sure your portal history is populated in your chosen uniques plugin, either manually or by using its import or sync features.</li>
                 <li>Install and enable <strong>Portal Coverage Layers</strong>.</li>
                 <li>Open the IITC layer chooser and enable <strong>Unvisited Portals</strong>, <strong>Uncaptured Portals</strong>, or both.</li>
                 <li>Use the visible portals as your action list for route planning, cleanup, or fieldwork.</li>
@@ -129,23 +129,23 @@
 
         <section aria-labelledby="requirements">
             <h2 id="requirements">Requirements and Limits</h2>
-            <p>This plugin requires <strong>Uniques Tools</strong>. It does not fetch official history on its own and does not maintain a separate database. It only interprets the portal history already stored by <strong>local-plugins/uniques-tools</strong>.</p>
+            <p>This plugin requires either <strong>Uniques Tools</strong> or the stock <strong>Uniques</strong> plugin. It does not fetch official history on its own and does not maintain a separate database. It only interprets the portal history already stored by <strong>local-plugins/uniques-tools</strong> or <strong>plugins/uniques.js</strong>.</p>
             <p>Because it works from currently loaded portal markers and the local history available to your IITC client, the output reflects your saved state and current map data rather than the complete live game world.</p>
         </section>
 
         <section aria-labelledby="faq">
             <h2 id="faq">FAQ</h2>
             <ul class="faq-list">
-                <li><span class="faq-q">Does this plugin work without Uniques Tools?</span> No. It depends on Uniques Tools for visited and captured history data.</li>
+                <li><span class="faq-q">Does this plugin work without Uniques Tools?</span> Yes, if you use the stock IITC <strong>Uniques</strong> plugin. It needs one of those two plugins for visited and captured history data.</li>
                 <li><span class="faq-q">What is the difference between Unvisited and Uncaptured?</span> <strong>Unvisited</strong> hides both visited and captured portals. <strong>Uncaptured</strong> hides only captured portals.</li>
-                <li><span class="faq-q">Do I need to maintain data in two plugins?</span> No. Update history only in Uniques Tools; Portal Coverage Layers simply reads and displays that data.</li>
+                <li><span class="faq-q">Do I need to maintain data in two plugins?</span> No. Maintain history in whichever uniques plugin you use; Portal Coverage Layers simply reads and displays that data.</li>
             </ul>
         </section>
 
         <section aria-labelledby="related">
             <h2 id="related">Related Plugins</h2>
             <ul class="related-list">
-                <li><a href="../uniques-tools/index.html" style="color:#ffce00;">Uniques Tools</a> is the required dependency and the source of visited and captured history.</li>
+                <li><a href="../uniques-tools/index.html" style="color:#ffce00;">Uniques Tools</a> is the preferred source of visited and captured history, with fallback support for the stock IITC <strong>Uniques</strong> plugin.</li>
                 <li><a href="../portal-afterimage/index.html" style="color:#ffce00;">Portal Afterimage</a> can complement this plugin when you want local visibility improvements for known portals.</li>
                 <li><a href="../player-activity-log/index.html" style="color:#ffce00;">Player Activity Log</a> pairs well with portal coverage cleanup by adding local activity context.</li>
             </ul>

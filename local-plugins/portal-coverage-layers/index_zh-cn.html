@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Coverage Layers for IITC | 未访问与未占领 Portal 筛选图层</title>
-    <meta name="description" content="Portal Coverage Layers 是 Niantic Ingress Intel Map 的 IITC 插件，可基于 Uniques Tools 数据分别显示未访问和未占领 Portal 图层。">
+    <meta name="description" content="Portal Coverage Layers 是 Niantic Ingress Intel Map 的 IITC 插件，可基于 Uniques Tools 数据分别显示未访问和未占领 Portal 图层，并可回退使用原版 Uniques 插件。">
     <link rel="canonical" href="https://gongjupal.com/ingress/portal-coverage-layers/index_zh-cn.html">
     <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/portal-coverage-layers/index.html">
     <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/portal-coverage-layers/index_ja.html">
@@ -13,12 +13,12 @@
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
     <meta property="og:title" content="Portal Coverage Layers for IITC | 未访问与未占领 Portal 筛选图层">
-    <meta property="og:description" content="利用 Uniques Tools 保存的历史数据，在 Intel Map 上只显示未访问 Portal 或未占领 Portal。">
+    <meta property="og:description" content="利用 Uniques Tools 或原版 Uniques 保存的历史数据，在 Intel Map 上只显示未访问 Portal 或未占领 Portal。">
     <meta property="og:url" content="https://gongjupal.com/ingress/portal-coverage-layers/index_zh-cn.html">
     <meta property="og:locale" content="zh_CN">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Portal Coverage Layers for IITC | 未访问与未占领 Portal 筛选图层">
-    <meta name="twitter:description" content="适用于 Ingress 特工的 IITC 插件，可把 Uniques Tools 的 Portal 历史变成直观的未访问和未占领图层。">
+    <meta name="twitter:description" content="适用于 Ingress 特工的 IITC 插件，可把 Uniques Tools 或原版 Uniques 的 Portal 历史变成直观的未访问和未占领图层。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Coda&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
@@ -29,9 +29,9 @@
       "name": "Portal Coverage Layers",
       "applicationCategory": "UtilitiesApplication",
       "operatingSystem": "Web Browser",
-      "description": "Portal Coverage Layers 是 Niantic Ingress Intel Map 的 IITC 插件，可读取 Uniques Tools 中保存的 Portal 历史，并生成未访问与未占领两个独立图层。",
+      "description": "Portal Coverage Layers 是 Niantic Ingress Intel Map 的 IITC 插件，可读取 Uniques Tools 中保存的 Portal 历史，并在缺少该插件时回退使用原版 Uniques，从而生成未访问与未占领两个独立图层。",
       "url": "https://gongjupal.com/ingress/portal-coverage-layers/index_zh-cn.html",
-      "softwareVersion": "0.1.0",
+      "softwareVersion": "0.1.1",
       "inLanguage": "zh-CN",
       "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/portal-coverage-layers"
     }
@@ -82,7 +82,7 @@
         </p>
 
         <div class="note note-danger">
-            <p><strong>依赖说明：</strong> 这个插件依赖 <a href="../uniques-tools/index_zh-cn.html" style="color:#ffce00;">Uniques Tools</a>，也就是 <code>local-plugins/uniques-tools</code>。如果没有安装该插件，或者其中没有保存 visited / captured 历史数据，那么 Portal Coverage Layers 就没有可用的筛选依据。</p>
+            <p><strong>依赖说明：</strong> 这个插件优先使用 <a href="../uniques-tools/index_zh-cn.html" style="color:#ffce00;">Uniques Tools</a>，也就是 <code>local-plugins/uniques-tools</code>，但也支持回退到 IITC 原版 <code>plugins/uniques.js</code>。如果两者都没有安装，或者都没有保存 visited / captured 历史数据，那么 Portal Coverage Layers 就没有可用的筛选依据。</p>
         </div>
 
         <section aria-labelledby="who">
@@ -94,10 +94,10 @@
             <h2 id="features">核心功能</h2>
             <ul class="feature-list">
                 <li><strong>两个独立图层：</strong> 为 IITC 增加 <strong>Unvisited Portals</strong> 和 <strong>Uncaptured Portals</strong> 两个独立 layer。</li>
-                <li><strong>基于历史数据筛选：</strong> 直接读取 <strong>Uniques Tools</strong> 中维护的 <strong>visited</strong> 和 <strong>captured</strong> 状态。</li>
+                <li><strong>基于历史数据筛选：</strong> 直接读取 <strong>Uniques Tools</strong> 中维护的 <strong>visited</strong> 和 <strong>captured</strong> 状态；若未安装，则回退读取原版 <strong>Uniques</strong> 插件数据。</li>
                 <li><strong>决策更直接：</strong> 把已经完成的 Portal 隐藏后，地图上剩下的就是待处理目标。</li>
                 <li><strong>支持双图层并开：</strong> 两个 layer 同时启用时，只要 Portal 满足任一条件就会保留显示。</li>
-                <li><strong>自动刷新：</strong> 地图数据变化或 Uniques Tools 更新状态后，会自动重新应用筛选。</li>
+                <li><strong>自动刷新：</strong> 地图数据变化，或任一支持的 uniques 插件更新状态后，会自动重新应用筛选。</li>
             </ul>
         </section>
 
@@ -113,8 +113,8 @@
         <section aria-labelledby="how-to-use">
             <h2 id="how-to-use">如何使用 Portal Coverage Layers</h2>
             <ol>
-                <li>先安装并启用 <strong>Uniques Tools</strong>。</li>
-                <li>确保你的 Portal 历史已经在 Uniques Tools 中录入，可以是手动记录，也可以来自其导入功能。</li>
+                <li>先安装并启用 <strong>Uniques Tools</strong>；如果你本来就在用原版 <strong>Uniques</strong>，也可以直接使用。</li>
+                <li>确保你的 Portal 历史已经在所使用的 uniques 插件中录入，可以是手动记录，也可以来自导入或同步功能。</li>
                 <li>安装并启用 <strong>Portal Coverage Layers</strong>。</li>
                 <li>打开 IITC 图层列表，按需启用 <strong>Unvisited Portals</strong>、<strong>Uncaptured Portals</strong> 或两者同时启用。</li>
                 <li>把地图上仍然可见的 Portal 直接当作补点、清理或跑图目标使用。</li>
@@ -129,23 +129,23 @@
 
         <section aria-labelledby="requirements">
             <h2 id="requirements">依赖与限制</h2>
-            <p>这个插件必须依赖 <strong>Uniques Tools</strong>。它自己不会抓取官方历史，也不会维护独立数据库，而只是读取 <strong>local-plugins/uniques-tools</strong> 已经保存好的 Portal 历史。</p>
+            <p>这个插件必须依赖 <strong>Uniques Tools</strong> 或原版 <strong>Uniques</strong>。它自己不会抓取官方历史，也不会维护独立数据库，而只是读取 <strong>local-plugins/uniques-tools</strong> 或 <strong>plugins/uniques.js</strong> 已经保存好的 Portal 历史。</p>
             <p>另外，它的结果只基于当前 IITC 客户端已经加载到地图上的 Portal，以及你本地保存的历史状态，因此更适合作为实战规划视图，而不是全局实时真相。</p>
         </section>
 
         <section aria-labelledby="faq">
             <h2 id="faq">常见问题</h2>
             <ul class="faq-list">
-                <li><span class="faq-q">没有 Uniques Tools 也能用吗？</span> 不能。这个插件完全依赖 Uniques Tools 提供 visited 和 captured 历史。</li>
+                <li><span class="faq-q">没有 Uniques Tools 也能用吗？</span> 可以，只要你安装并使用了原版 <strong>Uniques</strong>。这两个插件至少需要有一个提供 visited 和 captured 历史。</li>
                 <li><span class="faq-q">Unvisited 和 Uncaptured 有什么区别？</span> <strong>Unvisited</strong> 会隐藏 visited 和 captured；<strong>Uncaptured</strong> 只隐藏 captured。</li>
-                <li><span class="faq-q">是不是要在两个插件里分别维护数据？</span> 不需要。你只需要在 Uniques Tools 里维护历史数据，Portal Coverage Layers 只是读取并显示它。</li>
+                <li><span class="faq-q">是不是要在两个插件里分别维护数据？</span> 不需要。你只需要在当前使用的 uniques 插件里维护历史数据，Portal Coverage Layers 只是读取并显示它。</li>
             </ul>
         </section>
 
         <section aria-labelledby="related">
             <h2 id="related">相关插件</h2>
             <ul class="related-list">
-                <li><a href="../uniques-tools/index_zh-cn.html" style="color:#ffce00;">Uniques Tools</a> 是这个插件的必备依赖，也是 visited / captured 历史的来源。</li>
+                <li><a href="../uniques-tools/index_zh-cn.html" style="color:#ffce00;">Uniques Tools</a> 是这个插件首选的依赖，也是 visited / captured 历史的主要来源；同时也支持原版 <strong>Uniques</strong> 作为 fallback。</li>
                 <li><a href="../portal-afterimage/index_zh-cn.html" style="color:#ffce00;">Portal Afterimage</a> 可补充本地已知 Portal 的可见性增强，与本插件相辅相成。</li>
                 <li><a href="../player-activity-log/index_zh-cn.html" style="color:#ffce00;">Player Activity Log</a> 则能补上本地行动历史，让补点和复盘更完整。</li>
             </ul>
