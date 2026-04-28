@@ -2,7 +2,7 @@
 // @id             iitc-plugin-player-activity-log
 // @name           IITC plugin: Player Activity Log
 // @category       Info
-// @version        0.8.3
+// @version        0.8.4
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
 // @updateURL      https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/player-activity-log/player-activity-log.meta.js
 // @downloadURL    https://github.com/mordenkainennn/ingress-intel-total-conversion/raw/master/local-plugins/player-activity-log/player-activity-log.user.js
@@ -22,6 +22,12 @@ function wrapper(plugin_info) {
     window.plugin.playerActivityLog = function () { };
 
     var changelog = [
+        {
+            version: '0.8.4',
+            changes: [
+                'NEW: Added support for logging COMM events when a player deployed a Beacon on a portal.',
+            ],
+        },
         {
             version: '0.8.3',
             changes: [
@@ -1144,6 +1150,7 @@ function wrapper(plugin_info) {
     window.plugin.playerActivityLog.getActivityType = function (plainText) {
         if (plainText.includes('captured')) return 'captured';
         if (plainText.includes('deployed a Resonator')) return 'deployed';
+        if (plainText.includes('deployed a Beacon on')) return 'deployed beacon';
         if (plainText.includes('destroyed a Resonator')) return 'destroyed';
         if (plainText.includes('linked from')) return 'linked';
         if (plainText.includes('created a Control Field')) return 'created field';
