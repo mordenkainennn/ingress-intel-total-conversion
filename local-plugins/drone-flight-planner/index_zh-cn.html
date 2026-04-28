@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Drone Flight Planner for IITC | Ingress 无人机路线规划插件</title>
-    <meta name="description" content="Drone Flight Planner 是 Niantic Ingress Intel Map 的 IITC 插件，可基于 S2 机制、钥匙跳跃规则、JSON 导入导出和本地自动保存来规划无人机路线。">
+    <meta name="description" content="Drone Flight Planner 是 Niantic Ingress Intel Map 的 IITC 插件，可基于 S2 机制、Key jump 规则、JSON 导入导出和本地自动保存来规划无人机路线。">
     <link rel="canonical" href="https://gongjupal.com/ingress/drone-flight-planner/index_zh-cn.html">
     <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/drone-flight-planner/index.html">
     <link rel="alternate" hreflang="ja" href="https://gongjupal.com/ingress/drone-flight-planner/index_ja.html">
@@ -13,7 +13,7 @@
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
     <meta property="og:title" content="Drone Flight Planner for IITC | Ingress 无人机路线规划插件">
-    <meta property="og:description" content="在 Niantic Ingress Intel Map 上规划更长的无人机路线，支持 S2 可见性、钥匙跳跃限制、计划导出和战术叠加层。">
+    <meta property="og:description" content="在 Niantic Ingress Intel Map 上规划更长的无人机路线，支持 S2 可见性、Key jump 限制、计划导出和战术叠加层。">
     <meta property="og:url" content="https://gongjupal.com/ingress/drone-flight-planner/index_zh-cn.html">
     <meta property="og:locale" content="zh_CN">
     <meta name="twitter:card" content="summary">
@@ -82,7 +82,7 @@
     <main class="container">
         <h1>无人机飞行规划器</h1>
         <p class="intro">适用于 Niantic Ingress Intel Map 的 IITC 无人机路线规划插件。</p>
-        <p class="summary"><strong>Drone Flight Planner</strong> 用来基于当前 Intel Map 已加载的 Portal 生成更长的无人机移动路线。它支持传统距离模型、S2 可见性机制、钥匙跳跃限制、战术叠加层，以及 JSON 导入导出，适合想要优化无人机行动效率的 Ingress 特工。</p>
+        <p class="summary"><strong>Drone Flight Planner</strong> 用来基于当前 Intel Map 已加载的 Portal 生成更长的无人机移动路线。它支持传统距离模型、S2 可见性机制、Key jump 限制、战术叠加层，以及 JSON 导入导出，适合想要优化无人机行动效率的 Ingress 特工。</p>
         <p class="resource-links">
             <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/drone-flight-planner">在 GitHub 上查看此插件目录</a> |
             <a href="../index_zh-cn.html">查看全部 IITC 插件</a>
@@ -101,7 +101,7 @@
             <h2 id="features">核心功能</h2>
             <ul class="feature-list">
                 <li><strong>基于视口规划：</strong> 扫描当前地图视野中已加载的 Portal，并构建可达性图。</li>
-                <li><strong>多种优化目标：</strong> 可以偏向更少跳数、更少钥匙跳跃，或选择较平衡的路线。</li>
+                <li><strong>多种优化目标：</strong> 可以偏向更少跳数、更少 Key jump，或选择较平衡的路线。</li>
                 <li><strong>S2 机制支持：</strong> 需要时可切换到基于 S2 单元的无人机可见性逻辑，而不是只看直线距离。</li>
                 <li><strong>JSON 导入导出：</strong> 方便在刷新后恢复路线，或在不同设备之间转移计划。</li>
                 <li><strong>本地自动保存：</strong> 自动把最近一次路线保存到浏览器 localStorage。</li>
@@ -135,7 +135,7 @@
                     <tr>
                         <td>优化目标</td>
                         <td><code>Min Hops</code> / <code>Balanced</code> / <code>Min Keys</code></td>
-                        <td>控制总跳数和长距离钥匙跳跃之间的权衡。</td>
+                        <td>控制总跳数和长距离 Key jump 之间的权衡。</td>
                     </tr>
                     <tr>
                         <td>搜索算法</td>
@@ -165,7 +165,7 @@
                     <tr>
                         <td>长距离跳跃</td>
                         <td><code>Allow Keys (&lt;1.25km)</code> / <code>No Keys</code></td>
-                        <td>控制是否允许超出 scanner 范围、但不超过硬上限的钥匙跳跃。</td>
+                        <td>控制是否允许超出 scanner 范围、但不超过硬上限的 Key jump。</td>
                     </tr>
                 </tbody>
             </table>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fanfield Planner for IITC | Ingress 扇形场规划插件</title>
+    <title>Fanfield Planner for IITC | Ingress fanfield 规划插件</title>
     <meta name="description" content="Fanfield Planner 是 Niantic Ingress Intel Map 的 IITC 插件，可通过三角扫描、双阶段执行和 SBUL 限制来规划 anchor-based fanfield。">
     <link rel="canonical" href="https://gongjupal.com/ingress/fanfield-planner/index_zh-cn.html">
     <link rel="alternate" hreflang="en" href="https://gongjupal.com/ingress/fanfield-planner/index.html">
@@ -12,12 +12,12 @@
     <link rel="alternate" hreflang="x-default" href="https://gongjupal.com/ingress/fanfield-planner/index.html">
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="IITC Plugins for Ingress Intel Map">
-    <meta property="og:title" content="Fanfield Planner for IITC | Ingress 扇形场规划插件">
-    <meta property="og:description" content="在 Niantic Ingress Intel Map 上规划 anchor-based 扇形场，支持三角扫描、双阶段执行、SBUL 上限和专用图层覆盖。">
+    <meta property="og:title" content="Fanfield Planner for IITC | Ingress fanfield 规划插件">
+    <meta property="og:description" content="在 Niantic Ingress Intel Map 上规划 anchor-based fanfield，支持三角扫描、双阶段执行、SBUL 上限和专用图层覆盖。">
     <meta property="og:url" content="https://gongjupal.com/ingress/fanfield-planner/index_zh-cn.html">
     <meta property="og:locale" content="zh_CN">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="Fanfield Planner for IITC | Ingress 扇形场规划插件">
+    <meta name="twitter:title" content="Fanfield Planner for IITC | Ingress fanfield 规划插件">
     <meta name="twitter:description" content="面向 Ingress 特工的 IITC 规划插件，支持 Included/Excluded Portal 筛选、Phase 1 / Phase 2 逻辑和 SBUL 限制。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,7 +29,7 @@
       "name": "Fanfield Planner",
       "applicationCategory": "UtilitiesApplication",
       "operatingSystem": "Web Browser",
-      "description": "Fanfield Planner 是 Niantic Ingress Intel Map 的 IITC 插件，可通过三角扫描、双阶段执行和可选 SBUL 限制来规划 anchor-based 扇形场。",
+      "description": "Fanfield Planner 是 Niantic Ingress Intel Map 的 IITC 插件，可通过三角扫描、双阶段执行和可选 SBUL 限制来规划 anchor-based fanfield。",
       "url": "https://gongjupal.com/ingress/fanfield-planner/index_zh-cn.html",
       "softwareVersion": "2.3.1",
       "inLanguage": "zh-CN",
@@ -68,8 +68,8 @@
         <a href="../fanfield-planner/index_ja.html" lang="ja">日本語</a>
     </div>
     <main class="container">
-        <h1>扇形场规划器</h1>
-        <p class="intro">适用于 Niantic Ingress Intel Map 的 anchor-based 扇形场规划插件。</p>
+        <h1>Fanfield Planner</h1>
+        <p class="intro">适用于 Niantic Ingress Intel Map 的 anchor-based fanfield 规划插件。</p>
         <p class="summary"><strong>Fanfield Planner</strong> 用于帮助 Ingress 特工规划 anchor-based fanfield 和 pincushion 风格方案。它支持先扫描三角区域内的 Portal，再筛选底边点集合，并生成双阶段执行路线、统计摘要、图层覆盖和文字步骤，同时还支持可选的 SBUL 外连限制。</p>
         <p class="resource-links">
             <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/fanfield-planner">在 GitHub 上查看此插件目录</a> |
@@ -82,7 +82,7 @@
         </section>
 
         <div class="note">
-            <p><strong>当前重点：</strong> Phase 1 会基于筛选后的候选点构建一个不交叉的底边图。Phase 2 则回到 Anchor 向这张底边图反射。你可以选择忽略外连上限，也可以启用 SBUL 限制模式，让插件在给定上限内尽量获得更多 field。</p>
+            <p><strong>当前重点：</strong> Phase 1 会基于筛选后的候选点构建一个不交叉的底边图。Phase 2 则回到 Anchor 向这张底边图反射。你可以选择忽略外连上限，也可以启用 SBUL 限制模式，让插件在给定上限内尽量获得更多 Field。</p>
         </div>
 
         <section aria-labelledby="features">
@@ -92,8 +92,8 @@
                 <li><strong>Portal 筛选：</strong> 扫描三角形内当前已加载 Portal，并通过 <strong>Included</strong> / <strong>Excluded</strong> 列表筛选底边集合。</li>
                 <li><strong>双阶段执行：</strong> 先生成不交叉的 Phase 1 底边图，再生成从 Anchor 出发的 Phase 2 反射计划。</li>
                 <li><strong>SBUL 限制：</strong> 可选启用 <strong>0 到 4 个 SBUL</strong> 的 Phase 2 限制，并在外连预算内尽量最大化 field 数。</li>
-                <li><strong>地图图层覆盖：</strong> 分别绘制两个阶段的 links、fields 和高亮图层。</li>
-                <li><strong>可读文字输出：</strong> 输出易执行的步骤说明、路线摘要和钥匙需求。</li>
+                <li><strong>地图图层覆盖：</strong> 分别绘制两个阶段的 Links、Fields 和高亮图层。</li>
+                <li><strong>可读文字输出：</strong> 输出易执行的步骤说明、路线摘要和 Key 需求。</li>
             </ul>
         </section>
 
@@ -105,7 +105,7 @@
                 <li>点击 <code>Scan Triangle</code> 扫描三角形内已加载的 Portal。</li>
                 <li>在 <code>Included</code> 和 <code>Excluded</code> 列表之间移动 Portal，整理底边集合。</li>
                 <li>如果需要，启用 <code>Limit Phase 2 by SBUL</code> 并选择 <code>0</code> 到 <code>4</code>。</li>
-                <li>点击 <code>Plan Fanfield</code> 生成图层、摘要和钥匙需求。</li>
+                <li>点击 <code>Plan Fanfield</code> 生成图层、摘要和 Key 需求。</li>
             </ol>
         </section>
 
@@ -118,7 +118,7 @@
                 </div>
                 <div class="panel">
                     <h3>Phase 2</h3>
-                    <p>规划器回到 Anchor 后，会向 Phase 1 的底边图反射。在不受限模式下，会尽量发出更多 Anchor link；在 SBUL 限制模式下，最大外连数为 <code>8 + 8 * SBUL</code>，插件会在这个预算内选择能闭合最多 field 的反射集合与顺序。</p>
+                    <p>规划器回到 Anchor 后，会向 Phase 1 的底边图反射。在不受限模式下，会尽量发出更多 Anchor Link；在 SBUL 限制模式下，最大外连数为 <code>8 + 8 * SBUL</code>，插件会在这个预算内选择能闭合最多 Field 的反射集合与顺序。</p>
                 </div>
             </div>
         </section>
@@ -137,7 +137,7 @@
         <section aria-labelledby="faq">
             <h2 id="faq">常见问题</h2>
             <ul class="faq-list">
-                <li><span class="faq-q">Phase 1 和 Phase 2 的区别是什么？</span> Phase 1 负责构建不交叉的底边图，Phase 2 则回到 Anchor，对这个底边图进行反射来闭合场。</li>
+                <li><span class="faq-q">Phase 1 和 Phase 2 的区别是什么？</span> Phase 1 负责构建不交叉的底边图，Phase 2 则回到 Anchor，对这个底边图进行反射来闭合 Field。</li>
                 <li><span class="faq-q">为什么需要 Included / Excluded 列表？</span> 它能让你精细控制参与底边构建的 Portal 集合，而不需要重画三角形或手动逐个选点。</li>
                 <li><span class="faq-q">SBUL 限制有什么用？</span> 它限制 Phase 2 可用的外连数量，规划器会在这个预算内尽量获得更多 field。</li>
             </ul>
@@ -146,7 +146,7 @@
         <section aria-labelledby="related">
             <h2 id="related">相关插件</h2>
             <ul class="related-list">
-                <li><a href="../homogeneous-fields/index_zh-cn.html" style="color:#ffce00;">Homogeneous Fields</a> 适合需要另一种结构化控场算法时使用。</li>
+                <li><a href="../homogeneous-fields/index_zh-cn.html" style="color:#ffce00;">Homogeneous Fields</a> 适合需要另一种结构化 Field 算法时使用。</li>
                 <li><a href="../all-portal-names/index_zh-cn.html" style="color:#ffce00;">All Portal Names</a> 可以在高密度规划三角中保留更多 Portal 名称，方便阅读。</li>
             </ul>
         </section>
@@ -159,7 +159,7 @@
             </ul>
             <h3>版本 2.3.0</h3>
             <ul class="feature-list">
-                <li>加入可选的 Phase 2 SBUL 限制模式，在给定外连上限内尽量最大化 field 数量。</li>
+                <li>加入可选的 Phase 2 SBUL 限制模式，在给定外连上限内尽量最大化 Field 数量。</li>
             </ul>
             <h3>版本 2.2.0 到 2.2.1</h3>
             <ul class="feature-list">
