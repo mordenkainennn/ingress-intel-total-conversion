@@ -31,7 +31,7 @@
       "operatingSystem": "Web Browser",
       "description": "Homogeneous Fields is an IITC plugin for Niantic's Ingress Intel Map that designs layered field plans, maximum fielding plans, and cobweb plans from selected anchor portals.",
       "url": "https://gongjupal.com/ingress/homogeneous-fields/index.html",
-      "softwareVersion": "2.1.16",
+      "softwareVersion": "2.1.17",
       "inLanguage": "en",
       "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/homogeneous-fields"
     }
@@ -88,6 +88,7 @@
                 <li><strong>Portal inclusion control:</strong> Move portals between included and excluded lists to refine the final plan.</li>
                 <li><strong>Visual overlays:</strong> Draw the planned links and fields directly on the Intel Map and adjust overlay color as needed.</li>
                 <li><strong>Detailed execution output:</strong> Get link order, visitation order, SoftBank counts, key counts, total travel distance, and estimated total AP for the generated operation.</li>
+                <li><strong>Fixed outer-anchor route flow:</strong> The generated route now starts at the first selected outer anchor, treats the second selected outer anchor as pre-captured and pre-hacked, and ends at the third selected outer anchor.</li>
                 <li><strong>Plugin integration:</strong> Export the generated link plan to <strong>DrawTools</strong> and <strong>Arc</strong>.</li>
             </ul>
         </section>
@@ -110,6 +111,7 @@
                 <li>Select the desired field type, layer count, and geometry mode.</li>
                 <li>Optionally move portals between the included and excluded lists.</li>
                 <li>Click <strong>Find Fielding Plan</strong> to generate the final result.</li>
+                <li>For large operations, the plan assumes the second selected outer anchor has already been prepared for keys, while inner portals remain part of the live walking route.</li>
             </ol>
         </section>
 
@@ -147,6 +149,12 @@
 
         <section aria-labelledby="changelog">
             <h2 id="changelog">Changelog</h2>
+            <h3>Version 2.1.17</h3>
+            <ul class="feature-list">
+                <li>Route planning now starts at the first selected outer anchor and ends at the third selected outer anchor.</li>
+                <li>The second selected outer anchor is treated as pre-captured and pre-hacked for required keys, while inner portals remain on the live route.</li>
+                <li>Updated the More Info text and contributor credits.</li>
+            </ul>
             <h3>Version 2.1.16</h3>
             <ul class="feature-list">
                 <li>Added total AP to the generated plan statistics, assuming neutral portals are captured and fully deployed with eight resonators.</li>

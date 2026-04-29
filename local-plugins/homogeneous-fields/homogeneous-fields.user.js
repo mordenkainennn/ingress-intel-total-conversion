@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             iitc-plugin-homogeneous-fields@cloverjune
 // @name           IITC Plugin: 57Cell's Field Planner [cloverjune]
-// @version        2.1.16.20260415
+// @version        2.1.17.20260429
 // @description    Plugin for planning fields in IITC
 // @author         57Cell (Michael Hartley) and ChatGPT 4.0, modified by cloverjune
 // @category       Layer
@@ -24,8 +24,16 @@
 // ==/UserScript==
 
 pluginName = "57Cell's Field Planner";
-version = "2.1.16";
+version = "2.1.17";
 changeLog = [
+    {
+        version: '2.1.17.20260429',
+        changes: [
+            'NEW: Route planning now starts at the first selected outer anchor and ends at the third, while treating the second selected outer anchor as pre-captured and pre-hacked.',
+            'NEW: Added a More Info note explaining the fixed-anchor route planning behavior.',
+            'NEW: Added Cloverjune to the Contributing authors list with a repository link.',
+        ],
+    },
     {
         version: '2.1.16.20260415',
         changes: [
@@ -191,7 +199,7 @@ changeLog = [
 function wrapper(plugin_info) {
     if (typeof window.plugin !== 'function') window.plugin = function () { };
     plugin_info.buildName = '';
-    plugin_info.dateTimeVersion = '2026-04-15-000000';
+    plugin_info.dateTimeVersion = '2026-04-29-000000';
     plugin_info.pluginId = '57CellsFieldPlanner';
 
     // PLUGIN START
@@ -682,13 +690,32 @@ function wrapper(plugin_info) {
         return false;
     };
 
+    self.applyFixedEndpoints = function (path, fixedStartPortalId, fixedEndPortalId, fixedPrefixPortalIds) {
+        let prefixPortalIds = (fixedPrefixPortalIds || []).filter(portalId => portalId != null);
+        let reservedPortalIds = new Set(prefixPortalIds);
+        if (fixedStartPortalId != null) reservedPortalIds.add(fixedStartPortalId);
+        if (fixedEndPortalId != null) reservedPortalIds.add(fixedEndPortalId);
+
+        let middlePortals = path.filter(portalId => !reservedPortalIds.has(portalId));
+        let adjustedPath = prefixPortalIds.concat(fixedStartPortalId != null ? [fixedStartPortalId] : [], middlePortals);
+        if (fixedEndPortalId != null) adjustedPath.push(fixedEndPortalId);
+        return adjustedPath;
+    };
+
     // function to calculate the total length of a path
-    self.calculatePathLength = function (portalData, path) {
+    self.calculatePathLength = function (portalData, path, visitedPortalIds) {
         let totalLength = 0;
-        for (let i = 1; i < path.length; i++) {
-            let portal1 = portalData[path[i - 1]].latLng;
-            let portal2 = portalData[path[i]].latLng;
-            totalLength += self.distance(portal1, portal2);
+        let previousVisitedPortalId = null;
+        for (let portalId of path) {
+            if (visitedPortalIds && !visitedPortalIds.has(portalId)) {
+                continue;
+            }
+            if (previousVisitedPortalId != null) {
+                let portal1 = portalData[previousVisitedPortalId].latLng;
+                let portal2 = portalData[portalId].latLng;
+                totalLength += self.distance(portal1, portal2);
+            }
+            previousVisitedPortalId = portalId;
         }
         return totalLength;
     };
@@ -712,49 +739,69 @@ function wrapper(plugin_info) {
     };
 
     // optimization algorithm to find the shortest path
-    self.findShortestPath = function (portalData, path, fieldType) {
+    self.findShortestPath = function (portalData, path, fieldType, routeConfig) {
         let disallowMatryoska = true; // TODO: make this a UI element
         let maxOutgoingLinksPermitted = 40; // TODO: put this in the UI
-        let initialOutgoingLinks = self.countOutgoingLinks(path, portalData);
+        let fixedStartPortalId = routeConfig ? routeConfig.startPortalId : null;
+        let fixedEndPortalId = routeConfig ? routeConfig.endPortalId : null;
+        let fixedPrefixPortalIds = routeConfig ? routeConfig.fixedPrefixPortalIds : null;
+        let visitedPortalIds = routeConfig ? routeConfig.visitedPortalIds : null;
+        let fixedPath = self.applyFixedEndpoints(path, fixedStartPortalId, fixedEndPortalId, fixedPrefixPortalIds);
+        let initialOutgoingLinks = self.countOutgoingLinks(fixedPath, portalData);
         let leastMaxOutgoingLinks = Math.max(...Object.values(initialOutgoingLinks))
-        let bestPath = path.slice();
-        let bestLength = self.calculatePathLength(portalData, bestPath);
+        let bestPath = fixedPath.slice();
+        let bestLength = self.calculatePathLength(portalData, bestPath, visitedPortalIds);
+
+        if (bestPath.length <= 2) {
+            return bestPath;
+        }
 
         for (let i = 0; i < path.length * path.length; i++) {
             // create a copy of the path
             let newPath = bestPath.slice();
+            let mutableStartIndex = fixedStartPortalId != null ? ((fixedPrefixPortalIds || []).filter(portalId => portalId != null).length + 1) : 0;
+            let mutableEndIndex = fixedEndPortalId != null ? newPath.length - 2 : newPath.length - 1;
+            if (mutableStartIndex > mutableEndIndex) {
+                break;
+            }
+            let mutableLength = mutableEndIndex - mutableStartIndex + 1;
+            const randomMutableIndex = function () {
+                return mutableStartIndex + Math.floor(Math.random() * mutableLength);
+            };
 
             // decide which operation to perform
             let operation = Math.floor(Math.random() * 4);
             if (operation === 0) {
                 // swap two random elements
-                let index1 = Math.floor(Math.random() * newPath.length);
-                let index2 = Math.floor(Math.random() * newPath.length);
+                let index1 = randomMutableIndex();
+                let index2 = randomMutableIndex();
                 [newPath[index1], newPath[index2]] = [newPath[index2], newPath[index1]];
             } else if (operation === 1) {
                 // swap two adjacent elements
-                let index = Math.floor(Math.random() * (newPath.length - 1));
+                if (mutableLength < 2) continue;
+                let index = mutableStartIndex + Math.floor(Math.random() * (mutableLength - 1));
                 [newPath[index], newPath[index + 1]] = [newPath[index + 1], newPath[index]];
             } else if (operation === 2) {
                 // reverse a section of the path
-                let index1 = Math.floor(Math.random() * newPath.length);
-                let index2 = Math.floor(Math.random() * newPath.length);
+                let index1 = randomMutableIndex();
+                let index2 = randomMutableIndex();
                 if (index1 > index2) [index1, index2] = [index2, index1]; // ensure index1 <= index2
                 newPath = newPath.slice(0, index1)
                     .concat(newPath.slice(index1, index2 + 1).reverse())
                     .concat(newPath.slice(index2 + 1));
             } else {
                 // slide a section of the path to a different position
-                let index1 = Math.floor(Math.random() * newPath.length);
-                let index2 = Math.floor(Math.random() * newPath.length);
-                let slideTo = Math.floor(Math.random() * newPath.length);
+                let index1 = randomMutableIndex();
+                let index2 = randomMutableIndex();
                 if (index1 > index2) [index1, index2] = [index2, index1]; // ensure index1 <= index2
+                let slideTo = mutableStartIndex + Math.floor(Math.random() * (mutableLength + 1));
                 let chunk = newPath.splice(index1, index2 - index1 + 1); // remove the chunk from the path
                 newPath.splice(slideTo, 0, ...chunk); // insert the chunk at the new position
+                newPath = self.applyFixedEndpoints(newPath, fixedStartPortalId, fixedEndPortalId, fixedPrefixPortalIds);
             }
 
             // only keep the changes if they improve the total length and meet the constraints
-            let newLength = self.calculatePathLength(portalData, newPath);
+            let newLength = self.calculatePathLength(portalData, newPath, visitedPortalIds);
             let outgoingLinks = self.countOutgoingLinks(newPath, portalData);
             let maxLinks = Math.max(...Object.values(outgoingLinks));
             if (maxLinks < leastMaxOutgoingLinks) {
@@ -787,6 +834,10 @@ function wrapper(plugin_info) {
 
         $.each(plan, function (index, item) {
             if (item.action === 'capture') {
+                totalAP += AP_CAPTURE_NEUTRAL_PORTAL;
+                totalAP += RESONATORS_PER_PORTAL * AP_DEPLOY_RESONATOR;
+                totalAP += AP_FINAL_RESONATOR_BONUS;
+            } else if (item.action === 'prep') {
                 totalAP += AP_CAPTURE_NEUTRAL_PORTAL;
                 totalAP += RESONATORS_PER_PORTAL * AP_DEPLOY_RESONATOR;
                 totalAP += AP_FINAL_RESONATOR_BONUS;
@@ -843,6 +894,13 @@ function wrapper(plugin_info) {
                 }
                 linkPos = 'a';
                 totalDistance += item.distance;
+            }
+            else if (item.action === 'prep') {
+                portalCount++;
+                sbulText = item.sbul === 0 ? "" : ` (${item.sbul} Softbank${(item.sbul == 1 ? "" : "s")})`;
+                let keysTextForPrep = item.keys > 0 ? ` (${item.keys} keys)` : "";
+                planText += `${++stepPos}.`.padStart(4, '\xa0') + ` Pre-capture and hack ${item.portal.name}${sbulText}${keysTextForPrep}\n`;
+                linkPos = 'a';
             }
             else if (item.action === 'link') {
                 linkCount++;
@@ -1008,7 +1066,7 @@ function wrapper(plugin_info) {
     }
 
     // function to generate the final plan
-    self.generatePlan = function (portalData, path, hcfLevel, fieldType) {
+    self.generatePlan = function (portalData, path, hcfLevel, fieldType, routeConfig) {
 
         /** @function getThirds
           * Returns the list of portals, a new link a->b potentially(!) produces a field with.
@@ -1058,7 +1116,8 @@ function wrapper(plugin_info) {
         // calculate the keys needed
         let keysNeeded = self.calculateKeysNeeded(portalData, path);
 
-        let prevPortalId = null;
+        let visitedPortalIds = routeConfig ? routeConfig.visitedPortalIds : null;
+        let prevVisitedPortalId = null;
         // add the steps of the path
         for (let portalId of path) {
             // plan += `Capture ${a.name}\n`;
@@ -1070,8 +1129,9 @@ function wrapper(plugin_info) {
             let sbul = outgoingLinks.length <= 8 ? 0 : Math.floor((outgoingLinks.length - 1) / 8);
             let vec = null;
             let distance = 0;
-            if (prevPortalId != null) {
-                let prevLL = portalData[prevPortalId].latLng;
+            let isVisitedPortal = !visitedPortalIds || visitedPortalIds.has(portalId);
+            if (isVisitedPortal && prevVisitedPortalId != null) {
+                let prevLL = portalData[prevVisitedPortalId].latLng;
                 let thisLL = a.latLng;
                 distance = self.distance(prevLL, thisLL);
                 let diffLat = thisLL.lat - prevLL.lat;
@@ -1083,7 +1143,7 @@ function wrapper(plugin_info) {
             }
 
             plan.push({
-                action: 'capture',
+                action: isVisitedPortal ? 'capture' : 'prep',
                 stepNo: ++stepNo,
                 portal: a,
                 sbul: sbul,
@@ -1092,7 +1152,9 @@ function wrapper(plugin_info) {
                 keys: keysNeeded[portalId] || 0
             });
 
-            prevPortalId = portalId;
+            if (isVisitedPortal) {
+                prevVisitedPortalId = portalId;
+            }
 
             for (let linkId of outgoingLinks) {
                 // keep track of all links we've already made
@@ -1168,6 +1230,7 @@ function wrapper(plugin_info) {
         '                    style="height: inherit; display: flex; flex-direction: column; align-items: stretch;">\n' +
         '   <div style="display: flex;justify-content: space-between;align-items: center;">\n' +
         '      <span>This is ' + pluginName + ' version ' + version + '. Follow the links below if you would like to:\n' +
+        '        <p><strong>Route planning note:</strong> When you select the three outer triangle portals, the generated route now starts at the first selected portal and ends at the third selected portal. The second selected portal is treated as a prepped anchor that has already been captured and hacked for the required keys, while inner portals remain part of the live walking route.</p>\n' +
         '        <ul>\n' +
         '          <li style="visibility:hidden;"> <a href="https://www.youtube.com/watch?v=LGCOUXZDEjU" target="_blank">Learn how to use this plugin</a></li>\n' +
         '          <li> <a href="https://www.youtube.com/playlist?list=PLQ2GCHa7ljyP9pl0fmz5Z8U8Rx3_VZMVl" target="_blank"">Watch some videos on Homogeneous Fields</a></li>\n' +
@@ -1178,6 +1241,7 @@ function wrapper(plugin_info) {
         '        </ul>\n' +
         '      Contributing authors:\n' +
         '        <ul>\n' +
+        '          <li> <a href="https://github.com/mordenkainennn/ingress-intel-total-conversion" target="_blank">Cloverjune</a></li>\n' +
         '          <li> <a href="https://youtu.be/M1O2SehnPGw" target="_blank"">ChatGPT 4.0</a></li>\n' +
         '          <li> <a href="https://www.youtube.com/@57Cell" target="_blank">@57Cell</a></li>\n' +
         '          <li> <a href="https://www.youtube.com/@Heistergand" target="_blank">@Heistergand</a></li>\n' +
@@ -1614,6 +1678,9 @@ function wrapper(plugin_info) {
         let level = parseInt($("#layers").val());
         let mode = $("input[type=radio][name=hcf-mode]:checked").val();
         let fieldType = $("input[type=radio][name=field-type]:checked").val();
+        let startPortalId = corners[0];
+        let prepPortalId = corners[1];
+        let endPortalId = corners[2];
 
         let portalsToConsider = [];
         $('#hcf-included-portals option').each(function () {
@@ -1635,6 +1702,13 @@ function wrapper(plugin_info) {
         } else {
             // Generate portal data
             let portalData = self.generatePortalData(hcf);
+            let visitedPortalIds = new Set(Object.keys(portalData).filter(portalId => portalId !== prepPortalId));
+            let routeConfig = {
+                startPortalId: startPortalId,
+                endPortalId: endPortalId,
+                fixedPrefixPortalIds: [prepPortalId],
+                visitedPortalIds: visitedPortalIds,
+            };
             // let fieldData = self.generateFieldData(hcf);
 
             // Generate the initial path
@@ -1644,13 +1718,14 @@ function wrapper(plugin_info) {
                 let bValue = portalData[b].latLng.lat * Math.cos(t) + portalData[b].latLng.lng * Math.sin(t);
                 return aValue - bValue;
             }); // the "sweep" method: see https://youtu.be/iH0JMfR7BTI
+            initialPath = self.applyFixedEndpoints(initialPath, startPortalId, endPortalId, routeConfig.fixedPrefixPortalIds);
 
             // Find a shorter path
-            let shortestPath = self.findShortestPath(portalData, initialPath, fieldType);
+            let shortestPath = self.findShortestPath(portalData, initialPath, fieldType, routeConfig);
 
             // Generate the plan
             self.plan = null;
-            self.plan = self.generatePlan(portalData, shortestPath, level, fieldType);
+            self.plan = self.generatePlan(portalData, shortestPath, level, fieldType, routeConfig);
 
             if (!self.plan) {
                 $("#hcf-plan-text").val('Something went wrong. Wait for all portals to load, and try again.');

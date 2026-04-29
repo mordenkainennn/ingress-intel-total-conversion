@@ -31,7 +31,7 @@
       "operatingSystem": "Web Browser",
       "description": "Homogeneous Fields 是 Niantic Ingress Intel Map 的 IITC 插件，可基于选定锚点 Portal 设计 homogeneous field、maximum fielding 和 Cobweb Field 方案。",
       "url": "https://gongjupal.com/ingress/homogeneous-fields/index_zh-cn.html",
-      "softwareVersion": "2.1.16",
+      "softwareVersion": "2.1.17",
       "inLanguage": "zh-CN",
       "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/homogeneous-fields"
     }
@@ -88,6 +88,7 @@
                 <li><strong>Portal 纳入与排除控制：</strong> 通过 Included / Excluded 列表精细控制最终参与方案的 Portal。</li>
                 <li><strong>地图可视化覆盖：</strong> 直接在 Intel Map 上绘制规划结果，并可调整覆盖层颜色。</li>
                 <li><strong>详细执行输出：</strong> 自动生成访问顺序、Link 顺序、SoftBank 数量、Key 数量、总路程统计，以及本次规划可获得的总 AP 估算。</li>
+                <li><strong>固定外层锚点路线：</strong> 生成的路线会从第一个选中的外层锚点开始，把第二个选中的外层锚点视为已提前占领并获取钥匙，最后在第三个选中的外层锚点结束。</li>
                 <li><strong>插件联动：</strong> 支持把生成的 Link 方案导出到 <strong>DrawTools</strong> 与 <strong>Arc</strong>。</li>
             </ul>
         </section>
@@ -110,6 +111,7 @@
                 <li>选择 Field 类型、层数和几何模式。</li>
                 <li>按需把 Portal 在 Included 和 Excluded 列表之间移动。</li>
                 <li>点击 <strong>Find Fielding Plan</strong> 生成最终结果。</li>
+                <li>在大型行动中，方案默认第二个外层锚点已提前准备好钥匙，而内部 Portal 仍属于现场行进路线。</li>
             </ol>
         </section>
 
@@ -147,6 +149,12 @@
 
         <section aria-labelledby="changelog">
             <h2 id="changelog">更新日志</h2>
+            <h3>版本 2.1.17</h3>
+            <ul class="feature-list">
+                <li>路线规划现在固定从第一个选中的外层锚点开始，并在第三个选中的外层锚点结束。</li>
+                <li>第二个选中的外层锚点会被视为已提前占领并拿好所需钥匙，而内部 Portal 仍保留在现场路线中。</li>
+                <li>同步更新了 More Info 说明和贡献者信息。</li>
+            </ul>
             <h3>版本 2.1.16</h3>
             <ul class="feature-list">
                 <li>在生成的行动计划统计中加入总 AP，按中立 Portal 被占领并插满 8 个 Resonator 的前提进行估算。</li>

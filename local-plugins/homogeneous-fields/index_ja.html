@@ -31,7 +31,7 @@
       "operatingSystem": "Web Browser",
       "description": "Homogeneous Fields は Niantic Ingress Intel Map 向けの IITC プラグインで、選択したアンカーポータルから均一多重フィールド、最大フィールド、Cobweb 計画を生成します。",
       "url": "https://gongjupal.com/ingress/homogeneous-fields/index_ja.html",
-      "softwareVersion": "2.1.16",
+      "softwareVersion": "2.1.17",
       "inLanguage": "ja",
       "codeRepository": "https://github.com/mordenkainennn/ingress-intel-total-conversion/tree/master/local-plugins/homogeneous-fields"
     }
@@ -88,6 +88,7 @@
                 <li><strong>ポータル選別:</strong> Included / Excluded リストで、計画に使うポータルを細かく調整できます。</li>
                 <li><strong>地図上の可視化:</strong> 計画したリンクとフィールドを Intel Map 上に描画し、色も調整できます。</li>
                 <li><strong>詳細な実行出力:</strong> リンク順、訪問順、SoftBank 数、キー数、総移動距離に加え、この計画で得られる総 AP の見積もりも出力します。</li>
+                <li><strong>外側アンカー固定ルート:</strong> 生成されるルートは最初に選んだ外側アンカーから始まり、2 番目に選んだ外側アンカーは事前確保・事前ハック済みとして扱われ、3 番目に選んだ外側アンカーで終了します。</li>
                 <li><strong>他プラグイン連携:</strong> 生成したリンク計画を <strong>DrawTools</strong> や <strong>Arc</strong> に出力できます。</li>
             </ul>
         </section>
@@ -110,6 +111,7 @@
                 <li>フィールドタイプ、層数、ジオメトリモードを選びます。</li>
                 <li>必要ならポータルを Included と Excluded の間で移動します。</li>
                 <li><strong>Find Fielding Plan</strong> を押して計画を生成します。</li>
+                <li>大規模作戦では、2 番目に選んだ外側アンカーは事前に鍵準備済みとみなし、内側ポータルは実地ルートの対象のままです。</li>
             </ol>
         </section>
 
@@ -147,6 +149,12 @@
 
         <section aria-labelledby="changelog">
             <h2 id="changelog">変更履歴</h2>
+            <h3>バージョン 2.1.17</h3>
+            <ul class="feature-list">
+                <li>ルート計画は、最初に選んだ外側アンカーから始まり、3 番目に選んだ外側アンカーで終わるようになりました。</li>
+                <li>2 番目に選んだ外側アンカーは、必要な鍵を事前に確保・ハック済みとして扱い、内側ポータルは実地ルートに残ります。</li>
+                <li>More Info の説明文と貢献者表記を更新しました。</li>
+            </ul>
             <h3>バージョン 2.1.16</h3>
             <ul class="feature-list">
                 <li>生成した計画の統計に総 AP を追加しました。中立ポータルを確保し、8 本の Resonator をフル展開する前提で見積もります。</li>
