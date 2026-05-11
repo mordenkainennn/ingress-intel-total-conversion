@@ -2,7 +2,7 @@
 // @author         Cloverjune
 // @name           IITC plugin: Portal Coverage Layers
 // @category       Layer
-// @version        0.1.1
+// @version        0.1.2
 // @description    Adds Unvisited and Uncaptured portal layers using data from Uniques Tools or the stock Uniques plugin.
 // @id             portal-coverage-layers
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion

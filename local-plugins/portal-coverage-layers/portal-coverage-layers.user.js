@@ -2,7 +2,7 @@
 // @author         Cloverjune
 // @name           IITC plugin: Portal Coverage Layers
 // @category       Layer
-// @version        0.1.1
+// @version        0.1.2
 // @description    Adds Unvisited and Uncaptured portal layers using data from Uniques Tools or the stock Uniques plugin.
 // @id             portal-coverage-layers
 // @namespace      https://github.com/mordenkainennn/ingress-intel-total-conversion
@@ -19,10 +19,16 @@ function wrapper(plugin_info) {
     }
 
     plugin_info.buildName = 'local';
-    plugin_info.dateTimeVersion = '20260428.010000';
+    plugin_info.dateTimeVersion = '20260511.000000';
     plugin_info.pluginId = 'portal-coverage-layers';
 
     var changelog = [
+        {
+            version: '0.1.2',
+            changes: [
+                'UPD: Removed the legacy visible portal highlighter entry and switched layer filtering to direct portal style refreshes.',
+            ],
+        },
         {
             version: '0.1.1',
             changes: [
@@ -43,8 +49,6 @@ function wrapper(plugin_info) {
 
     self.UNVISITED_LAYER_NAME = 'Unvisited Portals';
     self.UNCAPTURED_LAYER_NAME = 'Uncaptured Portals';
-    self.HIGHLIGHTER_NAME = 'Unvisited/Uncaptured Filter';
-    self.originalHighlighter = window._no_highlighter;
     self.unvisitedLayer = null;
     self.uncapturedLayer = null;
 
@@ -83,16 +87,18 @@ function wrapper(plugin_info) {
         return false;
     };
 
-    self.highlighter = {
-        highlight: function (data) {
-            var guid = data.portal && data.portal.options ? data.portal.options.guid : null;
-            if (!guid || self.shouldDisplayPortal(guid)) return;
+    self.hidePortal = function (portal) {
+        portal.setStyle({
+            opacity: 0,
+            fillOpacity: 0,
+        });
+    };
 
-            data.portal.setStyle({
-                opacity: 0,
-                fillOpacity: 0,
-            });
-        },
+    self.applyPortalVisibility = function (portal) {
+        var guid = portal && portal.options ? portal.options.guid : null;
+        if (!guid || !self.isAnyLayerEnabled()) return;
+        if (self.shouldDisplayPortal(guid)) return;
+        self.hidePortal(portal);
     };
 
     self.isUnvisitedLayerEnabled = function () {
@@ -107,56 +113,44 @@ function wrapper(plugin_info) {
         return self.isUnvisitedLayerEnabled() || self.isUncapturedLayerEnabled();
     };
 
-    self.restoreHighlighter = function () {
-        if (window._current_highlighter !== self.HIGHLIGHTER_NAME) return;
-
-        var fallback = self.originalHighlighter;
-        if (!fallback || fallback === self.HIGHLIGHTER_NAME) {
-            fallback = window._no_highlighter;
-        }
-
-        $('#portal_highlight_select').val(fallback).trigger('change');
-    };
-
-    self.ensureHighlighter = function () {
-        if (!self.isAnyLayerEnabled()) {
-            self.restoreHighlighter();
-            return;
-        }
-
-        if (window._current_highlighter !== self.HIGHLIGHTER_NAME) {
-            self.originalHighlighter = window._current_highlighter || window._no_highlighter;
-            $('#portal_highlight_select').val(self.HIGHLIGHTER_NAME).trigger('change');
-            return;
-        }
-
+    self.refreshPortals = function () {
         window.resetHighlightedPortals();
+        if (!self.isAnyLayerEnabled()) return;
+
+        $.each(window.portals, function (guid, portal) {
+            self.applyPortalVisibility(portal);
+        });
     };
 
     self.refreshIfActive = function () {
         if (!self.isAnyLayerEnabled()) return;
-        self.ensureHighlighter();
+        self.refreshPortals();
     };
 
     var setup = function () {
         self.unvisitedLayer = new L.LayerGroup();
         self.uncapturedLayer = new L.LayerGroup();
 
-        window.addPortalHighlighter(self.HIGHLIGHTER_NAME, self.highlighter);
         window.addLayerGroup(self.UNVISITED_LAYER_NAME, self.unvisitedLayer, false);
         window.addLayerGroup(self.UNCAPTURED_LAYER_NAME, self.uncapturedLayer, false);
 
         window.map.on('overlayadd overlayremove', function (event) {
             if (event.layer === self.unvisitedLayer || event.layer === self.uncapturedLayer) {
-                self.ensureHighlighter();
+                self.refreshPortals();
             }
         });
 
+        window.addHook('portalAdded', function (data) {
+            self.applyPortalVisibility(data.portal);
+        });
         window.addHook('mapDataRefreshEnd', self.refreshIfActive);
         window.addHook('requestFinished', self.refreshIfActive);
         window.addHook('pluginUniquesToolsUpdate', self.refreshIfActive);
         window.addHook('pluginUniquesToolsRefreshAll', self.refreshIfActive);
         window.addHook('pluginUniquesUpdateUniques', self.refreshIfActive);
+        $(document).on('change', '#portal_highlight_select', function () {
+            self.refreshIfActive();
+        });
     };
 
     setup.info = plugin_info;
