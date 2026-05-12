@@ -86,15 +86,22 @@
         <li><strong>Automatic logging from COMM:</strong> Passively records supported public COMM actions such as capture, deploy, link, and field events. MACHINA is ignored.</li>
         <li><strong>Interactive activity viewer:</strong> Browse players, search by name or ID, and inspect detailed activity entries from the IITC toolbox.</li>
         <li><strong>Movement trail review:</strong> Visualize movement paths over time to understand local action flow and repeated activity routes.</li>
-        <li><strong>Portal Held Time in toolbox:</strong> For owned portals, the toolbox can show <code>Activity Log（xxD）</code> based on the latest local capture record.</li>
+        <li><strong>Recorded capture age in toolbox:</strong> For owned portals, the toolbox can show <code>Activity Log（xxD）</code> based on the last recorded capture age from local COMM history.</li>
         <li><strong>Import and export:</strong> Supports JSON and CSV export, plus merge-style import with de-duplication.</li>
       </ul>
     </section>
 
     <section aria-labelledby="held-time">
-      <h2 id="held-time">Portal Held Time</h2>
-      <p>When you select a currently owned portal, the toolbox link can change to <code>Activity Log（xxD）</code>. The value reflects how many full days have passed since the latest locally recorded capture event for that portal.</p>
+      <h2 id="held-time">Recorded Portal Capture Age</h2>
+      <p>When you select a currently owned portal, the toolbox link can change to <code>Activity Log（xxD）</code>. The value reflects how many full days have passed since the last locally recorded capture event for that portal.</p>
       <p>If there is no matching local capture record, or if the portal is neutral, the toolbox simply remains <code>Activity Log</code>.</p>
+    </section>
+
+    <section aria-labelledby="capture-age-notice">
+      <h2 id="capture-age-notice">Portal Capture Age Notice</h2>
+      <p>When the toolbox shows a value such as <code>Activity Log（20D）</code>, it means the last recorded capture event for the selected portal was about 20 days ago in your local COMM history.</p>
+      <p>It does <strong>not</strong> mean that all current resonators on that portal have existed for 20 days. If some resonators naturally decayed and were later redeployed while the portal stayed under the same faction, the displayed capture age may still point to the original recorded capture event.</p>
+      <p>Please treat this value as a local activity hint, not as an authoritative portal state record.</p>
     </section>
 
     <section aria-labelledby="how-it-works">
@@ -106,8 +113,8 @@
     <section aria-labelledby="whats-new">
       <h2 id="whats-new">What&apos;s New in 0.8.3</h2>
       <ul class="feature-list">
-        <li>Added toolbox Portal Held Time display in the form <code>Activity Log（xxD）</code> for selected owned portals.</li>
-        <li>Improved update behavior when switching portals and hid the held-time label for neutral portals.</li>
+        <li>Added toolbox recorded capture age display in the form <code>Activity Log（xxD）</code> for selected owned portals.</li>
+        <li>Improved update behavior when switching portals and hid the capture-age label for neutral portals.</li>
         <li>Added disclaimer text in the Activity Log window and documentation.</li>
       </ul>
     </section>
@@ -116,7 +123,8 @@
       <p><strong>Important:</strong> All data stays local to your browser and is not synced across devices or accounts. Back up regularly with export features if the history matters to you.</p>
     </div>
     <div class="note">
-      <p><strong>Disclaimer:</strong> The plugin works from locally recorded COMM history, so the data may be incomplete or inaccurate.</p>
+      <p><strong>Disclaimer:</strong> Data shown by this plugin is based on local COMM records. It may be incomplete if the plugin was not running, COMM history was not loaded, the activity was outside the visible COMM range, resonators decayed without a recorded event, or the data came from partial imports.</p>
+      <p>Portal capture age is a recorded activity hint, not an authoritative portal state record.</p>
     </div>
     <div class="note note-danger">
       <p><strong>Compatibility note:</strong> Trail drawing overlaps with the IITC-CE bundled <strong>Player activity tracker</strong> layer. Disable one of them if you do not want duplicate visual paths.</p>
@@ -127,7 +135,8 @@
       <ul class="faq-list">
         <li><span class="faq-q">Does this plugin read private or hidden data?</span> No. It works from public COMM activity already visible to your local client.</li>
         <li><span class="faq-q">Can I move history between devices?</span> Yes, but only manually. Use export and import to back up or merge local activity records.</li>
-        <li><span class="faq-q">Why can held time be wrong or missing?</span> The calculation depends on your own locally recorded capture history. If your client did not see the relevant event, the result can be missing or incomplete.</li>
+        <li><span class="faq-q">Does the capture age show the real age of all resonators?</span> No. It only shows when the plugin last recorded a capture event for the selected portal, and it does not track each resonator individually.</li>
+        <li><span class="faq-q">Why can capture age be wrong or missing?</span> The calculation depends on your own locally recorded capture history. If your client did not see the relevant event, COMM history was not loaded, or some resonators decayed and were later redeployed without the portal becoming neutral, the result can be missing or misleading.</li>
       </ul>
     </section>
 

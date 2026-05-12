@@ -86,15 +86,22 @@
         <li><strong>公開 COMM の自動記録:</strong> capture、deploy、link、field など対応する公開 COMM 活動を受動的に記録します。MACHINA は無視されます。</li>
         <li><strong>インタラクティブな閲覧画面:</strong> ツールボックスから開いて、プレイヤー一覧、詳細履歴、名前や ID による検索を利用できます。</li>
         <li><strong>行動軌跡レビュー:</strong> プレイヤーの移動を地図上の軌跡として可視化し、現地活動の流れを見直せます。</li>
-        <li><strong>Portal Held Time:</strong> 自分の Portal を選択すると、ツールボックスに <code>Activity Log（xxD）</code> の形式で保持日数を表示できます。</li>
+        <li><strong>記録された capture 経過日数:</strong> 自分の Portal を選択すると、ツールボックスに <code>Activity Log（xxD）</code> の形式で、ローカル COMM 履歴に基づく最後の capture 記録からの経過日数を表示できます。</li>
         <li><strong>インポートとエクスポート:</strong> JSON・CSV 出力と、重複除去付きのマージ型インポートに対応します。</li>
       </ul>
     </section>
 
     <section aria-labelledby="held-time">
-      <h2 id="held-time">Portal Held Time（保持日数）</h2>
-      <p>現在自分の所有する Portal を選択すると、ツールボックスのリンクが <code>Activity Log（xxD）</code> に変わります。ここで <code>xxD</code> は、その Portal に対する最新のローカル capture 記録から経過した日数を表します。</p>
+      <h2 id="held-time">Recorded Portal Capture Age</h2>
+      <p>現在自分の所有する Portal を選択すると、ツールボックスのリンクが <code>Activity Log（xxD）</code> に変わります。ここで <code>xxD</code> は、その Portal に対する最後のローカル capture 記録から経過した日数を表します。</p>
       <p>対応する capture 記録がローカルに存在しない場合、または Portal が中立状態の場合は、通常の <code>Activity Log</code> 表示のままになります。</p>
+    </section>
+
+    <section aria-labelledby="capture-age-notice">
+      <h2 id="capture-age-notice">Portal Capture Age Notice</h2>
+      <p>ツールボックスに <code>Activity Log（20D）</code> のように表示される値は、選択した Portal に対してローカル COMM 履歴に記録された最後の capture イベントがおよそ 20 日前だったことを意味します。</p>
+      <p>これは、その Portal 上の現在のすべての resonator が 20 日間存在していることを<strong>意味しません</strong>。一部の resonator が自然 decay した後、Portal が同じ陣営のまま再配置された場合でも、表示される capture age は最初に記録された capture を指し続けることがあります。</p>
+      <p>この値は公式な Portal 状態ではなく、ローカル活動記録のヒントとして扱ってください。</p>
     </section>
 
     <section aria-labelledby="how-it-works">
@@ -106,8 +113,8 @@
     <section aria-labelledby="whats-new">
       <h2 id="whats-new">0.8.3 の更新</h2>
       <ul class="feature-list">
-        <li>ツールボックスに <code>Activity Log（xxD）</code> 形式の保持日数表示を追加。</li>
-        <li>Portal 切り替え時の更新挙動を改善し、中立 Portal では保持日数を非表示化。</li>
+        <li>ツールボックスに <code>Activity Log（xxD）</code> 形式の記録済み capture 経過日数表示を追加。</li>
+        <li>Portal 切り替え時の更新挙動を改善し、中立 Portal ではこの時間表示を非表示化。</li>
         <li>プラグイン画面とドキュメントに免責事項を追加。</li>
       </ul>
     </section>
@@ -116,7 +123,8 @@
       <p><strong>重要:</strong> データはすべて現在のブラウザにのみ保存され、端末やアカウント間で自動同期されません。必要なら定期的にエクスポートしてバックアップしてください。</p>
     </div>
     <div class="note">
-      <p><strong>免責事項:</strong> このプラグインはローカルに記録された COMM 履歴に基づくため、データが不完全または不正確な場合があります。</p>
+      <p><strong>免責事項:</strong> このプラグインのデータはローカル COMM 記録に基づきます。プラグインが動作していなかった場合、COMM 履歴が読み込まれていなかった場合、対象活動が見えていた COMM 範囲外だった場合、resonator が記録なしで自然 decay した場合、または部分的なインポートだった場合は、不完全または不正確になることがあります。</p>
+      <p>Portal capture age は記録された活動のヒントであり、公式で正確な Portal 状態ではありません。</p>
     </div>
     <div class="note note-danger">
       <p><strong>互換性メモ:</strong> 軌跡描画は IITC-CE 標準の <strong>Player activity tracker</strong> レイヤーと重なります。重複表示を避けたい場合はどちらかを無効化してください。</p>
@@ -127,7 +135,8 @@
       <ul class="faq-list">
         <li><span class="faq-q">このプラグインは非公開データや隠しデータを読みますか？</span> いいえ。クライアントに表示された公開 COMM 活動だけを扱います。</li>
         <li><span class="faq-q">履歴を別の端末へ移せますか？</span> はい。ただし手動のみです。エクスポートしてからインポートしてください。</li>
-        <li><span class="faq-q">保持日数が欠けたりズレたりするのはなぜですか？</span> 計算はローカル capture 履歴に依存するため、必要なイベントを見ていなければ結果は欠落または不完全になります。</li>
+        <li><span class="faq-q">この時間は現在の resonator 全体の実際の年齢を示しますか？</span> いいえ。これは選択した Portal に対してプラグインが最後に記録した capture 時刻を示すだけで、各 resonator の実際の配置時刻までは追跡しません。</li>
+        <li><span class="faq-q">なぜこの時間が欠けたりズレたりするのですか？</span> 計算はローカル capture 履歴に依存するため、必要なイベントを見ていなかったり、COMM 履歴が読み込まれていなかったり、一部の resonator が decay 後に再配置されても Portal が中立化しなかった場合は、結果が欠落したり誤解を招くことがあります。</li>
       </ul>
     </section>
 
